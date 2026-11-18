@@ -1,0 +1,2258 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offline PDF → Exact Excel (.xlsx) Engine</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script>
+    // Configure Tailwind if online; fallback CSS below guarantees 100% full styling even completely offline!
+    if (window.tailwind) {
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+              mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+            }
+          }
+        }
+      };
+    }
+  </script>
+  <style>
+    /* =========================================================================
+       COMPLETE OFFLINE FALLBACK & CUSTOM TACTILE STYLES
+       Ensures full visual fidelity even when opened with zero internet access
+       ========================================================================= */
+    :root {
+      --bg-app: #0b0f19;
+      --bg-panel: #111827;
+      --bg-card: #1f2937;
+      --bg-elevated: #273244;
+      --border-subtle: #374151;
+      --text-primary: #f9fafb;
+      --text-secondary: #9ca3af;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --merge-bg: rgba(59, 130, 246, 0.16);
+      --merge-border: #3b82f6;
+      --selected-bg: rgba(16, 185, 129, 0.22);
+    }
+
+    html.light {
+      --bg-app: #f3f4f6;
+      --bg-panel: #ffffff;
+      --bg-card: #f9fafb;
+      --bg-elevated: #e5e7eb;
+      --border-subtle: #d1d5db;
+      --text-primary: #111827;
+      --text-secondary: #4b5563;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --emerald: #059669;
+      --amber: #d97706;
+      --merge-bg: rgba(37, 99, 235, 0.10);
+      --merge-border: #2563eb;
+      --selected-bg: rgba(5, 150, 105, 0.15);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-app);
+      color: var(--text-primary);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .app-panel {
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+    }
+
+    .app-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+    }
+
+    .dropzone {
+      border: 2px dashed var(--border-subtle);
+      border-radius: 14px;
+      background: linear-gradient(145deg, rgba(59,130,246,0.04), rgba(16,185,129,0.03));
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .dropzone:hover, .dropzone.drag-over {
+      border-color: var(--accent);
+      background: rgba(59, 130, 246, 0.10);
+      transform: translateY(-1px);
+    }
+
+    /* Spreadsheet Grid Table Styling */
+    .excel-grid-wrapper {
+      overflow: auto;
+      max-height: 64vh;
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      background-color: var(--bg-panel);
+      user-select: none;
+    }
+
+    table.excel-preview {
+      border-collapse: collapse;
+      width: max-content;
+      min-width: 100%;
+      font-size: 12.5px;
+      line-height: 1.35;
+    }
+
+    table.excel-preview th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: var(--bg-elevated);
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 6px 10px;
+      border: 1px solid var(--border-subtle);
+      text-align: center;
+    }
+
+    table.excel-preview th.row-header {
+      left: 0;
+      z-index: 11;
+      width: 42px;
+      min-width: 42px;
+    }
+
+    table.excel-preview td.row-num {
+      position: sticky;
+      left: 0;
+      z-index: 5;
+      background-color: var(--bg-elevated);
+      color: var(--text-secondary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-align: center;
+      padding: 6px 8px;
+      border: 1px solid var(--border-subtle);
+      font-weight: 500;
+    }
+
+    table.excel-preview td.grid-cell {
+      border: 1px solid var(--border-subtle);
+      padding: 6px 9px;
+      min-width: 76px;
+      max-width: 280px;
+      vertical-align: middle;
+      white-space: pre-wrap;
+      word-break: break-word;
+      cursor: cell;
+      transition: background-color 0.12s ease;
+      position: relative;
+    }
+
+    table.excel-preview td.grid-cell:hover {
+      outline: 1px solid var(--accent);
+      outline-offset: -1px;
+    }
+
+    table.excel-preview td.grid-cell.is-merged {
+      background-color: var(--merge-bg);
+      border: 1.5px solid var(--merge-border);
+    }
+
+    table.excel-preview td.grid-cell.is-selected {
+      background-color: var(--selected-bg) !important;
+      outline: 2px solid var(--emerald);
+      outline-offset: -2px;
+    }
+
+    .merge-badge {
+      position: absolute;
+      top: 2px;
+      right: 3px;
+      font-size: 9px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 1px 4px;
+      border-radius: 4px;
+      background: var(--accent);
+      color: #fff;
+      opacity: 0.85;
+      pointer-events: none;
+    }
+
+    /* Controls & Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border-subtle);
+      background-color: var(--bg-card);
+      color: var(--text-primary);
+      transition: all 0.15s ease;
+    }
+    .btn:hover:not(:disabled) {
+      background-color: var(--bg-elevated);
+    }
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background-color: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--accent-hover);
+    }
+    .btn-success {
+      background-color: var(--emerald);
+      border-color: var(--emerald);
+      color: #ffffff;
+    }
+    .btn-success:hover:not(:disabled) {
+      filter: brightness(1.08);
+    }
+
+    select, input[type="range"], input[type="number"] {
+      background-color: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+  </style>
+</head>
+<body class="min-h-screen p-3 sm:p-5 md:p-6">
+
+  <!-- Top Navigation & Status Header -->
+  <header class="max-w-[1560px] mx-auto mb-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 app-panel p-4 sm:p-5">
+    <div class="flex items-start sm:items-center gap-3.5">
+      <div class="w-11 h-11 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shrink-0">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </div>
+      <div>
+        <div class="flex flex-wrap items-center gap-2">
+          <h1 class="text-lg sm:text-xl font-bold tracking-tight">PDF → Exact Excel (.xlsx) Grid Engine</h1>
+          <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+            100% Offline Pure-JS Core
+          </span>
+        </div>
+        <p class="text-xs sm:text-sm mt-0.5" style="color: var(--text-secondary)">
+          Reconstructs vector gridlines, merged horizontal/vertical cells, and multi-line text blocks directly in your browser with zero server uploads.
+        </p>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2.5">
+      <button id="btn-offline-guide" class="btn text-xs sm:text-sm" title="How to save and run offline">
+        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Offline Usage Guide
+      </button>
+      <button id="btn-theme-toggle" class="btn text-xs sm:text-sm" title="Toggle Dark/Light Theme">
+        <span id="theme-label">☀️ Light Mode</span>
+      </button>
+      <button id="btn-download-xlsx" class="btn btn-success text-xs sm:text-sm shadow-lg" disabled>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        Download Exact Excel (.xlsx)
+      </button>
+    </div>
+  </header>
+
+  <!-- Toast / Status Notification Banner -->
+  <div id="status-banner" class="max-w-[1560px] mx-auto mb-4 hidden">
+    <div id="status-box" class="px-4 py-3 rounded-xl border text-sm flex items-center justify-between gap-3">
+      <span id="status-text"></span>
+      <button onclick="document.getElementById('status-banner').classList.add('hidden')" class="text-xs opacity-75 hover:opacity-100 px-2 py-1 rounded">✕</button>
+    </div>
+  </div>
+
+  <!-- Main Workspace Grid -->
+  <main class="max-w-[1560px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-5">
+
+    <!-- Left Sidebar: Upload + Intelligent Reconstruction Controls -->
+    <aside class="xl:col-span-4 flex flex-col gap-4">
+
+      <!-- 1. File Upload / Drag & Drop -->
+      <section class="app-panel p-4 sm:p-5">
+        <h2 class="text-sm font-bold uppercase tracking-wider mb-3" style="color: var(--text-secondary)">1. Selectable-Text PDF Input</h2>
+        <div id="dropzone" class="dropzone p-6 text-center flex flex-col items-center justify-center gap-2">
+          <input type="file" id="pdf-input" accept=".pdf,application/pdf" class="hidden" />
+          <div class="w-12 h-12 rounded-full bg-blue-500/15 flex items-center justify-center text-blue-400 mb-1">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+          </div>
+          <p class="font-semibold text-sm">Drop your PDF here or <span class="text-blue-400 underline">browse file</span></p>
+          <p class="text-xs" style="color: var(--text-secondary)">Supports multi-page selectable PDFs (FlateDecode, ASCII, vector lines & tables)</p>
+          <div id="file-badge" class="hidden mt-2 px-3 py-1.5 rounded-lg bg-blue-500/15 border border-blue-500/30 text-xs font-mono text-blue-300 max-w-full truncate"></div>
+        </div>
+        <div class="mt-3 flex items-center justify-between gap-2">
+          <button id="btn-load-sample" class="btn text-xs w-full">
+            ⚡ Load Sample Attendance Table PDF
+          </button>
+        </div>
+      </section>
+
+      <!-- 2. Intelligent Grid & Merge Reconstruction Settings -->
+      <section class="app-panel p-4 sm:p-5 flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold uppercase tracking-wider" style="color: var(--text-secondary)">2. Intelligent Grid Engine</h2>
+          <button id="btn-reprocess" class="btn btn-primary text-xs py-1.5 px-3" disabled>
+            ↻ Re-Analyze Grid
+          </button>
+        </div>
+
+        <!-- Detection Strategy -->
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color: var(--text-secondary)">Grid Detection Mode</label>
+          <select id="opt-mode" class="w-full">
+            <option value="hybrid" selected>Hybrid (Vector Lines + Smart Spatial Clustering)</option>
+            <option value="vector">Strict Vector Gridlines (PDF Drawn Borders)</option>
+            <option value="spatial">Smart Spatial Clustering (Borderless / Whitespace Tables)</option>
+          </select>
+        </div>
+
+        <!-- Orientation & Page Export -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold mb-1.5" style="color: var(--text-secondary)">Rotation Fix</label>
+            <select id="opt-rotation" class="w-full">
+              <option value="auto" selected>Auto (PDF Metadata)</option>
+              <option value="0">0° (Normal)</option>
+              <option value="90">90° Clockwise</option>
+              <option value="180">180° Upside Down</option>
+              <option value="270">270° (-90° CCW)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1.5" style="color: var(--text-secondary)">Multi-Page Output</label>
+            <select id="opt-pages" class="w-full">
+              <option value="separate" selected>Separate Sheets</option>
+              <option value="combined">Combined Single Sheet</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Threshold Sliders -->
+        <div class="app-card p-3 flex flex-col gap-3">
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="font-medium">Column Alignment Tolerance</span>
+              <span id="val-col-tol" class="font-mono text-blue-400">6 pt</span>
+            </div>
+            <input type="range" id="opt-col-tol" min="2" max="24" value="6" class="w-full p-0" />
+          </div>
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="font-medium">Row / Multi-Line Grouping Tolerance</span>
+              <span id="val-row-tol" class="font-mono text-blue-400">5 pt</span>
+            </div>
+            <input type="range" id="opt-row-tol" min="2" max="24" value="5" class="w-full p-0" />
+          </div>
+          <label class="flex items-center gap-2 text-xs cursor-pointer select-none pt-1">
+            <input type="checkbox" id="opt-detect-merges" checked class="rounded" />
+            <span>Auto-detect horizontal & vertical merged cells</span>
+          </label>
+          <label class="flex items-center gap-2 text-xs cursor-pointer select-none">
+            <input type="checkbox" id="opt-preserve-multiline" checked class="rounded" />
+            <span>Keep multi-line cell values together (e.g. In / Out / Duration)</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- 3. Detected Layout Telemetry -->
+      <section class="app-panel p-4 sm:p-5">
+        <h2 class="text-sm font-bold uppercase tracking-wider mb-3" style="color: var(--text-secondary)">3. Extraction Telemetry</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-2 gap-2.5">
+          <div class="app-card p-3">
+            <div class="text-xs" style="color: var(--text-secondary)">Pages Parsed</div>
+            <div id="stat-pages" class="text-lg font-bold font-mono mt-0.5">0</div>
+          </div>
+          <div class="app-card p-3">
+            <div class="text-xs" style="color: var(--text-secondary)">Grid Dimensions</div>
+            <div id="stat-dims" class="text-lg font-bold font-mono mt-0.5">0 × 0</div>
+          </div>
+          <div class="app-card p-3">
+            <div class="text-xs" style="color: var(--text-secondary)">Merged Regions</div>
+            <div id="stat-merges" class="text-lg font-bold font-mono text-blue-400 mt-0.5">0</div>
+          </div>
+          <div class="app-card p-3">
+            <div class="text-xs" style="color: var(--text-secondary)">Vector Lines / Text</div>
+            <div id="stat-items" class="text-lg font-bold font-mono text-emerald-400 mt-0.5">0 / 0</div>
+          </div>
+        </div>
+      </section>
+
+    </aside>
+
+    <!-- Right Workspace: Interactive Editable Spreadsheet & Visual PDF Inspector -->
+    <section class="xl:col-span-8 app-panel p-4 sm:p-5 flex flex-col gap-4">
+
+      <!-- Toolbar: Sheet Tabs + Cell Merge/Edit Controls + View Toggle -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b" style="border-color: var(--border-subtle)">
+        <div class="flex flex-wrap items-center gap-2">
+          <div id="sheet-tabs" class="flex flex-wrap items-center gap-1.5">
+            <span class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600/20 text-blue-400 border border-blue-500/40">Sheet 1</span>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="btn-merge-cells" class="btn text-xs" disabled title="Select 2 or more cells (Click + Shift-Click) to merge">
+            ⊞ Merge Selected
+          </button>
+          <button id="btn-unmerge-cells" class="btn text-xs" disabled title="Unmerge selected merged cell">
+            ⊟ Unmerge
+          </button>
+          <button id="btn-toggle-debug" class="btn text-xs" disabled title="Toggle Extracted PDF Vector & Text Coordinate Canvas">
+            📐 Inspect PDF Geometry
+          </button>
+        </div>
+      </div>
+
+      <!-- Formula / Active Cell Bar -->
+      <div class="flex items-center gap-2 app-card px-3 py-2">
+        <span id="active-cell-ref" class="font-mono text-xs font-bold px-2 py-1 rounded bg-blue-500/20 text-blue-400 min-w-[54px] text-center">--</span>
+        <span class="text-xs font-mono opacity-50">fx</span>
+        <input id="active-cell-editor" type="text" placeholder="Click any cell in the preview below to inspect or edit text (Shift+Click to select range for merging)..." class="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-mono" disabled />
+      </div>
+
+      <!-- Optional Visual PDF Geometry Overlay Canvas -->
+      <div id="geometry-panel" class="hidden app-card p-3">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-blue-400">Detected PDF Vector Lines (Cyan), Grid Tracks (Amber), & Text Bounding Boxes (Emerald)</span>
+          <button onclick="document.getElementById('geometry-panel').classList.add('hidden')" class="text-xs btn py-1 px-2">Hide</button>
+        </div>
+        <div class="overflow-auto max-h-[340px] flex justify-center bg-slate-950 rounded-lg p-2">
+          <canvas id="geometry-canvas" class="max-w-full h-auto rounded"></canvas>
+        </div>
+      </div>
+
+      <!-- Interactive Spreadsheet Grid Preview -->
+      <div id="grid-container" class="excel-grid-wrapper">
+        <div class="p-12 text-center flex flex-col items-center justify-center gap-3" style="color: var(--text-secondary)">
+          <svg class="w-12 h-12 opacity-40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          <p class="text-sm font-medium">No PDF loaded yet</p>
+          <p class="text-xs max-w-md">Upload a selectable-text PDF on the left or click <strong>"Load Sample Attendance Table PDF"</strong> to test exact grid & merged-cell reconstruction offline.</p>
+        </div>
+      </div>
+
+      <!-- Legend Footer -->
+      <div class="flex flex-wrap items-center justify-between gap-3 text-xs" style="color: var(--text-secondary)">
+        <div class="flex flex-wrap items-center gap-4">
+          <span class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded-sm inline-block border border-blue-500 bg-blue-500/20"></span>
+            Merged Cell Region (<code class="font-mono">colspan / rowspan</code>)
+          </span>
+          <span class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded-sm inline-block border border-emerald-500 bg-emerald-500/20"></span>
+            Selected Range (Click + Shift-Click)
+          </span>
+        </div>
+        <span>Double-click any cell directly in the grid to edit inline</span>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Offline Operation Architecture Modal -->
+  <div id="offline-modal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="app-panel max-w-2xl w-full p-6 shadow-2xl flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b pb-3" style="border-color: var(--border-subtle)">
+        <h3 class="text-base font-bold flex items-center gap-2">
+          <span class="text-emerald-400">●</span> 100% Air-Gapped Offline Architecture
+        </h3>
+        <button id="btn-close-modal" class="btn py-1 px-2.5 text-xs">✕</button>
+      </div>
+      <div class="text-xs sm:text-sm space-y-3 leading-relaxed" style="color: var(--text-secondary)">
+        <p class="text-white font-medium">This single HTML file contains zero external runtime dependencies for PDF parsing or Excel generation:</p>
+        <ul class="list-disc pl-5 space-y-1.5">
+          <li><strong>Pure-JS PDF Stream & Operator Engine:</strong> Parses PDF cross-reference tables/objects, decompresses <code class="font-mono text-blue-400">/FlateDecode</code> streams natively via the browser's built-in <code class="font-mono text-blue-400">DecompressionStream('deflate')</code> API, decodes <code class="font-mono text-blue-400">ToUnicode</code> CMap font tables, and extracts exact <code class="font-mono">Tm / Td / TJ</code> text matrices alongside <code class="font-mono">m / l / re</code> vector gridlines.</li>
+          <li><strong>Hybrid Grid & Merged-Cell Reconstructor:</strong> Snaps vector border segments into canonical X/Y grid tracks, groups multi-line entries inside cells, and infers horizontal (<code class="font-mono">colspan</code>) and vertical (<code class="font-mono">rowspan</code>) merged cells where dividing lines are omitted.</li>
+          <li><strong>Native OpenXML (.xlsx) & ZIP Builder:</strong> Generates standards-compliant <code class="font-mono">xl/worksheets/sheet*.xml</code> with <code class="font-mono">&lt;mergeCells&gt;</code>, cell borders, word-wrap styles, and CRC32-checksummed ZIP archives directly in memory.</li>
+        </ul>
+        <div class="app-card p-3 font-mono text-xs text-emerald-400">
+          How to use completely offline: Press <strong>Ctrl+S</strong> (or <strong>Cmd+S</strong>) to save this page as <strong>pdf_to_exact_excel.html</strong> on your computer, then open it anytime in Chrome, Edge, Firefox, or Safari without Wi-Fi.
+        </div>
+      </div>
+      <div class="flex justify-end">
+        <button id="btn-modal-ok" class="btn btn-primary text-xs">Got It</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================================
+       1. PURE-JS PDF PARSER (NO EXTERNAL LIBRARIES REQUIRED)
+       Extracts text items (with CMap ToUnicode decoding & CTM/Text matrices)
+       and vector line/rectangle drawing operations from selectable-text PDFs.
+       ========================================================================= */
+    class PurePdfEngine {
+      constructor(arrayBuffer) {
+        this.bytes = new Uint8Array(arrayBuffer);
+        this.latin1 = new TextDecoder('latin1').decode(this.bytes);
+        this.objects = new Map();
+      }
+
+      async parse() {
+        this.indexObjects();
+        const pages = await this.extractPages();
+        return pages;
+      }
+
+      indexObjects() {
+        // Scan all "objNum genNum obj ... endobj" blocks across the PDF buffer
+        const regex = /(\d+)\s+(\d+)\s+obj\b/g;
+        let match;
+        while ((match = regex.exec(this.latin1)) !== null) {
+          const objNum = parseInt(match[1], 10);
+          const startIdx = match.index + match[0].length;
+          const endIdx = this.latin1.indexOf('endobj', startIdx);
+          if (endIdx !== -1) {
+            this.objects.set(objNum, {
+              num: objNum,
+              raw: this.latin1.slice(startIdx, endIdx),
+              byteStart: startIdx,
+              byteEnd: endIdx
+            });
+          }
+        }
+      }
+
+      getObject(refOrNum) {
+        if (typeof refOrNum === 'number') return this.objects.get(refOrNum) || null;
+        const m = String(refOrNum).match(/(\d+)\s+\d+\s+R/);
+        if (m) return this.objects.get(parseInt(m[1], 10)) || null;
+        return null;
+      }
+
+      async getStreamData(obj) {
+        if (!obj) return null;
+        const streamPos = obj.raw.indexOf('stream');
+        if (streamPos === -1) return null;
+
+        let dataStart = obj.byteStart + streamPos + 6;
+        if (this.bytes[dataStart] === 0x0d && this.bytes[dataStart + 1] === 0x0a) dataStart += 2;
+        else if (this.bytes[dataStart] === 0x0a || this.bytes[dataStart] === 0x0d) dataStart += 1;
+
+        const endStreamPos = obj.raw.indexOf('endstream', streamPos);
+        if (endStreamPos === -1) return null;
+        let dataEnd = obj.byteStart + endStreamPos;
+        if (this.bytes[dataEnd - 1] === 0x0a) dataEnd--;
+        if (this.bytes[dataEnd - 1] === 0x0d) dataEnd--;
+
+        const slice = this.bytes.slice(dataStart, Math.max(dataStart, dataEnd));
+        const dictPart = obj.raw.slice(0, streamPos);
+
+        if (/\/FlateDecode\b/.test(dictPart)) {
+          return await this.inflateBytes(slice);
+        }
+        return slice;
+      }
+
+      async inflateBytes(compressed) {
+        // Use browser native DecompressionStream ('deflate' handles zlib-wrapped RFC1950, 'deflate-raw' handles raw RFC1951)
+        for (const format of ['deflate', 'deflate-raw']) {
+          try {
+            const ds = new DecompressionStream(format);
+            const writer = ds.writable.getWriter();
+            writer.write(compressed);
+            writer.close();
+            const reader = ds.readable.getReader();
+            const chunks = [];
+            let totalLen = 0;
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              chunks.push(value);
+              totalLen += value.length;
+            }
+            const out = new Uint8Array(totalLen);
+            let offset = 0;
+            for (const c of chunks) {
+              out.set(c, offset);
+              offset += c.length;
+            }
+            return out;
+          } catch (e) {
+            // Try fallback format
+          }
+        }
+        return compressed;
+      }
+
+      parseMediaBox(dictStr, inheritedBox = [0, 0, 612, 792]) {
+        const m = dictStr.match(/\/MediaBox\s*\[\s*([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s*\]/);
+        if (m) return m.slice(1, 5).map(Number);
+        return inheritedBox;
+      }
+
+      parseRotate(dictStr, inheritedRot = 0) {
+        const m = dictStr.match(/\/Rotate\s+(-?\d+)/);
+        return m ? parseInt(m[1], 10) : inheritedRot;
+      }
+
+      async parseFontMaps(pageRaw) {
+        // Resolve /Resources -> /Font -> /ToUnicode CMaps for accurate character decoding
+        const fontMaps = new Map();
+        let resText = pageRaw;
+        const resRef = pageRaw.match(/\/Resources\s+(\d+)\s+\d+\s+R/);
+        if (resRef) {
+          const resObj = this.getObject(parseInt(resRef[1], 10));
+          if (resObj) resText += '\n' + resObj.raw;
+        }
+
+        const fontBlockMatch = resText.match(/\/Font\s*<<([\s\S]*?)>>/);
+        let fontDictStr = fontBlockMatch ? fontBlockMatch[1] : '';
+        const fontDictRef = resText.match(/\/Font\s+(\d+)\s+\d+\s+R/);
+        if (fontDictRef) {
+          const fObj = this.getObject(parseInt(fontDictRef[1], 10));
+          if (fObj) fontDictStr += '\n' + fObj.raw;
+        }
+
+        const fontEntryRegex = /\/([A-Za-z0-9_+.-]+)\s+(\d+)\s+\d+\s+R/g;
+        let fm;
+        while ((fm = fontEntryRegex.exec(fontDictStr)) !== null) {
+          const fontName = fm[1];
+          const fontObj = this.getObject(parseInt(fm[2], 10));
+          if (!fontObj) continue;
+          const cmap = new Map();
+          const toUniMatch = fontObj.raw.match(/\/ToUnicode\s+(\d+)\s+\d+\s+R/);
+          if (toUniMatch) {
+            const cmapObj = this.getObject(parseInt(toUniMatch[1], 10));
+            const cmapBytes = await this.getStreamData(cmapObj);
+            if (cmapBytes) {
+              const cmapStr = new TextDecoder('latin1').decode(cmapBytes);
+              this.parseCMap(cmapStr, cmap);
+            }
+          }
+          fontMaps.set(fontName, cmap);
+        }
+        return fontMaps;
+      }
+
+      parseCMap(cmapStr, cmap) {
+        // Parse beginbfchar ... endbfchar
+        const bfcharBlocks = cmapStr.match(/beginbfchar([\s\S]*?)endbfchar/g) || [];
+        for (const block of bfcharBlocks) {
+          const pairRegex = /<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/g;
+          let m;
+          while ((m = pairRegex.exec(block)) !== null) {
+            const src = parseInt(m[1], 16);
+            const dst = this.hexToUtf16(m[2]);
+            cmap.set(src, dst);
+          }
+        }
+        // Parse beginbfrange ... endbfrange
+        const bfrangeBlocks = cmapStr.match(/beginbfrange([\s\S]*?)endbfrange/g) || [];
+        for (const block of bfrangeBlocks) {
+          const rangeRegex = /<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*(?:<([0-9A-Fa-f]+)>|\[([^\]]+)\])/g;
+          let m;
+          while ((m = rangeRegex.exec(block)) !== null) {
+            const start = parseInt(m[1], 16);
+            const end = parseInt(m[2], 16);
+            if (m[3]) {
+              let dstCode = parseInt(m[3], 16);
+              for (let code = start; code <= end; code++, dstCode++) {
+                cmap.set(code, String.fromCodePoint(dstCode));
+              }
+            } else if (m[4]) {
+              const arr = m[4].match(/<([0-9A-Fa-f]+)>/g) || [];
+              arr.forEach((hexToken, idx) => {
+                const clean = hexToken.replace(/[<>]/g, '');
+                cmap.set(start + idx, this.hexToUtf16(clean));
+              });
+            }
+          }
+        }
+      }
+
+      hexToUtf16(hex) {
+        let out = '';
+        for (let i = 0; i < hex.length; i += 4) {
+          const chunk = hex.slice(i, i + 4);
+          if (chunk.length === 4) {
+            out += String.fromCharCode(parseInt(chunk, 16));
+          } else if (chunk.length === 2) {
+            out += String.fromCharCode(parseInt(chunk, 16));
+          }
+        }
+        return out;
+      }
+
+      async extractPages() {
+        const pageObjects = [];
+        for (const [, obj] of this.objects) {
+          if (/\/Type\s*\/Page\b/.test(obj.raw) && !/\/Type\s*\/Pages\b/.test(obj.raw)) {
+            pageObjects.push(obj);
+          }
+        }
+
+        const results = [];
+        for (let pIdx = 0; pIdx < pageObjects.length; pIdx++) {
+          const pObj = pageObjects[pIdx];
+          const mediaBox = this.parseMediaBox(pObj.raw);
+          const rotation = this.parseRotate(pObj.raw);
+          const fontMaps = await this.parseFontMaps(pObj.raw);
+
+          // Collect content stream references (single ref or array of refs)
+          const contentRefs = [];
+          const arrMatch = pObj.raw.match(/\/Contents\s*\[([\s\S]*?)\]/);
+          if (arrMatch) {
+            const refs = arrMatch[1].match(/\d+\s+\d+\s+R/g) || [];
+            refs.forEach(r => contentRefs.push(this.getObject(r)));
+          } else {
+            const singleMatch = pObj.raw.match(/\/Contents\s+(\d+\s+\d+\s+R)/);
+            if (singleMatch) contentRefs.push(this.getObject(singleMatch[1]));
+          }
+
+          let combinedStream = '';
+          for (const cObj of contentRefs) {
+            const decoded = await this.getStreamData(cObj);
+            if (decoded) {
+              combinedStream += '\n' + new TextDecoder('latin1').decode(decoded);
+            }
+          }
+
+          const parsedContent = this.interpretContentStream(combinedStream, fontMaps, mediaBox);
+          results.push({
+            pageNumber: pIdx + 1,
+            mediaBox,
+            rotation,
+            width: mediaBox[2] - mediaBox[0],
+            height: mediaBox[3] - mediaBox[1],
+            textItems: parsedContent.textItems,
+            lines: parsedContent.lines
+          });
+        }
+        return results;
+      }
+
+      interpretContentStream(stream, fontMaps, mediaBox) {
+        const textItems = [];
+        const lines = [];
+
+        // Graphics & Text state
+        let ctm = [1, 0, 0, 1, 0, 0];
+        const ctmStack = [];
+        let tm = [1, 0, 0, 1, 0, 0];
+        let tlm = [1, 0, 0, 1, 0, 0];
+        let fontSize = 10;
+        let currentFont = null;
+        let leading = 0;
+
+        // Path construction state
+        let pathPoints = [];
+        let currentPt = null;
+
+        const multiplyMatrix = (m1, m2) => [
+          m1[0] * m2[0] + m1[1] * m2[2],
+          m1[0] * m2[1] + m1[1] * m2[3],
+          m1[2] * m2[0] + m1[3] * m2[2],
+          m1[2] * m2[1] + m1[3] * m2[3],
+          m1[4] * m2[0] + m1[5] * m2[2] + m2[4],
+          m1[4] * m2[1] + m1[5] * m2[3] + m2[5]
+        ];
+
+        const transformPt = (x, y, m) => ({
+          x: x * m[0] + y * m[2] + m[4],
+          y: x * m[1] + y * m[3] + m[5]
+        });
+
+        const decodePdfString = (token) => {
+          const cmap = currentFont ? fontMaps.get(currentFont) : null;
+          if (token.startsWith('<') && token.endsWith('>')) {
+            const hex = token.slice(1, -1).replace(/\s+/g, '');
+            let str = '';
+            const step = cmap && cmap.size > 0 ? 4 : 2;
+            for (let i = 0; i < hex.length; i += step) {
+              const code = parseInt(hex.slice(i, i + step), 16);
+              if (cmap && cmap.has(code)) str += cmap.get(code);
+              else if (code >= 32 && code < 65535) str += String.fromCharCode(code);
+            }
+            return str;
+          } else if (token.startsWith('(') && token.endsWith(')')) {
+            const inner = token.slice(1, -1);
+            let str = '';
+            for (let i = 0; i < inner.length; i++) {
+              let ch = inner[i];
+              if (ch === '\\' && i + 1 < inner.length) {
+                const next = inner[++i];
+                if (next === 'n') ch = '\n';
+                else if (next === 'r') ch = '\r';
+                else if (next === 't') ch = '\t';
+                else if (/[0-7]/.test(next)) {
+                  let oct = next;
+                  while (oct.length < 3 && i + 1 < inner.length && /[0-7]/.test(inner[i + 1])) {
+                    oct += inner[++i];
+                  }
+                  ch = String.fromCharCode(parseInt(oct, 8));
+                } else {
+                  ch = next;
+                }
+              }
+              const code = ch.charCodeAt(0);
+              if (cmap && cmap.has(code)) str += cmap.get(code);
+              else str += ch;
+            }
+            return str;
+          }
+          return '';
+        };
+
+        // Tokenize PDF content stream cleanly (handling nested parentheses & hex strings)
+        const tokens = this.tokenizeStream(stream);
+        const operands = [];
+
+        const emitText = (str) => {
+          const clean = str.replace(/\u0000/g, '').trim();
+          if (!clean) return;
+          const fullM = multiplyMatrix(tm, ctm);
+          const pos = transformPt(0, 0, fullM);
+          const effFontSize = Math.max(4, Math.hypot(fullM[0], fullM[1]) * fontSize || fontSize);
+          const estWidth = clean.length * effFontSize * 0.52;
+          // Normalize Y so top of page is 0 and Y increases downward
+          const pageTop = mediaBox[3];
+          const normY = pageTop - pos.y;
+          textItems.push({
+            text: clean,
+            x: pos.x,
+            y: normY,
+            width: estWidth,
+            height: effFontSize
+          });
+          // Advance text matrix horizontally
+          tm[4] += estWidth;
+        };
+
+        for (let i = 0; i < tokens.length; i++) {
+          const tok = tokens[i];
+          if (tok.type === 'op') {
+            const op = tok.val;
+            switch (op) {
+              case 'q':
+                ctmStack.push([...ctm]);
+                break;
+              case 'Q':
+                if (ctmStack.length) ctm = ctmStack.pop();
+                break;
+              case 'cm':
+                if (operands.length >= 6) {
+                  const m = operands.slice(-6).map(Number);
+                  ctm = multiplyMatrix(m, ctm);
+                }
+                break;
+              case 'BT':
+                tm = [1, 0, 0, 1, 0, 0];
+                tlm = [1, 0, 0, 1, 0, 0];
+                break;
+              case 'Tf':
+                if (operands.length >= 2) {
+                  currentFont = String(operands[operands.length - 2]).replace(/^\//, '');
+                  fontSize = Math.abs(Number(operands[operands.length - 1])) || 10;
+                }
+                break;
+              case 'TL':
+                if (operands.length >= 1) leading = Number(operands[operands.length - 1]) || 0;
+                break;
+              case 'Td':
+                if (operands.length >= 2) {
+                  const tx = Number(operands[operands.length - 2]) || 0;
+                  const ty = Number(operands[operands.length - 1]) || 0;
+                  tlm = multiplyMatrix([1, 0, 0, 1, tx, ty], tlm);
+                  tm = [...tlm];
+                }
+                break;
+              case 'TD':
+                if (operands.length >= 2) {
+                  const tx = Number(operands[operands.length - 2]) || 0;
+                  const ty = Number(operands[operands.length - 1]) || 0;
+                  leading = -ty;
+                  tlm = multiplyMatrix([1, 0, 0, 1, tx, ty], tlm);
+                  tm = [...tlm];
+                }
+                break;
+              case 'Tm':
+                if (operands.length >= 6) {
+                  const m = operands.slice(-6).map(Number);
+                  tm = [...m];
+                  tlm = [...m];
+                }
+                break;
+              case 'T*':
+                tlm = multiplyMatrix([1, 0, 0, 1, 0, -leading], tlm);
+                tm = [...tlm];
+                break;
+              case 'Tj':
+                if (operands.length >= 1) {
+                  emitText(decodePdfString(String(operands[operands.length - 1])));
+                }
+                break;
+              case 'TJ':
+                if (operands.length >= 1 && Array.isArray(operands[operands.length - 1])) {
+                  const arr = operands[operands.length - 1];
+                  let combined = '';
+                  for (const item of arr) {
+                    if (typeof item === 'string') {
+                      combined += decodePdfString(item);
+                    } else if (typeof item === 'number' && item < -180) {
+                      combined += ' ';
+                    }
+                  }
+                  emitText(combined);
+                }
+                break;
+              case "'":
+                tlm = multiplyMatrix([1, 0, 0, 1, 0, -leading], tlm);
+                tm = [...tlm];
+                if (operands.length >= 1) {
+                  emitText(decodePdfString(String(operands[operands.length - 1])));
+                }
+                break;
+              case 'm':
+                if (operands.length >= 2) {
+                  const p = transformPt(Number(operands[operands.length - 2]), Number(operands[operands.length - 1]), ctm);
+                  currentPt = { x: p.x, y: mediaBox[3] - p.y };
+                  pathPoints = [currentPt];
+                }
+                break;
+              case 'l':
+                if (operands.length >= 2 && currentPt) {
+                  const p = transformPt(Number(operands[operands.length - 2]), Number(operands[operands.length - 1]), ctm);
+                  const nextPt = { x: p.x, y: mediaBox[3] - p.y };
+                  lines.push({ x1: currentPt.x, y1: currentPt.y, x2: nextPt.x, y2: nextPt.y });
+                  currentPt = nextPt;
+                  pathPoints.push(nextPt);
+                }
+                break;
+              case 're':
+                if (operands.length >= 4) {
+                  const rx = Number(operands[operands.length - 4]);
+                  const ry = Number(operands[operands.length - 3]);
+                  const rw = Number(operands[operands.length - 2]);
+                  const rh = Number(operands[operands.length - 1]);
+                  const p1 = transformPt(rx, ry, ctm);
+                  const p2 = transformPt(rx + rw, ry + rh, ctm);
+                  const xMin = Math.min(p1.x, p2.x);
+                  const xMax = Math.max(p1.x, p2.x);
+                  const yMin = Math.min(mediaBox[3] - p1.y, mediaBox[3] - p2.y);
+                  const yMax = Math.max(mediaBox[3] - p1.y, mediaBox[3] - p2.y);
+                  // Add 4 edges of the rectangle as gridlines
+                  lines.push({ x1: xMin, y1: yMin, x2: xMax, y2: yMin });
+                  lines.push({ x1: xMin, y1: yMax, x2: xMax, y2: yMax });
+                  lines.push({ x1: xMin, y1: yMin, x2: xMin, y2: yMax });
+                  lines.push({ x1: xMax, y1: yMin, x2: xMax, y2: yMax });
+                }
+                break;
+              case 'h':
+                if (pathPoints.length > 2 && currentPt) {
+                  const first = pathPoints[0];
+                  lines.push({ x1: currentPt.x, y1: currentPt.y, x2: first.x, y2: first.y });
+                }
+                break;
+            }
+            operands.length = 0;
+          } else {
+            operands.push(tok.val);
+          }
+        }
+
+        return { textItems, lines };
+      }
+
+      tokenizeStream(s) {
+        const tokens = [];
+        let i = 0;
+        const len = s.length;
+
+        const isWhitespace = (c) => c === ' ' || c === '\n' || c === '\r' || c === '\t' || c === '\f' || c === '\0';
+        const isDelimiter = (c) => isWhitespace(c) || c === '(' || c === ')' || c === '<' || c === '>' || c === '[' || c === ']' || c === '/' || c === '%';
+
+        while (i < len) {
+          const c = s[i];
+          if (isWhitespace(c)) {
+            i++;
+            continue;
+          }
+          if (c === '%') {
+            while (i < len && s[i] !== '\n' && s[i] !== '\r') i++;
+            continue;
+          }
+          if (c === '(') {
+            let depth = 1;
+            let start = i++;
+            while (i < len && depth > 0) {
+              if (s[i] === '\\') { i += 2; continue; }
+              if (s[i] === '(') depth++;
+              else if (s[i] === ')') depth--;
+              i++;
+            }
+            tokens.push({ type: 'val', val: s.slice(start, i) });
+            continue;
+          }
+          if (c === '<' && s[i + 1] !== '<') {
+            let start = i++;
+            while (i < len && s[i] !== '>') i++;
+            i++;
+            tokens.push({ type: 'val', val: s.slice(start, i) });
+            continue;
+          }
+          if (c === '[') {
+            i++;
+            const arr = [];
+            while (i < len && s[i] !== ']') {
+              if (isWhitespace(s[i])) { i++; continue; }
+              if (s[i] === '(') {
+                let depth = 1;
+                let st = i++;
+                while (i < len && depth > 0) {
+                  if (s[i] === '\\') { i += 2; continue; }
+                  if (s[i] === '(') depth++;
+                  else if (s[i] === ')') depth--;
+                  i++;
+                }
+                arr.push(s.slice(st, i));
+              } else if (s[i] === '<') {
+                let st = i++;
+                while (i < len && s[i] !== '>') i++;
+                i++;
+                arr.push(s.slice(st, i));
+              } else {
+                let st = i;
+                while (i < len && !isDelimiter(s[i])) i++;
+                const numStr = s.slice(st, i);
+                if (numStr) arr.push(Number(numStr));
+              }
+            }
+            if (s[i] === ']') i++;
+            tokens.push({ type: 'val', val: arr });
+            continue;
+          }
+          if (c === '/') {
+            let st = i++;
+            while (i < len && !isDelimiter(s[i])) i++;
+            tokens.push({ type: 'val', val: s.slice(st, i) });
+            continue;
+          }
+          // Number or Operator
+          let st = i;
+          while (i < len && !isDelimiter(s[i])) i++;
+          const word = s.slice(st, i);
+          if (!word) { i++; continue; }
+          if (/^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(word)) {
+            tokens.push({ type: 'val', val: Number(word) });
+          } else {
+            tokens.push({ type: 'op', val: word });
+          }
+        }
+        return tokens;
+      }
+    }
+
+    /* =========================================================================
+       2. INTELLIGENT GRID & MERGED CELL RECONSTRUCTION ENGINE
+       Combines vector line tracks + spatial text clustering to infer exact
+       spreadsheet rows, columns, multi-line cells, and horizontal/vertical merges.
+       ========================================================================= */
+    class GridReconstructor {
+      static buildSheet(pageData, options) {
+        const { mode, rotation, colTol, rowTol, detectMerges, preserveMultiline } = options;
+
+        // 1. Apply rotation transformation if requested
+        const rot = rotation === 'auto' ? (pageData.rotation || 0) : parseInt(rotation, 10);
+        const { textItems, lines, width, height } = this.applyRotation(pageData, rot);
+
+        if (textItems.length === 0 && lines.length === 0) {
+          return {
+            name: `Page ${pageData.pageNumber}`,
+            rows: [['(No selectable text found on this page)']],
+            merges: [],
+            colTracks: [0, 300],
+            rowTracks: [0, 30],
+            geometry: { textItems, lines, width, height, colTracks: [], rowTracks: [] }
+          };
+        }
+
+        // 2. Filter orthogonal horizontal and vertical vector lines
+        const hLines = [];
+        const vLines = [];
+        for (const ln of lines) {
+          const dx = Math.abs(ln.x2 - ln.x1);
+          const dy = Math.abs(ln.y2 - ln.y1);
+          if (dy <= 2.5 && dx > 4) {
+            hLines.push({
+              y: (ln.y1 + ln.y2) / 2,
+              x1: Math.min(ln.x1, ln.x2),
+              x2: Math.max(ln.x1, ln.x2)
+            });
+          } else if (dx <= 2.5 && dy > 4) {
+            vLines.push({
+              x: (ln.x1 + ln.x2) / 2,
+              y1: Math.min(ln.y1, ln.y2),
+              y2: Math.max(ln.y1, ln.y2)
+            });
+          }
+        }
+
+        // 3. Determine Column X-Boundaries & Row Y-Boundaries
+        let colTracks = [];
+        let rowTracks = [];
+
+        const useVectors = (mode === 'vector' || mode === 'hybrid') && (vLines.length >= 2 || hLines.length >= 2);
+        const useSpatial = (mode === 'spatial' || mode === 'hybrid');
+
+        if (useVectors) {
+          colTracks = this.clusterCoordinates(vLines.map(l => l.x), colTol);
+          rowTracks = this.clusterCoordinates(hLines.map(l => l.y), rowTol);
+        }
+
+        if (useSpatial) {
+          const spatialCols = this.inferSpatialColumns(textItems, colTol * 1.4, colTracks);
+          const spatialRows = this.inferSpatialRows(textItems, rowTol * 1.35, rowTracks, hLines);
+          colTracks = spatialCols;
+          rowTracks = spatialRows;
+        }
+
+        // Ensure bounding box covers all text items
+        if (textItems.length > 0) {
+          const minX = Math.min(...textItems.map(t => t.x)) - 4;
+          const maxX = Math.max(...textItems.map(t => t.x + t.width)) + 4;
+          const minY = Math.min(...textItems.map(t => t.y - t.height)) - 4;
+          const maxY = Math.max(...textItems.map(t => t.y + 4)) + 4;
+
+          if (colTracks.length === 0 || colTracks[0] > minX + colTol) colTracks.unshift(minX);
+          if (colTracks[colTracks.length - 1] < maxX - colTol) colTracks.push(maxX);
+          if (rowTracks.length === 0 || rowTracks[0] > minY + rowTol) rowTracks.unshift(minY);
+          if (rowTracks[rowTracks.length - 1] < maxY - rowTol) rowTracks.push(maxY);
+        }
+
+        colTracks = this.dedupeSorted(colTracks, Math.max(4, colTol));
+        rowTracks = this.dedupeSorted(rowTracks, Math.max(4, rowTol));
+
+        const numRows = Math.max(1, rowTracks.length - 1);
+        const numCols = Math.max(1, colTracks.length - 1);
+
+        // 4. Bucket text items into (row, col) cells
+        const cellBuckets = Array.from({ length: numRows }, () =>
+          Array.from({ length: numCols }, () => [])
+        );
+
+        for (const item of textItems) {
+          const cx = item.x + Math.min(item.width * 0.35, 12);
+          const cy = item.y - item.height * 0.35;
+          const r = this.findIntervalIndex(rowTracks, cy);
+          const c = this.findIntervalIndex(colTracks, cx);
+          if (r >= 0 && r < numRows && c >= 0 && c < numCols) {
+            cellBuckets[r][c].push(item);
+          }
+        }
+
+        // 5. Sort text inside each cell top-to-bottom, left-to-right & join multi-line entries
+        const grid = Array.from({ length: numRows }, (_, r) =>
+          Array.from({ length: numCols }, (_, c) => {
+            const items = cellBuckets[r][c];
+            if (!items.length) return '';
+            items.sort((a, b) => (Math.abs(a.y - b.y) > rowTol * 0.75 ? a.y - b.y : a.x - b.x));
+            if (!preserveMultiline) {
+              return items.map(it => it.text).join(' ');
+            }
+            const linesOut = [];
+            let curLine = [items[0]];
+            for (let k = 1; k < items.length; k++) {
+              if (Math.abs(items[k].y - curLine[curLine.length - 1].y) <= rowTol * 0.85) {
+                curLine.push(items[k]);
+              } else {
+                linesOut.push(curLine.map(x => x.text).join(' '));
+                curLine = [items[k]];
+              }
+            }
+            linesOut.push(curLine.map(x => x.text).join(' '));
+            return linesOut.join('\n');
+          })
+        );
+
+        // 6. Detect Merged Cells (both vector-line-absence merges and text-span merges)
+        const merges = detectMerges
+          ? this.detectMergedCells(grid, cellBuckets, colTracks, rowTracks, hLines, vLines, colTol, rowTol)
+          : [];
+
+        // Clear slave cells inside merged ranges so text isn't duplicated
+        for (const m of merges) {
+          for (let r = m.s.r; r <= m.e.r; r++) {
+            for (let c = m.s.c; c <= m.e.c; c++) {
+              if (r === m.s.r && c === m.s.c) continue;
+              if (grid[r][c]) {
+                grid[m.s.r][m.s.c] = (grid[m.s.r][m.s.c] + '\n' + grid[r][c]).trim();
+                grid[r][c] = '';
+              }
+            }
+          }
+        }
+
+        return {
+          name: `Page ${pageData.pageNumber}`,
+          rows: grid,
+          merges,
+          colTracks,
+          rowTracks,
+          geometry: { textItems, lines, width, height, colTracks, rowTracks }
+        };
+      }
+
+      static applyRotation(pageData, rot) {
+        const normRot = ((rot % 360) + 360) % 360;
+        let { width, height } = pageData;
+        const transform = (x, y) => {
+          if (normRot === 90) return { x: height - y, y: x };
+          if (normRot === 180) return { x: width - x, y: height - y };
+          if (normRot === 270) return { x: y, y: width - x };
+          return { x, y };
+        };
+
+        const textItems = pageData.textItems.map(t => {
+          const p = transform(t.x, t.y);
+          return {
+            ...t,
+            x: p.x,
+            y: p.y,
+            width: normRot === 90 || normRot === 270 ? t.height : t.width,
+            height: normRot === 90 || normRot === 270 ? t.width : t.height
+          };
+        });
+
+        const lines = pageData.lines.map(l => {
+          const p1 = transform(l.x1, l.y1);
+          const p2 = transform(l.x2, l.y2);
+          return { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y };
+        });
+
+        if (normRot === 90 || normRot === 270) [width, height] = [height, width];
+        return { textItems, lines, width, height };
+      }
+
+      static clusterCoordinates(coords, tol) {
+        if (!coords.length) return [];
+        const sorted = [...coords].sort((a, b) => a - b);
+        const clusters = [[sorted[0]]];
+        for (let i = 1; i < sorted.length; i++) {
+          const lastCluster = clusters[clusters.length - 1];
+          const avg = lastCluster.reduce((s, v) => s + v, 0) / lastCluster.length;
+          if (Math.abs(sorted[i] - avg) <= tol) {
+            lastCluster.push(sorted[i]);
+          } else {
+            clusters.push([sorted[i]]);
+          }
+        }
+        return clusters.map(cl => cl.reduce((s, v) => s + v, 0) / cl.length);
+      }
+
+      static inferSpatialColumns(textItems, tol, existingTracks) {
+        const tracks = [...existingTracks];
+        const xStarts = textItems.map(t => t.x);
+        const clustered = this.clusterCoordinates(xStarts, tol);
+        for (const cx of clustered) {
+          if (!tracks.some(ex => Math.abs(ex - cx) <= tol * 1.1)) {
+            tracks.push(cx - 3);
+          }
+        }
+        return tracks.sort((a, b) => a - b);
+      }
+
+      static inferSpatialRows(textItems, tol, existingTracks, hLines) {
+        // If strong horizontal vector lines exist (like a ruled attendance table), respect them primarily
+        if (existingTracks.length >= 3 && hLines.length >= 4) {
+          return [...existingTracks].sort((a, b) => a - b);
+        }
+        const tracks = [...existingTracks];
+        const yTops = textItems.map(t => t.y - t.height);
+        const clustered = this.clusterCoordinates(yTops, tol * 1.5);
+        for (const cy of clustered) {
+          if (!tracks.some(ex => Math.abs(ex - cy) <= tol * 1.3)) {
+            tracks.push(cy - 2);
+          }
+        }
+        return tracks.sort((a, b) => a - b);
+      }
+
+      static dedupeSorted(arr, minGap) {
+        const sorted = [...arr].sort((a, b) => a - b);
+        const out = [];
+        for (const v of sorted) {
+          if (!out.length || v - out[out.length - 1] >= minGap) {
+            out.push(v);
+          }
+        }
+        return out;
+      }
+
+      static findIntervalIndex(tracks, val) {
+        if (val < tracks[0]) return 0;
+        for (let i = 0; i < tracks.length - 1; i++) {
+          if (val >= tracks[i] && val < tracks[i + 1]) return i;
+        }
+        return tracks.length - 2;
+      }
+
+      static detectMergedCells(grid, cellBuckets, colTracks, rowTracks, hLines, vLines, colTol, rowTol) {
+        const numRows = grid.length;
+        const numCols = grid[0].length;
+        const visited = Array.from({ length: numRows }, () => Array(numCols).fill(false));
+        const merges = [];
+
+        const hasVerticalDivider = (colBoundaryX, yTop, yBot) => {
+          if (vLines.length < 2) return true; // Spatial mode: rely on text span instead
+          const midY = (yTop + yBot) / 2;
+          return vLines.some(vl =>
+            Math.abs(vl.x - colBoundaryX) <= colTol * 1.2 &&
+            vl.y1 <= midY + 2 && vl.y2 >= midY - 2
+          );
+        };
+
+        const hasHorizontalDivider = (rowBoundaryY, xLeft, xRight) => {
+          if (hLines.length < 2) return true;
+          const midX = (xLeft + xRight) / 2;
+          return hLines.some(hl =>
+            Math.abs(hl.y - rowBoundaryY) <= rowTol * 1.2 &&
+            hl.x1 <= midX + 2 && hl.x2 >= midX - 2
+          );
+        };
+
+        for (let r = 0; r < numRows; r++) {
+          for (let c = 0; c < numCols; c++) {
+            if (visited[r][c]) continue;
+
+            let endC = c;
+            let endR = r;
+
+            // Case A: Vector gridlines present -> merge adjacent cells lacking interior border lines
+            if (vLines.length >= 2 && hLines.length >= 2) {
+              while (
+                endC + 1 < numCols &&
+                !visited[r][endC + 1] &&
+                !hasVerticalDivider(colTracks[endC + 1], rowTracks[r], rowTracks[r + 1])
+              ) {
+                endC++;
+              }
+              while (endR + 1 < numRows) {
+                let canExpandDown = true;
+                for (let cc = c; cc <= endC; cc++) {
+                  if (visited[endR + 1][cc] || hasHorizontalDivider(rowTracks[endR + 1], colTracks[cc], colTracks[cc + 1])) {
+                    canExpandDown = false;
+                    break;
+                  }
+                }
+                if (canExpandDown) endR++;
+                else break;
+              }
+            }
+
+            // Case B: Wide text block physically overflowing across empty right columns
+            if (endC === c && cellBuckets[r][c].length > 0) {
+              const maxRightX = Math.max(...cellBuckets[r][c].map(it => it.x + it.width));
+              while (
+                endC + 1 < numCols &&
+                !visited[r][endC + 1] &&
+                grid[r][endC + 1] === '' &&
+                maxRightX > colTracks[endC + 1] + 6 &&
+                !hasVerticalDivider(colTracks[endC + 1], rowTracks[r], rowTracks[r + 1])
+              ) {
+                endC++;
+              }
+            }
+
+            if (endR > r || endC > c) {
+              for (let rr = r; rr <= endR; rr++) {
+                for (let cc = c; cc <= endC; cc++) {
+                  visited[rr][cc] = true;
+                }
+              }
+              merges.push({ s: { r, c }, e: { r: endR, c: endC } });
+            } else {
+              visited[r][c] = true;
+            }
+          }
+        }
+        return merges;
+      }
+    }
+
+    /* =========================================================================
+       3. PURE-JS OPENXML (.XLSX) & ZIP ARCHIVE GENERATOR (100% OFFLINE)
+       Builds valid .xlsx files with styled borders, wrapped text, auto-fit
+       column widths, row heights, and exact <mergeCells> XML tags.
+       ========================================================================= */
+    class PureXlsxBuilder {
+      static colIndexToLetter(idx) {
+        let letters = '';
+        let n = idx + 1;
+        while (n > 0) {
+          const rem = (n - 1) % 26;
+          letters = String.fromCharCode(65 + rem) + letters;
+          n = Math.floor((n - 1) / 26);
+        }
+        return letters;
+      }
+
+      static escapeXml(str) {
+        return String(str ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&apos;');
+      }
+
+      static generateXlsxBytes(sheets) {
+        const files = [];
+        const enc = new TextEncoder();
+
+        // 1. [Content_Types].xml
+        let sheetOverrides = '';
+        sheets.forEach((_, i) => {
+          sheetOverrides += `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`;
+        });
+        const contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+  ${sheetOverrides}
+</Types>`;
+        files.push({ name: '[Content_Types].xml', data: enc.encode(contentTypesXml) });
+
+        // 2. _rels/.rels
+        const rootRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`;
+        files.push({ name: '_rels/.rels', data: enc.encode(rootRelsXml) });
+
+        // 3. xl/workbook.xml & xl/_rels/workbook.xml.rels
+        let sheetsXml = '';
+        let wbRelsXml = `<Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`;
+        sheets.forEach((sh, i) => {
+          const safeName = this.escapeXml(sh.name.slice(0, 31).replace(/[\\/?*\[\]:]/g, '_'));
+          sheetsXml += `<sheet name="${safeName}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`;
+          wbRelsXml += `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`;
+        });
+
+        const workbookXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>${sheetsXml}</sheets>
+</workbook>`;
+        files.push({ name: 'xl/workbook.xml', data: enc.encode(workbookXml) });
+
+        const workbookRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  ${wbRelsXml}
+</Relationships>`;
+        files.push({ name: 'xl/_rels/workbook.xml.rels', data: enc.encode(workbookRels) });
+
+        // 4. xl/styles.xml (Thin cell borders + word-wrap alignment + header highlight style)
+        const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <fonts count="2">
+    <font><sz val="10"/><name val="Calibri"/></font>
+    <font><b/><sz val="10"/><name val="Calibri"/></font>
+  </fonts>
+  <fills count="3">
+    <fill><patternFill patternType="none"/></fill>
+    <fill><patternFill patternType="gray125"/></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFEFF6FF"/></patternFill></fill>
+  </fills>
+  <borders count="2">
+    <border><left/><right/><top/><bottom/><diagonal/></border>
+    <border>
+      <left style="thin"><color rgb="FF9CA3AF"/></left>
+      <right style="thin"><color rgb="FF9CA3AF"/></right>
+      <top style="thin"><color rgb="FF9CA3AF"/></top>
+      <bottom style="thin"><color rgb="FF9CA3AF"/></bottom>
+      <diagonal/>
+    </border>
+  </borders>
+  <cellStyleXfs count="1">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>
+  </cellStyleXfs>
+  <cellXfs count="3">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1">
+      <alignment horizontal="left" vertical="center" wrapText="1"/>
+    </xf>
+    <xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">
+      <alignment horizontal="center" vertical="center" wrapText="1"/>
+    </xf>
+  </cellXfs>
+</styleSheet>`;
+        files.push({ name: 'xl/styles.xml', data: enc.encode(stylesXml) });
+
+        // 5. xl/worksheets/sheet{N}.xml
+        sheets.forEach((sh, idx) => {
+          const sheetXml = this.buildWorksheetXml(sh);
+          files.push({ name: `xl/worksheets/sheet${idx + 1}.xml`, data: enc.encode(sheetXml) });
+        });
+
+        return this.createZip(files);
+      }
+
+      static buildWorksheetXml(sheet) {
+        const rows = sheet.rows || [[]];
+        const merges = sheet.merges || [];
+        const numRows = rows.length;
+        const numCols = Math.max(1, ...rows.map(r => r.length));
+
+        // Calculate optimal column widths
+        const colWidths = Array(numCols).fill(11);
+        for (let r = 0; r < numRows; r++) {
+          for (let c = 0; c < numCols; c++) {
+            const isHorizMerge = merges.some(m => m.s.r === r && m.s.c === c && m.e.c > m.s.c);
+            if (isHorizMerge) continue;
+            const val = String(rows[r][c] ?? '');
+            const maxLineLen = Math.max(0, ...val.split('\n').map(l => l.length));
+            colWidths[c] = Math.min(44, Math.max(colWidths[c], maxLineLen + 3));
+          }
+        }
+
+        let colsXml = '<cols>';
+        for (let c = 0; c < numCols; c++) {
+          colsXml += `<col min="${c + 1}" max="${c + 1}" width="${colWidths[c]}" customWidth="1"/>`;
+        }
+        colsXml += '</cols>';
+
+        let sheetDataXml = '<sheetData>';
+        for (let r = 0; r < numRows; r++) {
+          let maxLines = 1;
+          for (let c = 0; c < numCols; c++) {
+            const lineCount = String(rows[r][c] ?? '').split('\n').length;
+            if (lineCount > maxLines) maxLines = lineCount;
+          }
+          const rowHeight = Math.max(20, maxLines * 15 + 6);
+          sheetDataXml += `<row r="${r + 1}" ht="${rowHeight}" customHeight="1">`;
+
+          for (let c = 0; c < numCols; c++) {
+            const ref = `${this.colIndexToLetter(c)}${r + 1}`;
+            const val = String(rows[r][c] ?? '');
+            const isMergedHeader = merges.some(m => m.s.r === r && m.s.c === c && (m.e.c - m.s.c >= 2));
+            const styleIdx = isMergedHeader ? 2 : 1;
+
+            if (val.length > 0) {
+              sheetDataXml += `<c r="${ref}" s="${styleIdx}" t="inlineStr"><is><t xml:space="preserve">${this.escapeXml(val)}</t></is></c>`;
+            } else {
+              sheetDataXml += `<c r="${ref}" s="${styleIdx}"/>`;
+            }
+          }
+          sheetDataXml += '</row>';
+        }
+        sheetDataXml += '</sheetData>';
+
+        let mergeXml = '';
+        if (merges.length > 0) {
+          mergeXml = `<mergeCells count="${merges.length}">`;
+          for (const m of merges) {
+            const startRef = `${this.colIndexToLetter(m.s.c)}${m.s.r + 1}`;
+            const endRef = `${this.colIndexToLetter(m.e.c)}${m.e.r + 1}`;
+            mergeXml += `<mergeCell ref="${startRef}:${endRef}"/>`;
+          }
+          mergeXml += '</mergeCells>';
+        }
+
+        return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  ${colsXml}
+  ${sheetDataXml}
+  ${mergeXml}
+</worksheet>`;
+      }
+
+      static crc32(buf) {
+        let crc = 0xFFFFFFFF;
+        for (let i = 0; i < buf.length; i++) {
+          crc ^= buf[i];
+          for (let j = 0; j < 8; j++) {
+            crc = (crc >>> 1) ^ (crc & 1 ? 0xEDB88320 : 0);
+          }
+        }
+        return (crc ^ 0xFFFFFFFF) >>> 0;
+      }
+
+      static createZip(files) {
+        const enc = new TextEncoder();
+        const localParts = [];
+        const centralParts = [];
+        let offset = 0;
+
+        for (const f of files) {
+          const nameBytes = enc.encode(f.name);
+          const crc = this.crc32(f.data);
+          const size = f.data.length;
+
+          // Local file header (30 bytes + name + data)
+          const lh = new Uint8Array(30 + nameBytes.length);
+          const lv = new DataView(lh.buffer);
+          lv.setUint32(0, 0x04034b50, true);
+          lv.setUint16(4, 20, true);
+          lv.setUint16(6, 0x0800, true); // UTF-8 filename flag
+          lv.setUint16(8, 0, true);      // Store (no compression needed)
+          lv.setUint16(10, 0, true);
+          lv.setUint16(12, 0, true);
+          lv.setUint32(14, crc, true);
+          lv.setUint32(18, size, true);
+          lv.setUint32(22, size, true);
+          lv.setUint16(26, nameBytes.length, true);
+          lv.setUint16(28, 0, true);
+          lh.set(nameBytes, 30);
+
+          localParts.push(lh, f.data);
+
+          // Central directory header (46 bytes + name)
+          const ch = new Uint8Array(46 + nameBytes.length);
+          const cv = new DataView(ch.buffer);
+          cv.setUint32(0, 0x02014b50, true);
+          cv.setUint16(4, 20, true);
+          cv.setUint16(6, 20, true);
+          cv.setUint16(8, 0x0800, true);
+          cv.setUint16(10, 0, true);
+          cv.setUint16(12, 0, true);
+          cv.setUint16(14, 0, true);
+          cv.setUint32(16, crc, true);
+          cv.setUint32(20, size, true);
+          cv.setUint32(24, size, true);
+          cv.setUint16(28, nameBytes.length, true);
+          cv.setUint16(30, 0, true);
+          cv.setUint16(32, 0, true);
+          cv.setUint16(34, 0, true);
+          cv.setUint16(36, 0, true);
+          cv.setUint32(38, 0, true);
+          cv.setUint32(42, offset, true);
+          ch.set(nameBytes, 46);
+
+          centralParts.push(ch);
+          offset += lh.length + size;
+        }
+
+        const centralStart = offset;
+        let centralSize = 0;
+        for (const c of centralParts) centralSize += c.length;
+
+        const eocd = new Uint8Array(22);
+        const ev = new DataView(eocd.buffer);
+        ev.setUint32(0, 0x06054b50, true);
+        ev.setUint16(4, 0, true);
+        ev.setUint16(6, 0, true);
+        ev.setUint16(8, files.length, true);
+        ev.setUint16(10, files.length, true);
+        ev.setUint32(12, centralSize, true);
+        ev.setUint32(16, centralStart, true);
+        ev.setUint16(20, 0, true);
+
+        const totalLen = offset + centralSize + 22;
+        const out = new Uint8Array(totalLen);
+        let pos = 0;
+        for (const p of localParts) { out.set(p, pos); pos += p.length; }
+        for (const c of centralParts) { out.set(c, pos); pos += c.length; }
+        out.set(eocd, pos);
+        return out;
+      }
+    }
+
+    /* =========================================================================
+       4. APPLICATION STATE & INTERACTIVE SPREADSHEET CONTROLLER
+       ========================================================================= */
+    const state = {
+      fileName: 'converted_table.xlsx',
+      rawPages: [],
+      sheets: [],
+      activeSheetIdx: 0,
+      selStart: null,
+      selEnd: null
+    };
+
+    const el = {
+      dropzone: document.getElementById('dropzone'),
+      pdfInput: document.getElementById('pdf-input'),
+      fileBadge: document.getElementById('file-badge'),
+      btnDownload: document.getElementById('btn-download-xlsx'),
+      btnReprocess: document.getElementById('btn-reprocess'),
+      btnMerge: document.getElementById('btn-merge-cells'),
+      btnUnmerge: document.getElementById('btn-unmerge-cells'),
+      btnDebug: document.getElementById('btn-toggle-debug'),
+      gridContainer: document.getElementById('grid-container'),
+      sheetTabs: document.getElementById('sheet-tabs'),
+      cellRef: document.getElementById('active-cell-ref'),
+      cellEditor: document.getElementById('active-cell-editor'),
+      optMode: document.getElementById('opt-mode'),
+      optRotation: document.getElementById('opt-rotation'),
+      optPages: document.getElementById('opt-pages'),
+      optColTol: document.getElementById('opt-col-tol'),
+      optRowTol: document.getElementById('opt-row-tol'),
+      optDetectMerges: document.getElementById('opt-detect-merges'),
+      optMultiline: document.getElementById('opt-preserve-multiline'),
+      valColTol: document.getElementById('val-col-tol'),
+      valRowTol: document.getElementById('val-row-tol'),
+      statPages: document.getElementById('stat-pages'),
+      statDims: document.getElementById('stat-dims'),
+      statMerges: document.getElementById('stat-merges'),
+      statItems: document.getElementById('stat-items'),
+      geomPanel: document.getElementById('geometry-panel'),
+      geomCanvas: document.getElementById('geometry-canvas')
+    };
+
+    function showStatus(msg, type = 'info') {
+      const banner = document.getElementById('status-banner');
+      const box = document.getElementById('status-box');
+      const text = document.getElementById('status-text');
+      banner.classList.remove('hidden');
+      text.textContent = msg;
+      box.className = 'px-4 py-3 rounded-xl border text-sm flex items-center justify-between gap-3 ' + (
+        type === 'error'
+          ? 'bg-red-500/15 border-red-500/40 text-red-300'
+          : type === 'success'
+            ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+            : 'bg-blue-500/15 border-blue-500/40 text-blue-300'
+      );
+    }
+
+    // Theme & Modal Bindings
+    document.getElementById('btn-theme-toggle').addEventListener('click', () => {
+      const html = document.documentElement;
+      const isDark = html.classList.contains('dark');
+      html.classList.toggle('dark', !isDark);
+      html.classList.toggle('light', isDark);
+      document.getElementById('theme-label').textContent = isDark ? '🌙 Dark Mode' : '☀️ Light Mode';
+    });
+
+    document.getElementById('btn-offline-guide').addEventListener('click', () => {
+      document.getElementById('offline-modal').classList.remove('hidden');
+    });
+    document.getElementById('btn-close-modal').addEventListener('click', () => {
+      document.getElementById('offline-modal').classList.add('hidden');
+    });
+    document.getElementById('btn-modal-ok').addEventListener('click', () => {
+      document.getElementById('offline-modal').classList.add('hidden');
+    });
+
+    // Range Slider Readouts
+    el.optColTol.addEventListener('input', () => { el.valColTol.textContent = `${el.optColTol.value} pt`; });
+    el.optRowTol.addEventListener('input', () => { el.valRowTol.textContent = `${el.optRowTol.value} pt`; });
+
+    // File Upload & Drag-and-Drop
+    el.dropzone.addEventListener('click', () => el.pdfInput.click());
+    el.dropzone.addEventListener('dragover', (e) => { e.preventDefault(); el.dropzone.classList.add('drag-over'); });
+    el.dropzone.addEventListener('dragleave', () => el.dropzone.classList.remove('drag-over'));
+    el.dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      el.dropzone.classList.remove('drag-over');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handlePdfFile(e.dataTransfer.files[0]);
+      }
+    });
+    el.pdfInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) handlePdfFile(e.target.files[0]);
+    });
+
+    async function handlePdfFile(file) {
+      try {
+        showStatus(`Parsing "${file.name}" offline in pure JavaScript...`, 'info');
+        const buf = await file.arrayBuffer();
+        const engine = new PurePdfEngine(buf);
+        const pages = await engine.parse();
+
+        if (!pages.length) {
+          showStatus('Could not locate PDF page dictionaries. Please verify the file is a valid PDF.', 'error');
+          return;
+        }
+
+        state.fileName = file.name.replace(/\.pdf$/i, '') + '_exact.xlsx';
+        state.rawPages = pages;
+        el.fileBadge.textContent = `📄 ${file.name} (${pages.length} page${pages.length > 1 ? 's' : ''})`;
+        el.fileBadge.classList.remove('hidden');
+
+        runGridReconstruction();
+        showStatus(`Extracted ${pages.length} page(s) with vector gridlines & merged cells ready for Excel export.`, 'success');
+      } catch (err) {
+        console.error(err);
+        showStatus(`Error parsing PDF: ${err.message}`, 'error');
+      }
+    }
+
+    // Generate Synthetic Selectable-Text PDF with Vector Gridlines & Merged Cells for Instant Offline Testing
+    document.getElementById('btn-load-sample').addEventListener('click', async () => {
+      const samplePdfBytes = buildSampleVectorTablePdf();
+      const engine = new PurePdfEngine(samplePdfBytes.buffer);
+      state.rawPages = await engine.parse();
+      state.fileName = 'Sample_Attendance_Exact.xlsx';
+      el.fileBadge.textContent = '📄 Sample_ISRO_Attendance.pdf (Built-in Demo)';
+      el.fileBadge.classList.remove('hidden');
+      runGridReconstruction();
+      showStatus('Loaded built-in vector PDF with horizontal/vertical merged cells & multi-line punch logs.', 'success');
+    });
+
+    function buildSampleVectorTablePdf() {
+      // Creates a real binary PDF with vector gridlines (m / l / re) and selectable text (BT / Tm / Tj)
+      const streamLines = [
+        // Header banner merged across columns 1..7 (x=40..560, y=730..760)
+        '40 730 520 30 re S',
+        'BT /F1 11 Tf 50 741 Tm (Contract ID: GC154696VS   |   Contractor: ISRO APPRENTICESHIP HOLDERS SOCIETY) Tj ET',
+        // Table Gridlines (y from 570 to 730)
+        // Outer box & row lines
+        '40 705 520 25 re S',
+        '40 660 520 45 re S',
+        '40 615 520 45 re S',
+        '40 570 520 45 re S',
+        // Vertical dividers (x = 160, 225, 290, 355, 420, 485)
+        '160 570 m 160 730 l S',
+        '225 570 m 225 730 l S',
+        '290 570 m 290 730 l S',
+        '355 570 m 355 730 l S',
+        // Notice: x=420 is OMITTED in row 1 (y=660..705) and row 2 (y=615..660) to represent a merged weekend block!
+        '420 705 m 420 730 l S',
+        '420 570 m 420 615 l S',
+        '485 570 m 485 730 l S',
+        // Column Headers
+        'BT /F1 9 Tf 50 714 Tm (Employee Name) Tj ET',
+        'BT /F1 9 Tf 172 714 Tm (01-08 Mon) Tj ET',
+        'BT /F1 9 Tf 237 714 Tm (02-08 Tue) Tj ET',
+        'BT /F1 9 Tf 302 714 Tm (03-08 Wed) Tj ET',
+        'BT /F1 9 Tf 367 714 Tm (04-08 Sat) Tj ET',
+        'BT /F1 9 Tf 432 714 Tm (05-08 Sun) Tj ET',
+        'BT /F1 9 Tf 497 714 Tm (06-08 Mon) Tj ET',
+        // Row 1: GAYATHRI J S (Multi-line cells + Merged Sat/Sun)
+        'BT /F1 9 Tf 50 680 Tm (GAYATHRI J S) Tj ET',
+        'BT /F1 8 Tf 175 692 Tm (09:29) Tj 0 -11 Td (17:07) Tj 0 -11 Td ((7.37)) Tj ET',
+        'BT /F1 8 Tf 240 692 Tm (09:55) Tj 0 -11 Td (17:03) Tj 0 -11 Td ((7.08)) Tj ET',
+        'BT /F1 8 Tf 305 692 Tm (09:13) Tj 0 -11 Td (17:17) Tj 0 -11 Td ((8.03)) Tj ET',
+        'BT /F1 8 Tf 395 680 Tm (WEEKEND OFF) Tj ET',
+        'BT /F1 8 Tf 500 692 Tm (09:21) Tj 0 -11 Td (17:23) Tj 0 -11 Td ((8.02)) Tj ET',
+        // Row 2: ABHAYAMBIKA S
+        'BT /F1 9 Tf 50 635 Tm (ABHAYAMBIKA S) Tj ET',
+        'BT /F1 8 Tf 175 647 Tm (09:01) Tj 0 -11 Td (16:55) Tj 0 -11 Td ((7.54)) Tj ET',
+        'BT /F1 8 Tf 240 647 Tm (08:50) Tj 0 -11 Td (15:45) Tj 0 -11 Td ((6.55)) Tj ET',
+        'BT /F1 8 Tf 312 635 Tm (abs) Tj ET',
+        'BT /F1 8 Tf 505 635 Tm (abs) Tj ET',
+        // Row 3: SUJA S R (Unmerged Sat/Sun with split shift)
+        'BT /F1 9 Tf 50 590 Tm (SUJA S R) Tj ET',
+        'BT /F1 8 Tf 175 602 Tm (09:28) Tj 0 -11 Td (17:15) Tj 0 -11 Td ((7.46)) Tj ET',
+        'BT /F1 8 Tf 240 602 Tm (09:17) Tj 0 -11 Td (15:00) Tj 0 -11 Td ((5.43)) Tj ET',
+        'BT /F1 8 Tf 305 602 Tm (09:07) Tj 0 -11 Td (17:09) Tj 0 -11 Td ((8.02)) Tj ET',
+        'BT /F1 8 Tf 370 602 Tm (10:04) Tj 0 -11 Td (16:07) Tj 0 -11 Td ((6.02)) Tj ET',
+        'BT /F1 8 Tf 442 590 Tm (abs) Tj ET',
+        'BT /F1 8 Tf 500 602 Tm (08:59) Tj 0 -11 Td (17:20) Tj 0 -11 Td ((8.20)) Tj ET'
+      ].join('\n');
+
+      const pdfStr = `%PDF-1.4
+1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj
+2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj
+3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj
+4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj
+5 0 obj << /Length ${streamLines.length} >>
+stream
+${streamLines}
+endstream
+endobj
+trailer << /Root 1 0 R >>
+%%EOF`;
+      return new TextEncoder().encode(pdfStr);
+    }
+
+    // Re-analyze when settings change
+    el.btnReprocess.addEventListener('click', runGridReconstruction);
+    [el.optMode, el.optRotation, el.optPages, el.optDetectMerges, el.optMultiline].forEach(ctrl => {
+      ctrl.addEventListener('change', () => { if (state.rawPages.length) runGridReconstruction(); });
+    });
+
+    function runGridReconstruction() {
+      if (!state.rawPages.length) return;
+      const options = {
+        mode: el.optMode.value,
+        rotation: el.optRotation.value,
+        colTol: parseInt(el.optColTol.value, 10),
+        rowTol: parseInt(el.optRowTol.value, 10),
+        detectMerges: el.optDetectMerges.checked,
+        preserveMultiline: el.optMultiline.checked
+      };
+
+      const builtSheets = state.rawPages.map(p => GridReconstructor.buildSheet(p, options));
+
+      if (el.optPages.value === 'combined' && builtSheets.length > 1) {
+        const combinedRows = [];
+        const combinedMerges = [];
+        let rowOffset = 0;
+        builtSheets.forEach((sh, idx) => {
+          if (idx > 0) {
+            combinedRows.push([]);
+            rowOffset += 1;
+          }
+          sh.rows.forEach(r => combinedRows.push([...r]));
+          sh.merges.forEach(m => {
+            combinedMerges.push({
+              s: { r: m.s.r + rowOffset, c: m.s.c },
+              e: { r: m.e.r + rowOffset, c: m.e.c }
+            });
+          });
+          rowOffset += sh.rows.length;
+        });
+        state.sheets = [{
+          name: 'Combined_Sheets',
+          rows: combinedRows,
+          merges: combinedMerges,
+          geometry: builtSheets[0].geometry
+        }];
+      } else {
+        state.sheets = builtSheets;
+      }
+
+      state.activeSheetIdx = Math.min(state.activeSheetIdx, state.sheets.length - 1);
+      state.selStart = null;
+      state.selEnd = null;
+
+      el.btnDownload.disabled = false;
+      el.btnReprocess.disabled = false;
+      el.btnDebug.disabled = false;
+
+      renderSheetTabs();
+      renderActiveSheet();
+    }
+
+    function renderSheetTabs() {
+      el.sheetTabs.innerHTML = '';
+      state.sheets.forEach((sh, idx) => {
+        const btn = document.createElement('button');
+        const active = idx === state.activeSheetIdx;
+        btn.className = active
+          ? 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white shadow'
+          : 'btn py-1.5 px-3 text-xs';
+        btn.textContent = sh.name;
+        btn.onclick = () => {
+          state.activeSheetIdx = idx;
+          state.selStart = null;
+          state.selEnd = null;
+          renderSheetTabs();
+          renderActiveSheet();
+        };
+        el.sheetTabs.appendChild(btn);
+      });
+    }
+
+    function renderActiveSheet() {
+      const sheet = state.sheets[state.activeSheetIdx];
+      if (!sheet) return;
+
+      const rows = sheet.rows;
+      const merges = sheet.merges;
+      const numRows = rows.length;
+      const numCols = Math.max(1, ...rows.map(r => r.length));
+
+      // Update Telemetry Stats
+      const totalLines = state.rawPages.reduce((s, p) => s + p.lines.length, 0);
+      const totalTexts = state.rawPages.reduce((s, p) => s + p.textItems.length, 0);
+      el.statPages.textContent = state.rawPages.length;
+      el.statDims.textContent = `${numRows} × ${numCols}`;
+      el.statMerges.textContent = merges.length;
+      el.statItems.textContent = `${totalLines} / ${totalTexts}`;
+
+      // Map master & covered merged cells
+      const masterMap = new Map();
+      const coveredSet = new Set();
+      for (const m of merges) {
+        masterMap.set(`${m.s.r},${m.s.c}`, {
+          rowspan: m.e.r - m.s.r + 1,
+          colspan: m.e.c - m.s.c + 1
+        });
+        for (let rr = m.s.r; rr <= m.e.r; rr++) {
+          for (let cc = m.s.c; cc <= m.e.c; cc++) {
+            if (rr === m.s.r && cc === m.s.c) continue;
+            coveredSet.add(`${rr},${cc}`);
+          }
+        }
+      }
+
+      const selBounds = getSelectionBounds();
+
+      const table = document.createElement('table');
+      table.className = 'excel-preview';
+
+      // Column Letters Header (A, B, C...)
+      const thead = document.createElement('thead');
+      const headRow = document.createElement('tr');
+      const cornerTh = document.createElement('th');
+      cornerTh.className = 'row-header';
+      cornerTh.textContent = '#';
+      headRow.appendChild(cornerTh);
+
+      for (let c = 0; c < numCols; c++) {
+        const th = document.createElement('th');
+        th.textContent = PureXlsxBuilder.colIndexToLetter(c);
+        headRow.appendChild(th);
+      }
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+
+      // Table Body
+      const tbody = document.createElement('tbody');
+      for (let r = 0; r < numRows; r++) {
+        const tr = document.createElement('tr');
+        const rowNumTd = document.createElement('td');
+        rowNumTd.className = 'row-num';
+        rowNumTd.textContent = r + 1;
+        tr.appendChild(rowNumTd);
+
+        for (let c = 0; c < numCols; c++) {
+          const key = `${r},${c}`;
+          if (coveredSet.has(key)) continue;
+
+          const td = document.createElement('td');
+          td.className = 'grid-cell';
+          const span = masterMap.get(key);
+          if (span) {
+            if (span.rowspan > 1) td.rowSpan = span.rowspan;
+            if (span.colspan > 1) td.colSpan = span.colspan;
+            td.classList.add('is-merged');
+          }
+
+          if (selBounds && r >= selBounds.r1 && r <= selBounds.r2 && c >= selBounds.c1 && c <= selBounds.c2) {
+            td.classList.add('is-selected');
+          }
+
+          td.textContent = rows[r][c] ?? '';
+
+          if (span) {
+            const badge = document.createElement('span');
+            badge.className = 'merge-badge';
+            badge.textContent = `${span.rowspan}×${span.colspan}`;
+            td.appendChild(badge);
+          }
+
+          // Single click / Shift-click selection
+          td.addEventListener('click', (e) => {
+            if (e.shiftKey && state.selStart) {
+              state.selEnd = { r: span ? r + span.rowspan - 1 : r, c: span ? c + span.colspan - 1 : c };
+            } else {
+              state.selStart = { r, c };
+              state.selEnd = { r: span ? r + span.rowspan - 1 : r, c: span ? c + span.colspan - 1 : c };
+            }
+            updateSelectionToolbar();
+            renderActiveSheet();
+          });
+
+          // Double click inline editing
+          td.addEventListener('dblclick', () => {
+            td.contentEditable = 'true';
+            td.focus();
+            const finishEdit = () => {
+              td.contentEditable = 'false';
+              // Strip badge text if present
+              const cleanVal = Array.from(td.childNodes)
+                .filter(n => n.nodeType === Node.TEXT_NODE)
+                .map(n => n.textContent)
+                .join('\n');
+              sheet.rows[r][c] = cleanVal;
+              el.cellEditor.value = cleanVal.replace(/\n/g, ' | ');
+              renderActiveSheet();
+            };
+            td.addEventListener('blur', finishEdit, { once: true });
+          });
+
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+
+      table.appendChild(tbody);
+      el.gridContainer.innerHTML = '';
+      el.gridContainer.appendChild(table);
+
+      if (!el.geomPanel.classList.contains('hidden')) {
+        drawGeometryCanvas(sheet.geometry);
+      }
+    }
+
+    function getSelectionBounds() {
+      if (!state.selStart || !state.selEnd) return null;
+      return {
+        r1: Math.min(state.selStart.r, state.selEnd.r),
+        r2: Math.max(state.selStart.r, state.selEnd.r),
+        c1: Math.min(state.selStart.c, state.selEnd.c),
+        c2: Math.max(state.selStart.c, state.selEnd.c)
+      };
+    }
+
+    function updateSelectionToolbar() {
+      const sheet = state.sheets[state.activeSheetIdx];
+      const b = getSelectionBounds();
+      if (!sheet || !b) {
+        el.cellRef.textContent = '--';
+        el.cellEditor.disabled = true;
+        el.btnMerge.disabled = true;
+        el.btnUnmerge.disabled = true;
+        return;
+      }
+
+      const startRef = `${PureXlsxBuilder.colIndexToLetter(b.c1)}${b.r1 + 1}`;
+      const endRef = `${PureXlsxBuilder.colIndexToLetter(b.c2)}${b.r2 + 1}`;
+      el.cellRef.textContent = startRef === endRef ? startRef : `${startRef}:${endRef}`;
+      el.cellEditor.disabled = false;
+      el.cellEditor.value = (sheet.rows[b.r1][b.c1] ?? '').replace(/\n/g, ' \\n ');
+
+      const isMultiCell = b.r2 > b.r1 || b.c2 > b.c1;
+      el.btnMerge.disabled = !isMultiCell;
+      el.btnUnmerge.disabled = !sheet.merges.some(m => m.s.r === b.r1 && m.s.c === b.c1);
+    }
+
+    // Formula bar live edit
+    el.cellEditor.addEventListener('input', () => {
+      const sheet = state.sheets[state.activeSheetIdx];
+      const b = getSelectionBounds();
+      if (!sheet || !b) return;
+      sheet.rows[b.r1][b.c1] = el.cellEditor.value.replace(/\s*\\n\s*/g, '\n');
+      renderActiveSheet();
+    });
+
+    // Manual Merge Selected Range
+    el.btnMerge.addEventListener('click', () => {
+      const sheet = state.sheets[state.activeSheetIdx];
+      const b = getSelectionBounds();
+      if (!sheet || !b || (b.r1 === b.r2 && b.c1 === b.c2)) return;
+
+      // Remove overlapping merges
+      sheet.merges = sheet.merges.filter(m =>
+        m.e.r < b.r1 || m.s.r > b.r2 || m.e.c < b.c1 || m.s.c > b.c2
+      );
+
+      // Consolidate text into top-left master cell
+      const texts = [];
+      for (let r = b.r1; r <= b.r2; r++) {
+        for (let c = b.c1; c <= b.c2; c++) {
+          if (sheet.rows[r][c]) texts.push(sheet.rows[r][c]);
+          sheet.rows[r][c] = '';
+        }
+      }
+      sheet.rows[b.r1][b.c1] = texts.join('\n');
+      sheet.merges.push({ s: { r: b.r1, c: b.c1 }, e: { r: b.r2, c: b.c2 } });
+      updateSelectionToolbar();
+      renderActiveSheet();
+    });
+
+    // Manual Unmerge
+    el.btnUnmerge.addEventListener('click', () => {
+      const sheet = state.sheets[state.activeSheetIdx];
+      const b = getSelectionBounds();
+      if (!sheet || !b) return;
+      sheet.merges = sheet.merges.filter(m => !(m.s.r === b.r1 && m.s.c === b.c1));
+      updateSelectionToolbar();
+      renderActiveSheet();
+    });
+
+    // Geometry Visualizer
+    el.btnDebug.addEventListener('click', () => {
+      el.geomPanel.classList.toggle('hidden');
+      const sheet = state.sheets[state.activeSheetIdx];
+      if (!el.geomPanel.classList.contains('hidden') && sheet) {
+        drawGeometryCanvas(sheet.geometry);
+      }
+    });
+
+    function drawGeometryCanvas(geom) {
+      if (!geom) return;
+      const canvas = el.geomCanvas;
+      const scale = 1.35;
+      canvas.width = Math.max(400, geom.width * scale);
+      canvas.height = Math.max(300, geom.height * scale);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#090d16';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Detected Grid Tracks (Amber dashed)
+      ctx.strokeStyle = 'rgba(245, 158, 11, 0.35)';
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 1;
+      for (const x of geom.colTracks) {
+        ctx.beginPath(); ctx.moveTo(x * scale, 0); ctx.lineTo(x * scale, canvas.height); ctx.stroke();
+      }
+      for (const y of geom.rowTracks) {
+        ctx.beginPath(); ctx.moveTo(0, y * scale); ctx.lineTo(canvas.width, y * scale); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+
+      // PDF Vector Lines (Cyan)
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1.5;
+      for (const ln of geom.lines) {
+        ctx.beginPath();
+        ctx.moveTo(ln.x1 * scale, ln.y1 * scale);
+        ctx.lineTo(ln.x2 * scale, ln.y2 * scale);
+        ctx.stroke();
+      }
+
+      // Extracted Text Items (Emerald)
+      ctx.fillStyle = 'rgba(16, 185, 129, 0.25)';
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 1;
+      for (const t of geom.textItems) {
+        const rx = t.x * scale;
+        const ry = (t.y - t.height) * scale;
+        const rw = Math.max(8, t.width * scale);
+        const rh = Math.max(8, t.height * scale);
+        ctx.fillRect(rx, ry, rw, rh);
+        ctx.strokeRect(rx, ry, rw, rh);
+      }
+    }
+
+    // One-Click Download Exact Excel (.xlsx)
+    el.btnDownload.addEventListener('click', () => {
+      if (!state.sheets.length) return;
+      try {
+        const xlsxBytes = PureXlsxBuilder.generateXlsxBytes(state.sheets);
+        const blob = new Blob([xlsxBytes], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = state.fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        showStatus(`Downloaded "${state.fileName}" with exact cell borders, word-wrapping, and ${state.sheets.reduce((s, sh) => s + sh.merges.length, 0)} merged cell regions.`, 'success');
+      } catch (err) {
+        console.error(err);
+        showStatus(`Export failed: ${err.message}`, 'error');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Offline PDF to Exact Excel Pro Studio — Attendance &amp; CSCD GOCO Salary Bill</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-alt: #162032;
+    --border: #334155;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-dark: #0284c7;
+    --green: #22c55e;
+    --amber: #f59e0b;
+    --pink: #ec4899;
+    --purple: #a855f7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.45;
+  }
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .badge-offline {
+    background: rgba(34, 197, 94, 0.16);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  button, .btn {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  button.primary {
+    background: var(--accent-dark);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  button.primary:hover { background: #0369a1; color: #fff; }
+  button.success {
+    background: #15803d;
+    border-color: #22c55e;
+    color: #fff;
+  }
+  button.success:hover { background: #166534; }
+
+  .container {
+    max-width: 1580px;
+    margin: 0 auto;
+    padding: 18px 24px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0 0 12px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .dropzone {
+    border: 2px dashed #475569;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    background: var(--panel-alt);
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .dropzone:hover, .dropzone.dragover {
+    border-color: var(--accent);
+    background: rgba(56, 189, 248, 0.08);
+  }
+  .dropzone p { margin: 4px 0; color: var(--muted); font-size: 0.86rem; }
+  .dropzone strong { color: var(--text); font-size: 0.98rem; }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .field label {
+    font-size: 0.74rem;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .field input, .field select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+  }
+  .field input:focus, .field select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  /* Calendar Strip */
+  .cal-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+    gap: 8px;
+  }
+  .cal-day {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 0.78rem;
+  }
+  .cal-day.type-W { background: #1e2533; border-color: #64748b; }
+  .cal-day.type-H { background: rgba(245, 158, 11, 0.14); border-color: #f59e0b; }
+  .cal-day.is-24h { box-shadow: inset 0 0 0 1.5px #ec4899; }
+  .cal-day-head {
+    font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cal-day select {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 4px;
+    font-size: 0.74rem;
+  }
+  .chk-24 {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    color: #f472b6;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* Individual Person Inspector */
+  .person-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .kpi-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-left: auto;
+  }
+  .kpi {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    text-align: center;
+  }
+  .kpi .val { font-size: 1rem; font-weight: 700; color: var(--accent); }
+  .kpi .lbl { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; }
+
+  /* Tables */
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  th, td {
+    border: 1px solid #293548;
+    padding: 6px 8px;
+    text-align: center;
+  }
+  th {
+    background: #172033;
+    color: #cbd5e1;
+    font-weight: 700;
+    position: sticky;
+    top: 0;
+  }
+  td.left { text-align: left; }
+  td.right { text-align: right; }
+
+  /* Rule highlight badges in preview */
+  .bg-weekend { background: rgba(148, 163, 184, 0.18) !important; }
+  .bg-holiday { background: rgba(245, 158, 11, 0.24) !important; color: #fde68a; }
+  .bg-short75 { background: rgba(56, 189, 248, 0.22) !important; color: #bae6fd; font-weight: 700; }
+  .bg-round24 { background: rgba(236, 72, 153, 0.20) !important; }
+  .bg-blank { color: #475569; font-style: italic; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+  .tab-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    padding: 8px 14px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .tab-btn.active {
+    background: var(--bg);
+    border-color: var(--border);
+    color: var(--accent);
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.76rem;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .swatch {
+    width: 13px;
+    height: 13px;
+    border-radius: 3px;
+    display: inline-block;
+    border: 1px solid #64748b;
+  }
+  .status-msg {
+    font-size: 0.82rem;
+    color: #4ade80;
+    margin-top: 8px;
+  }
+  .inline-edit {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text);
+    width: 74px;
+    text-align: center;
+    font-size: 0.8rem;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+  .inline-edit:hover, .inline-edit:focus {
+    border-color: var(--accent);
+    background: var(--panel);
+    outline: none;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>
+    <span>Offline PDF to Exact Excel Pro Studio</span>
+    <span class="badge-offline">100% OFFLINE • ZERO EXTERNAL LIBS</span>
+  </h1>
+  <div class="header-actions">
+    <button id="btnLoadDemo" type="button">Load Built-in Demo (17 Staff)</button>
+    <button id="btnExportXlsx" class="success" type="button">⬇ Download 3-Page Excel Salary Bill (.xlsx)</button>
+  </div>
+</header>
+
+<div class="container">
+  <!-- 1. PDF Upload & Metadata -->
+  <div class="card">
+    <div class="card-title">
+      <span>1. Upload Attendance PDF (Multi-Page Text PDF Supported)</span>
+      <span id="parseBadge" style="font-size:0.78rem;color:#94a3b8;">Ready — Drop any selectable-text attendance PDF</span>
+    </div>
+    <div class="dropzone" id="dropzone">
+      <strong>Click to choose your Attendance PDF or drag &amp; drop here</strong>
+      <p>Automatically extracts multi-page tables, Contract ID, Contractor Name, Dates, In Time, Out Time, and (Total Hrs) while keeping missing punch-loss cells blank.</p>
+      <input type="file" id="pdfInput" accept="application/pdf" style="display:none;" />
+    </div>
+    <div id="statusMsg" class="status-msg"></div>
+
+    <div class="meta-grid">
+      <div class="field">
+        <label>Contract ID</label>
+        <input type="text" id="metaContractId" value="GC154696VS" />
+      </div>
+      <div class="field">
+        <label>Contractor Name</label>
+        <input type="text" id="metaContractor" value="ISRO APPRENTICESHIP HOLDERS SOCIETY" />
+      </div>
+      <div class="field">
+        <label>Validity Period</label>
+        <input type="text" id="metaValidity" value="01-12-2024 to 30-11-2026" />
+      </div>
+      <div class="field">
+        <label>Contact Staff</label>
+        <input type="text" id="metaContactStaff" value="PERUMAL A E" />
+      </div>
+      <div class="field">
+        <label>Bill Period Title</label>
+        <input type="text" id="metaBillPeriod" value="01.08.2026 to 15.08.2026" />
+      </div>
+      <div class="field">
+        <label>Division</label>
+        <input type="text" id="metaDivision" value="CSCD" />
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Interactive Calendar & Rules Configuration -->
+  <div class="card">
+    <div class="card-title">
+      <span>2. Calendar Day Rules &amp; 24-Hour (Round-O-Clock) Day Marker</span>
+      <span style="font-size:0.76rem;color:#94a3b8;">Click any day to mark Regular (R), Sat/Sun (W), Central Govt Holiday (H), or 24-Hr Round-O-Clock Duty</span>
+    </div>
+    <div class="cal-strip" id="calendarStrip"></div>
+    <div class="legend">
+      <span><i class="swatch" style="background:#334155;"></i> Regular Day (R): Start &lt; 08:45 &rarr; 08:45; &ge;8.5h &rarr; 9h+; 7.5h–&lt;8h &rarr; 8h; &lt;7.5h &rarr; 7h</span>
+      <span><i class="swatch" style="background:#64748b;"></i> Sat / Sun (W): 6h–8h &rarr; 8h; &ge;8.5h &rarr; 9h+</span>
+      <span><i class="swatch" style="background:#f59e0b;"></i> Indian Central Govt Holiday (H): 6h–8h &rarr; 8h; &ge;8.5h &rarr; 9h+ (Shaded Gold)</span>
+      <span><i class="swatch" style="background:#38bdf8;"></i> Short Day 7.5h–&lt;8.0h &rarr; Credited 8h (Shaded Blue)</span>
+      <span><i class="swatch" style="background:#ec4899;"></i> 24-Hr Round-O-Clock Day: Disables 08:45 start clamp for full 24h shift</span>
+    </div>
+  </div>
+
+  <!-- 3. Individual Person-by-Person Inspector -->
+  <div class="card">
+    <div class="card-title">
+      <span>3. Individual Personnel Attendance &amp; Hours Inspector</span>
+      <span style="font-size:0.76rem;color:#94a3b8;">Select any employee to inspect extracted In / Out / Bracket Hrs &amp; Rule-Credited Hours</span>
+    </div>
+    <div class="person-bar">
+      <button type="button" id="btnPrevPerson">&larr; Prev</button>
+      <select id="personSelect" style="min-width:240px;padding:8px 10px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;font-weight:700;"></select>
+      <button type="button" id="btnNextPerson">Next &rarr;</button>
+
+      <div class="field" style="flex-direction:row;align-items:center;gap:6px;">
+        <label style="margin:0;">Rate (₹):</label>
+        <input type="number" id="personRateInput" style="width:90px;" value="1400" />
+      </div>
+      <div class="field" style="flex-direction:row;align-items:center;gap:6px;">
+        <label style="margin:0;">Category:</label>
+        <input type="text" id="personCatInput" style="width:55px;text-align:center;" value="D" />
+      </div>
+      <div class="field" style="flex-direction:row;align-items:center;gap:6px;">
+        <label style="margin:0;">Pass No:</label>
+        <input type="text" id="personPassInput" style="width:125px;" placeholder="e.g. P20260615VS" />
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi"><div class="val" id="kpiDays">0</div><div class="lbl">Days Worked</div></div>
+        <div class="kpi"><div class="val" id="kpiExtra">0</div><div class="lbl">Extra Hrs</div></div>
+        <div class="kpi"><div class="val" id="kpiTotalHrs">0</div><div class="lbl">Total Credited Hrs</div></div>
+        <div class="kpi"><div class="val" id="kpiPayDays">0.000</div><div class="lbl">Bill Days (/8)</div></div>
+        <div class="kpi"><div class="val" id="kpiCost">₹0.00</div><div class="lbl">Total Cost</div></div>
+      </div>
+    </div>
+
+    <div class="table-wrap" id="personDetailTableWrap"></div>
+  </div>
+
+  <!-- 4. Live Preview of All 3 Excel Pages -->
+  <div class="card">
+    <div class="card-title">
+      <span>4. Multi-Page Excel Workbook Preview (All Equations Included in .xlsx Export)</span>
+    </div>
+    <div class="tabs">
+      <button type="button" class="tab-btn active" data-tab="p1">Page 1: All Employees Attendance &amp; Rules</button>
+      <button type="button" class="tab-btn" data-tab="p2">Page 2: Daily Credited &amp; Extra Hours Matrix</button>
+      <button type="button" class="tab-btn" data-tab="p3">Page 3: CSCD GOCO Salary Bill &amp; BOQ</button>
+    </div>
+    <div id="tabContent" class="table-wrap"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================================
+   1. INDIAN CENTRAL GOVERNMENT HOLIDAYS (GAZETTED) LOOKUP (DD-MM)
+   ============================================================================ */
+const CENTRAL_GOVT_HOLIDAYS = new Set([
+  "26-01", // Republic Day
+  "14-04", // Dr. B.R. Ambedkar Jayanti
+  "01-05", // Buddha Purnima / May Day
+  "15-08", // Independence Day
+  "02-10", // Mahatma Gandhi Jayanti
+  "25-12"  // Christmas Day
+]);
+
+/* ============================================================================
+   2. PURE-JS OFFLINE PDF PARSER (MULTI-PAGE, FLATEDECODE, CMAP, X-COLUMN GRID)
+   ============================================================================ */
+class OfflinePdfExtractor {
+  static async parseFile(arrayBuffer) {
+    const bytes = new Uint8Array(arrayBuffer);
+    const latin = new TextDecoder("latin1").decode(bytes);
+
+    // Build xref / object map by scanning "N G obj ... endobj"
+    const objMap = new Map();
+    const objRegex = /(\d+)\s+(\d+)\s+obj\b/g;
+    let m;
+    while ((m = objRegex.exec(latin)) !== null) {
+      const objNum = parseInt(m[1], 10);
+      const start = m.index + m[0].length;
+      const endObjIdx = latin.indexOf("endobj", start);
+      if (endObjIdx !== -1) {
+        objMap.set(objNum, { start, end: endObjIdx });
+      }
+    }
+
+    const readObjDictAndStream = async (objNum) => {
+      const info = objMap.get(objNum);
+      if (!info) return { dict: "", streamBytes: null };
+      const rawSlice = latin.slice(info.start, info.end);
+      const streamPos = rawSlice.indexOf("stream");
+      if (streamPos === -1) {
+        return { dict: rawSlice.trim(), streamBytes: null };
+      }
+      const dictPart = rawSlice.slice(0, streamPos).trim();
+      let dataStart = info.start + streamPos + 6;
+      if (bytes[dataStart] === 13 && bytes[dataStart + 1] === 10) dataStart += 2;
+      else if (bytes[dataStart] === 10 || bytes[dataStart] === 13) dataStart += 1;
+
+      const endStreamPos = latin.indexOf("endstream", dataStart);
+      let rawData = bytes.slice(dataStart, endStreamPos !== -1 ? endStreamPos : info.end);
+      // Trim trailing CR/LF before endstream
+      while (rawData.length > 0 && (rawData[rawData.length - 1] === 10 || rawData[rawData.length - 1] === 13)) {
+        rawData = rawData.slice(0, rawData.length - 1);
+      }
+
+      if (/\/Filter\s*\/FlateDecode\b/.test(dictPart) || /\/Filter\s*\[\s*\/FlateDecode/.test(dictPart)) {
+        try {
+          const ds = new DecompressionStream("deflate");
+          const writer = ds.writable.getWriter();
+          writer.write(rawData);
+          writer.close();
+          const outBuf = await new Response(ds.readable).arrayBuffer();
+          return { dict: dictPart, streamBytes: new Uint8Array(outBuf) };
+        } catch (e) {
+          // Fallback raw inflate if zlib header is absent
+          try {
+            const dsRaw = new DecompressionStream("deflate-raw");
+            const writer = dsRaw.writable.getWriter();
+            writer.write(rawData);
+            writer.close();
+            const outBuf = await new Response(dsRaw.readable).arrayBuffer();
+            return { dict: dictPart, streamBytes: new Uint8Array(outBuf) };
+          } catch (e2) {
+            return { dict: dictPart, streamBytes: rawData };
+          }
+        }
+      }
+      return { dict: dictPart, streamBytes: rawData };
+    };
+
+    // Parse ToUnicode CMaps across objects
+    const cmaps = new Map();
+    for (const [objNum] of objMap) {
+      const { dict, streamBytes } = await readObjDictAndStream(objNum);
+      if (streamBytes) {
+        const txt = new TextDecoder("latin1").decode(streamBytes);
+        if (txt.includes("begincmap")) {
+          cmaps.set(objNum, this.parseCMap(txt));
+        }
+      }
+    }
+
+    // Find Page objects in document order
+    const pageObjs = [];
+    for (const [objNum, info] of objMap) {
+      const slice = latin.slice(info.start, info.end);
+      if (/\/Type\s*\/Page\b(?!s)/.test(slice)) {
+        pageObjs.push({ objNum, dict: slice });
+      }
+    }
+
+    // Sort pages by /Pages /Kids order if available
+    const kidsOrder = [];
+    for (const [, info] of objMap) {
+      const slice = latin.slice(info.start, info.end);
+      if (/\/Type\s*\/Pages\b/.test(slice)) {
+        const km = slice.match(/\/Kids\s*\[([^\]]+)\]/);
+        if (km) {
+          const refs = [...km[1].matchAll(/(\d+)\s+\d+\s+R/g)].map(r => parseInt(r[1], 10));
+          kidsOrder.push(...refs);
+        }
+      }
+    }
+    if (kidsOrder.length > 0) {
+      pageObjs.sort((a, b) => {
+        const ia = kidsOrder.indexOf(a.objNum);
+        const ib = kidsOrder.indexOf(b.objNum);
+        return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+      });
+    }
+
+    const pagesTextItems = [];
+    for (let pIdx = 0; pIdx < pageObjs.length; pIdx++) {
+      const pObj = pageObjs[pIdx];
+      // Map font resource name (/F6) -> ToUnicode CMap
+      const fontCmapForPage = new Map();
+      const resMatch = pObj.dict.match(/\/Resources\s+(\d+)\s+\d+\s+R/);
+      let resText = pObj.dict;
+      if (resMatch) {
+        const rObj = await readObjDictAndStream(parseInt(resMatch[1], 10));
+        resText = rObj.dict;
+      }
+      const fontBlockMatch = resText.match(/\/Font\s*<<([\s\S]*?)>>/);
+      if (fontBlockMatch) {
+        const fRefs = [...fontBlockMatch[1].matchAll(/\/([A-Za-z0-9_+.-]+)\s+(\d+)\s+\d+\s+R/g)];
+        for (const fr of fRefs) {
+          const fName = fr[1];
+          const fObjNum = parseInt(fr[2], 10);
+          const fData = await readObjDictAndStream(fObjNum);
+          const tuMatch = fData.dict.match(/\/ToUnicode\s+(\d+)\s+\d+\s+R/);
+          if (tuMatch) {
+            const tuObj = parseInt(tuMatch[1], 10);
+            if (cmaps.has(tuObj)) fontCmapForPage.set(fName, cmaps.get(tuObj));
+          }
+        }
+      }
+
+      // Extract Contents stream(s)
+      const contentRefs = [];
+      const cArrMatch = pObj.dict.match(/\/Contents\s*\[([^\]]+)\]/);
+      if (cArrMatch) {
+        for (const rm of cArrMatch[1].matchAll(/(\d+)\s+\d+\s+R/g)) {
+          contentRefs.push(parseInt(rm[1], 10));
+        }
+      } else {
+        const cSingleMatch = pObj.dict.match(/\/Contents\s+(\d+)\s+\d+\s+R/);
+        if (cSingleMatch) contentRefs.push(parseInt(cSingleMatch[1], 10));
+      }
+
+      let fullContentStream = "";
+      for (const cRef of contentRefs) {
+        const { streamBytes } = await readObjDictAndStream(cRef);
+        if (streamBytes) {
+          fullContentStream += "\n" + new TextDecoder("latin1").decode(streamBytes);
+        }
+      }
+
+      const items = this.extractPositionedText(fullContentStream, fontCmapForPage);
+      pagesTextItems.push(items);
+    }
+
+    return this.reconstructAttendanceDataset(pagesTextItems);
+  }
+
+  static parseCMap(cmapStr) {
+    const map = new Map();
+    const bfcharBlocks = [...cmapStr.matchAll(/beginbfchar([\s\S]*?)endbfchar/g)];
+    for (const blk of bfcharBlocks) {
+      const pairs = [...blk[1].matchAll(/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/g)];
+      for (const p of pairs) {
+        const code = parseInt(p[1], 16);
+        const uni = this.hexToUtf16(p[2]);
+        map.set(code, uni);
+      }
+    }
+    const bfrangeBlocks = [...cmapStr.matchAll(/beginbfrange([\s\S]*?)endbfrange/g)];
+    for (const blk of bfrangeBlocks) {
+      const lines = blk[1].trim().split(/\r?\n/);
+      for (const line of lines) {
+        const rm = line.match(/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/);
+        if (rm) {
+          const start = parseInt(rm[1], 16);
+          const end = parseInt(rm[2], 16);
+          let dst = parseInt(rm[3], 16);
+          for (let c = start; c <= end; c++) {
+            map.set(c, String.fromCodePoint(dst++));
+          }
+        }
+      }
+    }
+    return map;
+  }
+
+  static hexToUtf16(hex) {
+    let out = "";
+    for (let i = 0; i < hex.length; i += 4) {
+      const chunk = hex.slice(i, i + 4);
+      if (chunk.length === 4) out += String.fromCharCode(parseInt(chunk, 16));
+    }
+    return out;
+  }
+
+  static decodeHexGlyphs(hexStr, cmap) {
+    if (!cmap || cmap.size === 0) {
+      let s = "";
+      for (let i = 0; i < hexStr.length; i += 2) {
+        s += String.fromCharCode(parseInt(hexStr.slice(i, i + 2), 16));
+      }
+      return s;
+    }
+    let out = "";
+    for (let i = 0; i < hexStr.length; i += 4) {
+      const code = parseInt(hexStr.slice(i, i + 4), 16);
+      if (cmap.has(code)) out += cmap.get(code);
+    }
+    return out;
+  }
+
+  static extractPositionedText(stream, fontCmapMap) {
+    // Track graphics state CTM stack + text matrix Tm/Td
+    const multMat = (m1, m2) => [
+      m1[0] * m2[0] + m1[1] * m2[2],
+      m1[0] * m2[1] + m1[1] * m2[3],
+      m1[2] * m2[0] + m1[3] * m2[2],
+      m1[2] * m2[1] + m1[3] * m2[3],
+      m1[4] * m2[0] + m1[5] * m2[2] + m2[4],
+      m1[4] * m2[1] + m1[5] * m2[3] + m2[5]
+    ];
+
+    let ctm = [1, 0, 0, 1, 0, 0];
+    const ctmStack = [];
+    let tm = [1, 0, 0, 1, 0, 0];
+    let tlm = [1, 0, 0, 1, 0, 0];
+    let currentFont = null;
+    const rawGlyphs = [];
+
+    // Tokenize PDF operators cleanly
+    const tokenRegex = /(<[0-9A-Fa-f]+>|\((?:\\.|[^\\)])*\)|\[[\s\S]*?\]|\/[A-Za-z0-9_+.-]+|[-+]?\d*\.?\d+|[A-Za-z*'"]+)/g;
+    const tokens = stream.match(tokenRegex) || [];
+    const operands = [];
+
+    for (let i = 0; i < tokens.length; i++) {
+      const tok = tokens[i];
+      if (tok === "q") {
+        ctmStack.push([...ctm]);
+        operands.length = 0;
+      } else if (tok === "Q") {
+        if (ctmStack.length > 0) ctm = ctmStack.pop();
+        operands.length = 0;
+      } else if (tok === "cm" && operands.length >= 6) {
+        const m = operands.slice(-6).map(Number);
+        ctm = multMat(m, ctm);
+        operands.length = 0;
+      } else if (tok === "BT") {
+        tm = [1, 0, 0, 1, 0, 0];
+        tlm = [1, 0, 0, 1, 0, 0];
+        operands.length = 0;
+      } else if (tok === "ET") {
+        operands.length = 0;
+      } else if (tok === "Tf" && operands.length >= 2) {
+        const fTok = operands[operands.length - 2];
+        if (fTok.startsWith("/")) currentFont = fTok.slice(1);
+        operands.length = 0;
+      } else if (tok === "Tm" && operands.length >= 6) {
+        tm = operands.slice(-6).map(Number);
+        tlm = [...tm];
+        operands.length = 0;
+      } else if ((tok === "Td" || tok === "TD") && operands.length >= 2) {
+        const tx = Number(operands[operands.length - 2]);
+        const ty = Number(operands[operands.length - 1]);
+        tlm = multMat([1, 0, 0, 1, tx, ty], tlm);
+        tm = [...tlm];
+        operands.length = 0;
+      } else if (tok === "T*") {
+        tlm = multMat([1, 0, 0, 1, 0, -12], tlm);
+        tm = [...tlm];
+        operands.length = 0;
+      } else if ((tok === "Tj" || tok === "'" || tok === '"') && operands.length >= 1) {
+        const strTok = operands[operands.length - 1];
+        const cmap = fontCmapMap.get(currentFont);
+        let text = "";
+        if (strTok.startsWith("<") && strTok.endsWith(">")) {
+          text = this.decodeHexGlyphs(strTok.slice(1, -1), cmap);
+        } else if (strTok.startsWith("(") && strTok.endsWith(")")) {
+          text = strTok.slice(1, -1).replace(/\\([()\\])/g, "$1");
+        }
+        const dev = multMat(tm, ctm);
+        if (text) rawGlyphs.push({ x: dev[4], y: dev[5], text });
+        operands.length = 0;
+      } else if (tok === "TJ" && operands.length >= 1) {
+        const arrTok = operands[operands.length - 1];
+        const cmap = fontCmapMap.get(currentFont);
+        if (arrTok.startsWith("[")) {
+          const inner = [...arrTok.matchAll(/(<[0-9A-Fa-f]+>|\((?:\\.|[^\\)])*\)|[-+]?\d*\.?\d+)/g)];
+          let combined = "";
+          for (const item of inner) {
+            const v = item[1];
+            if (v.startsWith("<")) combined += this.decodeHexGlyphs(v.slice(1, -1), cmap);
+            else if (v.startsWith("(")) combined += v.slice(1, -1).replace(/\\([()\\])/g, "$1");
+          }
+          const dev = multMat(tm, ctm);
+          if (combined) rawGlyphs.push({ x: dev[4], y: dev[5], text: combined });
+        }
+        operands.length = 0;
+      } else if (/^[A-Za-z*'"]+$/.test(tok)) {
+        operands.length = 0;
+      } else {
+        operands.push(tok);
+      }
+    }
+
+    // Group glyphs on same horizontal baseline (within 2.5pt) into line segments
+    rawGlyphs.sort((a, b) => (Math.abs(a.y - b.y) > 2.5 ? b.y - a.y : a.x - b.x));
+    const lines = [];
+    for (const g of rawGlyphs) {
+      const last = lines[lines.length - 1];
+      if (last && Math.abs(last.y - g.y) <= 2.5 && (g.x - last.endX) < 18) {
+        if (g.x - last.endX > 3.2 && !last.text.endsWith(" ") && !g.text.startsWith(" ")) {
+          last.text += " ";
+        }
+        last.text += g.text;
+        last.endX = g.x + g.text.length * 4.5;
+      } else {
+        lines.push({ x: g.x, endX: g.x + g.text.length * 4.5, y: g.y, text: g.text });
+      }
+    }
+    return lines;
+  }
+
+  static reconstructAttendanceDataset(pagesLines) {
+    const meta = {
+      contractId: "GC154696VS",
+      contractorName: "ISRO APPRENTICESHIP HOLDERS SOCIETY",
+      validity: "01-12-2024 to 30-11-2026",
+      totalPersons: 33,
+      contactStaff: "PERUMAL A E"
+    };
+
+    // Detect date headers (DD-MM + (Day)) from any page
+    let dateHeaders = [];
+    for (const lines of pagesLines) {
+      const dMatches = lines.filter(l => /^\d{2}-\d{2}$/.test(l.text.trim()));
+      if (dMatches.length >= 10) {
+        dMatches.sort((a, b) => a.x - b.x);
+        dateHeaders = dMatches.map(dm => {
+          const dayLbl = lines.find(l => Math.abs(l.x - dm.x) < 12 && l.y < dm.y && dm.y - l.y < 16 && /^\([A-Za-z]{3}\)$/.test(l.text.trim()));
+          return {
+            x: dm.x,
+            dateStr: dm.text.trim(),
+            dayName: dayLbl ? dayLbl.text.trim().replace(/[()]/g, "") : ""
+          };
+        });
+        break;
+      }
+    }
+
+    // Fallback standard 15-day headers if header text was split
+    if (dateHeaders.length === 0) {
+      const dNames = ["Sat","Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      for (let i = 0; i < 15; i++) {
+        dateHeaders.push({
+          x: 205 + i * 37.42,
+          dateStr: `${String(i + 1).padStart(2, "0")}-08`,
+          dayName: dNames[i]
+        });
+      }
+    }
+
+    // Build column centers (up to 16 if trailing column exists like Suja S R)
+    const stepX = dateHeaders.length > 1 ? (dateHeaders[1].x - dateHeaders[0].x) : 37.42;
+    const colCenters = dateHeaders.map(d => d.x);
+
+    const employees = [];
+
+    for (const lines of pagesLines) {
+      // Extract metadata if present on page
+      for (const l of lines) {
+        const t = l.text.trim();
+        if (t.startsWith("Contract ID:")) meta.contractId = t.replace("Contract ID:", "").trim();
+        if (t.startsWith("Contractor Name:")) meta.contractorName = t.replace("Contractor Name:", "").trim();
+        if (t.startsWith("Validity:")) meta.validity = t.replace("Validity:", "").trim();
+        if (t.startsWith("Contact Staff:")) meta.contactStaff = t.replace("Contact Staff:", "").trim();
+      }
+
+      // Find employee name rows (left column x < 165, uppercase alphabetic name, excluding headers/metadata)
+      const nameCandidates = lines.filter(l => {
+        const t = l.text.trim();
+        if (l.x > 165 || t.length < 3) return false;
+        if (/^(Name|Contract|Validity|Contact|Total|Sl)/i.test(t)) return false;
+        return /^[A-Z][A-Z\s\.]+$/.test(t);
+      });
+      nameCandidates.sort((a, b) => b.y - a.y);
+
+      for (const nc of nameCandidates) {
+        const empName = nc.text.trim();
+        const rowCells = new Array(colCenters.length).fill("");
+
+        // Gather all cell fragments within +-18pt vertically of employee baseline
+        const rowItems = lines.filter(l => l.x >= colCenters[0] - 18 && Math.abs(l.y - nc.y) <= 18);
+
+        // Group items by nearest column index
+        const byCol = new Map();
+        for (const it of rowItems) {
+          let bestIdx = 0;
+          let bestDist = Infinity;
+          for (let c = 0; c < colCenters.length; c++) {
+            const dist = Math.abs(it.x - colCenters[c]);
+            if (dist < bestDist) {
+              bestDist = dist;
+              bestIdx = c;
+            }
+          }
+          // If item is 1 column past the last date header (trailing split column), snap into last column if empty
+          if (bestDist > stepX * 0.75 && it.x > colCenters[colCenters.length - 1]) {
+            bestIdx = colCenters.length - 1;
+          } else if (bestDist > stepX * 0.65) {
+            continue;
+          }
+          if (!byCol.has(bestIdx)) byCol.set(bestIdx, []);
+          byCol.get(bestIdx).push(it);
+        }
+
+        for (const [cIdx, items] of byCol) {
+          items.sort((a, b) => b.y - a.y);
+          const joined = items.map(x => x.text.trim()).join("\n");
+          rowCells[cIdx] = joined;
+        }
+
+        employees.push({
+          name: empName,
+          rate: 1400,
+          category: "D",
+          passNo: "",
+          cells: rowCells
+        });
+      }
+    }
+
+    return { meta, dateHeaders, employees };
+  }
+}
+
+/* ============================================================================
+   3. BUILT-IN COMPLETE 17-EMPLOYEE DATASET (MATCHING YOUR UPLOADED PDF)
+   ============================================================================ */
+function getDemoDataset() {
+  const dNames = ["Sat","Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const dateHeaders = dNames.map((dn, idx) => ({
+    dateStr: `${String(idx + 1).padStart(2, "0")}-08`,
+    dayName: dn
+  }));
+
+  const rawEmp = [
+    ["GAYATHRI J S", ["","","09:29\n17:07\n(7.37)","09:55\n17:03\n(7.08)","09:13\n17:17\n(8.03)","08:52\n17:06\n(8.14)","09:32\n13:43\n(4.11)","","","09:21\n17:23\n(8.02)","abs","abs","08:28\n16:56\n(8.27)","09:08\n17:09\n(8.00)","09:07\n17:04\n(7.57)"]],
+    ["ABHAYAMBIKA S", ["","","09:01\n16:55\n(7.54)","08:50\n15:45\n(6.55)","abs","09:03\n16:52\n(7.48)","09:07\n17:15\n(8.08)","","","abs","abs","abs","09:09\n16:56\n(7.46)","09:12\n16:53\n(7.40)","abs"]],
+    ["SRAVYA B S", ["","","10:01\n17:07\n(7.06)","abs","abs","abs","08:43\n17:30\n(8.46)","08:53\n14:37\n(5.44)","","abs","abs","abs","abs","abs","08:50\n17:07\n(8.16)"]],
+    ["SUJA S R", ["","","09:28\n17:15\n(7.46)","09:17\n15:00\n(5.43)","09:07\n17:09\n(8.02)","10:32\n17:32\n(6.59)","09:46\n17:28\n(7.41)","10:08\n16:08\n(6.00)","","10:04\n17:18\n(7.14)","abs","abs","09:41\n15:51\n(6.10)","09:12\n13:37\n(4.25)","08:59\n17:20\n(8.20)"]],
+    ["VINEETHA VS", ["","","09:09\n17:10\n(8.00)","09:25\n13:30\n(4.04)","09:07\n17:01\n(7.53)","09:03\n16:53\n(7.50)","abs","08:55\n14:56\n(6.01)","","08:59\n17:00\n(8.00)","abs","abs","08:44\n16:46\n(8.02)","08:41\n16:45\n(8.03)","08:52\n16:58\n(8.05)"]],
+    ["SHAJEERA K", ["","","09:22\n17:06\n(7.44)","abs","abs","abs","abs","","","09:01\n14:38\n(5.37)","abs","abs","abs","abs","abs"]],
+    ["KRISHNAPRASAD K", ["19:04\n23:59\n(4.55)","00:00\n17:08\n(17.08)","abs","abs","abs","abs","abs","","","abs","abs","08:11\n23:59\n(15.48)","00:00\n17:03\n(17.03)","07:07\n15:11\n(8.04)",""]],
+    ["DEEPTHI S", ["","","08:52\n17:04\n(8.12)","08:42\n09:12\n(0.00)","abs","abs","08:47\n17:06\n(8.19)","","","08:53\n17:06\n(8.12)","08:51\n17:08\n(8.17)","08:41\n17:07\n(8.26)","08:46\n17:07\n(8.21)","08:51\n17:04\n(8.13)",""]],
+    ["PREETHA KUMARI A", ["","","09:50\n17:51\n(8.01)","09:54\n18:44\n(8.49)","09:44\n17:38\n(7.54)","10:29\n18:26\n(7.57)","09:40\n17:44\n(8.04)","","","09:44\n17:52\n(8.08)","abs","09:44\n17:38\n(7.53)","09:26\n17:34\n(8.08)","09:23\n17:28\n(8.04)",""]],
+    ["SHEELA R", ["","","08:47\n17:18\n(8.30)","08:40\n17:23\n(8.43)","08:43\n17:20\n(8.37)","08:41\n13:01\n(4.19)","08:41\n17:16\n(8.35)","","","08:45\n14:25\n(5.40)","abs","abs","08:46\n17:17\n(8.31)","08:42\n17:18\n(8.35)",""]],
+    ["SUJITH S", ["","","10:11\n17:31\n(7.20)","10:04\n17:43\n(7.38)","abs","10:25\n17:35\n(7.09)","09:57\n18:00\n(8.02)","","","10:59\n15:27\n(4.28)","12:13\n17:29\n(5.15)","abs","abs","10:22\n17:59\n(7.37)",""]],
+    ["SARAN AS", ["","","08:52\n16:51\n(7.59)","08:56\n16:57\n(8.01)","08:41\n16:50\n(8.09)","abs","abs","","","08:32\n17:00\n(8.28)","08:45\n11:01\n(2.15)","08:30\n16:50\n(8.20)","08:35\n16:52\n(8.17)","08:30\n17:02\n(8.31)",""]],
+    ["SANTHOSHKUMAR S", ["","","08:07\n16:50\n(8.43)","08:01\n16:49\n(8.47)","08:36\n16:46\n(8.09)","08:13\n16:10\n(7.56)","abs","","","08:15\n17:00\n(8.45)","08:10\n16:46\n(8.35)","08:07\n16:51\n(8.43)","08:13\n16:53\n(8.39)","08:09\n16:49\n(8.39)",""]],
+    ["INDULEKHA C", ["","","09:26\n17:27\n(8.00)","09:12\n17:20\n(8.08)","09:15\n17:19\n(8.03)","09:09\n17:09\n(8.00)","09:28\n17:30\n(8.02)","","","09:11\n17:27\n(8.15)","09:19\n17:25\n(8.05)","09:17\n17:27\n(8.09)","09:24\n17:27\n(8.03)","09:15\n17:22\n(8.06)",""]],
+    ["AJITHA R", ["","","09:52\n17:53\n(8.01)","09:56\n18:44\n(8.47)","09:40\n16:14\n(6.34)","09:47\n17:48\n(8.01)","09:29\n17:30\n(8.00)","","","10:58\n17:52\n(6.53)","abs","abs","09:31\n17:34\n(8.02)","09:18\n17:28\n(8.09)",""]],
+    ["ARUNA ANAND", ["","","09:11\n17:19\n(8.07)","08:35\n17:12\n(8.36)","08:57\n17:23\n(8.25)","08:51\n17:04\n(8.12)","08:50\n17:23\n(8.32)","","","09:01\n17:03\n(8.02)","08:46\n17:00\n(8.14)","abs","08:58\n17:01\n(8.03)","08:56\n17:02\n(8.06)",""]],
+    ["STEFI V T", ["","","08:22\n16:37\n(8.14)","08:46\n17:12\n(8.25)","08:51\n16:57\n(8.06)","09:26\n17:32\n(8.06)","09:14\n17:26\n(8.12)","","","08:57\n17:06\n(8.09)","08:39\n16:53\n(8.14)","09:11\n17:26\n(8.15)","09:14\n17:21\n(8.06)","09:06\n17:22\n(8.15)",""]]
+  ];
+
+  return {
+    meta: {
+      contractId: "GC154696VS",
+      contractorName: "ISRO APPRENTICESHIP HOLDERS SOCIETY",
+      validity: "01-12-2024 to 30-11-2026",
+      totalPersons: 33,
+      contactStaff: "PERUMAL A E"
+    },
+    dateHeaders,
+    employees: rawEmp.map(([name, cells]) => ({
+      name,
+      rate: 1400,
+      category: "D",
+      passNo: "",
+      cells
+    }))
+  };
+}
+
+/* ============================================================================
+   4. ATTENDANCE & SALARY RULES EVALUATION ENGINE
+   ============================================================================ */
+const state = {
+  dateHeaders: [],
+  calendarConfig: [], // { dateStr, dayName, type: 'R'|'W'|'H', is24h: boolean }
+  employees: [],
+  selectedPersonIdx: 0,
+  activeTab: "p1"
+};
+
+function parseAttendanceCell(raw) {
+  if (!raw || !raw.trim()) return { status: "BLANK", rawIn: "", rawOut: "", bracketHrs: "" };
+  const clean = raw.trim();
+  if (/^abs$/i.test(clean)) return { status: "ABS", rawIn: "abs", rawOut: "", bracketHrs: "" };
+  const lines = clean.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  const rawIn = lines[0] || "";
+  const rawOut = lines[1] || "";
+  let bracketHrs = "";
+  if (lines[2]) {
+    const bm = lines[2].match(/\(?([\d.]+)\)?/);
+    bracketHrs = bm ? bm[1] : lines[2];
+  }
+  return { status: "PRESENT", rawIn, rawOut, bracketHrs };
+}
+
+function hhmmToMinutes(str) {
+  const m = str.match(/^(\d{1,2})[:.](\d{2})$/);
+  if (!m) return null;
+  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+}
+
+function minutesToHHMM(mins) {
+  const h = Math.floor(mins / 60) % 24;
+  const m = mins % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+function evaluateDay(rawCell, dayCfg) {
+  const parsed = parseAttendanceCell(rawCell);
+  if (parsed.status === "BLANK") {
+    return { ...parsed, effIn: "", effHrs: null, creditedHrs: null, flag: "BLANK" };
+  }
+  if (parsed.status === "ABS") {
+    return { ...parsed, effIn: "abs", effHrs: 0, creditedHrs: 0, flag: "ABS" };
+  }
+
+  const inMin = hhmmToMinutes(parsed.rawIn);
+  const outMin = hhmmToMinutes(parsed.rawOut);
+  if (inMin === null || outMin === null) {
+    return { ...parsed, effIn: parsed.rawIn, effHrs: null, creditedHrs: null, flag: "BLANK" };
+  }
+
+  // Regular working days start at 08:45 AM (525 mins); earlier punch-ins normalize to 08:45 unless 24h day
+  let effInMin = inMin;
+  if (dayCfg.type === "R" && !dayCfg.is24h && inMin < 525) {
+    effInMin = 525;
+  }
+
+  const diffMin = outMin >= effInMin ? (outMin - effInMin) : (outMin + 1440 - effInMin);
+  const effHrs = Math.round((diffMin / 60) * 100) / 100;
+
+  let creditedHrs = 0;
+  let flag = "NORMAL";
+
+  if (dayCfg.type === "W" || dayCfg.type === "H") {
+    // Saturday, Sunday, or Central Govt Holiday:
+    // 6.0 to 8.0 hrs -> 8 hrs; > 8.0 hrs -> rounds at .5 (8.5 -> 9, 9.5 -> 10, etc.)
+    if (effHrs >= 6.0 && effHrs <= 8.0) {
+      creditedHrs = 8;
+    } else {
+      creditedHrs = Math.floor(effHrs + 0.5);
+    }
+    flag = dayCfg.type === "H" ? "HOLIDAY" : "WEEKEND";
+  } else {
+    // Regular working day:
+    // >= 8.0 hrs -> rounds at .5 (8.5 -> 9, etc.)
+    // 7.5 to < 8.0 hrs -> 8 hrs (different color)
+    // < 7.5 hrs -> 7 hrs (if > 0)
+    if (effHrs >= 8.0) {
+      creditedHrs = Math.floor(effHrs + 0.5);
+    } else if (effHrs >= 7.5) {
+      creditedHrs = 8;
+      flag = "SHORT75";
+    } else if (effHrs > 0) {
+      creditedHrs = 7;
+      flag = "UNDER75";
+    } else {
+      creditedHrs = 0;
+    }
+  }
+
+  return {
+    ...parsed,
+    effIn: minutesToHHMM(effInMin),
+    effHrs,
+    creditedHrs,
+    flag
+  };
+}
+
+function computeEmployeeMetrics(emp) {
+  const daysEval = emp.cells.map((c, idx) => evaluateDay(c, state.calendarConfig[idx]));
+  let workedDays = 0;
+  let totalCredited = 0;
+  for (const d of daysEval) {
+    if (d.creditedHrs !== null && d.creditedHrs > 0) {
+      workedDays += 1;
+      totalCredited += d.creditedHrs;
+    }
+  }
+  const baseHrs = workedDays * 8;
+  const extraHrs = Math.max(0, totalCredited - baseHrs);
+  const billDays = totalCredited / 8;
+  const totalCost = Math.round(emp.rate * billDays * 100) / 100;
+  return { daysEval, workedDays, baseHrs, extraHrs, totalCredited, billDays, totalCost };
+}
+
+/* ============================================================================
+   5. UI RENDERING & INTERACTIVITY
+   ============================================================================ */
+function loadDataset(dataset) {
+  state.dateHeaders = dataset.dateHeaders;
+  state.calendarConfig = dataset.dateHeaders.map(dh => {
+    const isHoliday = CENTRAL_GOVT_HOLIDAYS.has(dh.dateStr);
+    const isWeekend = dh.dayName === "Sat" || dh.dayName === "Sun";
+    return {
+      dateStr: dh.dateStr,
+      dayName: dh.dayName,
+      type: isHoliday ? "H" : (isWeekend ? "W" : "R"),
+      is24h: false
+    };
+  });
+  state.employees = dataset.employees;
+  state.selectedPersonIdx = 0;
+
+  document.getElementById("metaContractId").value = dataset.meta.contractId || "";
+  document.getElementById("metaContractor").value = dataset.meta.contractorName || "";
+  document.getElementById("metaValidity").value = dataset.meta.validity || "";
+  document.getElementById("metaContactStaff").value = dataset.meta.contactStaff || "";
+
+  renderAll();
+}
+
+function renderCalendarStrip() {
+  const strip = document.getElementById("calendarStrip");
+  strip.innerHTML = "";
+  state.calendarConfig.forEach((cfg, idx) => {
+    const div = document.createElement("div");
+    div.className = `cal-day type-${cfg.type} ${cfg.is24h ? "is-24h" : ""}`;
+    div.innerHTML = `
+      <div class="cal-day-head">
+        <span>${cfg.dateStr}</span>
+        <span style="color:var(--muted);">${cfg.dayName}</span>
+      </div>
+      <select data-idx="${idx}" class="cal-type-sel">
+        <option value="R" ${cfg.type === "R" ? "selected" : ""}>R • Regular</option>
+        <option value="W" ${cfg.type === "W" ? "selected" : ""}>W • Sat/Sun</option>
+        <option value="H" ${cfg.type === "H" ? "selected" : ""}>H • Govt Holiday</option>
+      </select>
+      <label class="chk-24">
+        <input type="checkbox" data-idx="${idx}" class="cal-24-chk" ${cfg.is24h ? "checked" : ""} />
+        24-Hr Round-O-Clock
+      </label>
+    `;
+    strip.appendChild(div);
+  });
+
+  strip.querySelectorAll(".cal-type-sel").forEach(sel => {
+    sel.addEventListener("change", e => {
+      const i = parseInt(e.target.dataset.idx, 10);
+      state.calendarConfig[i].type = e.target.value;
+      renderAll();
+    });
+  });
+
+  strip.querySelectorAll(".cal-24-chk").forEach(chk => {
+    chk.addEventListener("change", e => {
+      const i = parseInt(e.target.dataset.idx, 10);
+      state.calendarConfig[i].is24h = e.target.checked;
+      renderAll();
+    });
+  });
+}
+
+function renderPersonInspector() {
+  const sel = document.getElementById("personSelect");
+  sel.innerHTML = "";
+  state.employees.forEach((emp, idx) => {
+    const opt = document.createElement("option");
+    opt.value = idx;
+    opt.textContent = `${idx + 1}. ${emp.name}`;
+    if (idx === state.selectedPersonIdx) opt.selected = true;
+    sel.appendChild(opt);
+  });
+
+  const emp = state.employees[state.selectedPersonIdx];
+  if (!emp) return;
+
+  document.getElementById("personRateInput").value = emp.rate;
+  document.getElementById("personCatInput").value = emp.category;
+  document.getElementById("personPassInput").value = emp.passNo;
+
+  const metrics = computeEmployeeMetrics(emp);
+  document.getElementById("kpiDays").textContent = metrics.workedDays;
+  document.getElementById("kpiExtra").textContent = metrics.extraHrs;
+  document.getElementById("kpiTotalHrs").textContent = metrics.totalCredited;
+  document.getElementById("kpiPayDays").textContent = metrics.billDays.toFixed(3);
+  document.getElementById("kpiCost").textContent = `₹${metrics.totalCost.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  let html = `<table><thead><tr><th>Field / Metric</th>`;
+  state.calendarConfig.forEach(c => {
+    const cls = c.type === "H" ? "bg-holiday" : (c.type === "W" ? "bg-weekend" : "");
+    html += `<th class="${cls}">${c.dateStr}<br><small>(${c.dayName}) [${c.type}${c.is24h ? "/24h" : ""}]</small></th>`;
+  });
+  html += `<th>Total</th></tr></thead><tbody>`;
+
+  const rows = [
+    { label: "1. Raw PDF Cell", fn: d => d.status === "BLANK" ? '<span class="bg-blank">(blank)</span>' : (d.status === "ABS" ? "abs" : `${d.rawIn}<br>${d.rawOut}<br>(${d.bracketHrs})`), tot: "" },
+    { label: "2. Extracted In Time", fn: d => d.rawIn || "", tot: "" },
+    { label: "3. Effective In (≥08:45)", fn: d => d.effIn || "", tot: "" },
+    { label: "4. Extracted Out Time", fn: d => d.rawOut || "", tot: "" },
+    { label: "5. Effective Work Hrs", fn: d => d.effHrs !== null ? d.effHrs.toFixed(2) : "", tot: "" },
+    { label: "6. Rule Credited Hours", fn: d => d.creditedHrs !== null ? `<strong>${d.creditedHrs}</strong>` : "", tot: `<strong>${metrics.totalCredited} hrs</strong>` }
+  ];
+
+  rows.forEach((r, rIdx) => {
+    html += `<tr><td class="left"><strong>${r.label}</strong></td>`;
+    metrics.daysEval.forEach((d, cIdx) => {
+      const cfg = state.calendarConfig[cIdx];
+      let cls = "";
+      if (cfg.type === "H") cls = "bg-holiday";
+      else if (cfg.type === "W") cls = "bg-weekend";
+      else if (rIdx === 5 && d.flag === "SHORT75") cls = "bg-short75";
+      html += `<td class="${cls}">${r.fn(d)}</td>`;
+    });
+    html += `<td>${r.tot}</td></tr>`;
+  });
+
+  html += `</tbody></table>`;
+  document.getElementById("personDetailTableWrap").innerHTML = html;
+}
+
+function renderActiveTab() {
+  const wrap = document.getElementById("tabContent");
+  if (state.activeTab === "p1") {
+    let html = `<table><thead><tr><th>Sl</th><th>Employee Name</th><th>Metric</th>`;
+    state.calendarConfig.forEach(c => {
+      const cls = c.type === "H" ? "bg-holiday" : (c.type === "W" ? "bg-weekend" : "");
+      html += `<th class="${cls}">${c.dateStr} (${c.dayName})</th>`;
+    });
+    html += `<th>Days</th><th>Extra Hrs</th><th>Total Hrs</th></tr></thead><tbody>`;
+
+    state.employees.forEach((emp, idx) => {
+      const m = computeEmployeeMetrics(emp);
+      html += `<tr>
+        <td rowspan="2">${idx + 1}</td>
+        <td rowspan="2" class="left"><strong>${emp.name}</strong></td>
+        <td class="left">In / Out / (Hrs)</td>`;
+      m.daysEval.forEach((d, cIdx) => {
+        const cfg = state.calendarConfig[cIdx];
+        const cls = cfg.type === "H" ? "bg-holiday" : (cfg.type === "W" ? "bg-weekend" : "");
+        const txt = d.status === "BLANK" ? "" : (d.status === "ABS" ? "abs" : `${d.rawIn} | ${d.rawOut} (${d.bracketHrs})`);
+        html += `<td class="${cls}">${txt}</td>`;
+      });
+      html += `<td rowspan="2"><strong>${m.workedDays}</strong></td>
+        <td rowspan="2"><strong>${m.extraHrs}</strong></td>
+        <td rowspan="2"><strong>${m.totalCredited}</strong></td>
+      </tr><tr><td class="left" style="color:var(--accent);">Credited Hrs</td>`;
+      m.daysEval.forEach((d, cIdx) => {
+        const cfg = state.calendarConfig[cIdx];
+        let cls = cfg.type === "H" ? "bg-holiday" : (cfg.type === "W" ? "bg-weekend" : "");
+        if (d.flag === "SHORT75") cls = "bg-short75";
+        html += `<td class="${cls}"><strong>${d.creditedHrs !== null ? d.creditedHrs : ""}</strong></td>`;
+      });
+      html += `</tr>`;
+    });
+    html += `</tbody></table>`;
+    wrap.innerHTML = html;
+  } else if (state.activeTab === "p2") {
+    let html = `<table><thead><tr><th>Sl. No.</th><th>Name of Service Personnel (Shri/Smt)</th>`;
+    state.calendarConfig.forEach(c => {
+      const cls = c.type === "H" ? "bg-holiday" : (c.type === "W" ? "bg-weekend" : "");
+      html += `<th class="${cls}">${c.dateStr.split("-")[0]}<br><small>${c.dayName}</small></th>`;
+    });
+    html += `<th>Extra Hours</th><th>Total Hour</th></tr></thead><tbody>`;
+
+    let sumExtra = 0, sumTotal = 0;
+    state.employees.forEach((emp, idx) => {
+      const m = computeEmployeeMetrics(emp);
+      sumExtra += m.extraHrs;
+      sumTotal += m.totalCredited;
+      html += `<tr><td>${idx + 1}</td><td class="left">${emp.name}</td>`;
+      m.daysEval.forEach((d, cIdx) => {
+        const cfg = state.calendarConfig[cIdx];
+        const cls = cfg.type === "H" ? "bg-holiday" : (cfg.type === "W" ? "bg-weekend" : "");
+        html += `<td class="${cls}">${d.creditedHrs !== null ? d.creditedHrs : 0}</td>`;
+      });
+      html += `<td><strong>${m.extraHrs}</strong></td><td><strong>${m.totalCredited}</strong></td></tr>`;
+    });
+    html += `<tr><td colspan="${state.calendarConfig.length + 2}" class="right"><strong>Total:</strong></td><td><strong>${sumExtra}</strong></td><td><strong>${sumTotal}</strong></td></tr>`;
+    html += `</tbody></table>`;
+    wrap.innerHTML = html;
+  } else if (state.activeTab === "p3") {
+    const divName = document.getElementById("metaDivision").value || "CSCD";
+    let html = `<table><thead><tr><th>SL No:</th><th>Name</th><th>Rate (₹)</th><th>Days (=Total Hrs/8)</th><th>Pass No.</th><th>Category</th><th>Division</th><th>Total Cost (₹)</th></tr></thead><tbody>`;
+    let grandDays = 0, grandCost = 0;
+    state.employees.forEach((emp, idx) => {
+      const m = computeEmployeeMetrics(emp);
+      grandDays += m.billDays;
+      grandCost += m.totalCost;
+      html += `<tr>
+        <td>${idx + 1}</td>
+        <td class="left">${emp.name}</td>
+        <td><input type="number" class="inline-edit p3-rate" data-idx="${idx}" value="${emp.rate}" /></td>
+        <td>${m.billDays.toFixed(3)}</td>
+        <td><input type="text" class="inline-edit p3-pass" data-idx="${idx}" style="width:120px;" value="${emp.passNo}" placeholder="Pass No" /></td>
+        <td><input type="text" class="inline-edit p3-cat" data-idx="${idx}" style="width:45px;" value="${emp.category}" /></td>
+        <td>${divName}</td>
+        <td class="right"><strong>${m.totalCost.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></td>
+      </tr>`;
+    });
+    html += `<tr>
+      <td colspan="3" class="right"><strong>Total:</strong></td>
+      <td><strong>${grandDays.toFixed(3)}</strong></td>
+      <td colspan="3"></td>
+      <td class="right"><strong>₹${grandCost.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></td>
+    </tr></tbody></table>`;
+    wrap.innerHTML = html;
+
+    wrap.querySelectorAll(".p3-rate").forEach(inp => {
+      inp.addEventListener("change", e => {
+        state.employees[parseInt(e.target.dataset.idx, 10)].rate = parseFloat(e.target.value) || 0;
+        renderAll();
+      });
+    });
+    wrap.querySelectorAll(".p3-pass").forEach(inp => {
+      inp.addEventListener("change", e => {
+        state.employees[parseInt(e.target.dataset.idx, 10)].passNo = e.target.value;
+      });
+    });
+    wrap.querySelectorAll(".p3-cat").forEach(inp => {
+      inp.addEventListener("change", e => {
+        state.employees[parseInt(e.target.dataset.idx, 10)].category = e.target.value;
+      });
+    });
+  }
+}
+
+function renderAll() {
+  renderCalendarStrip();
+  renderPersonInspector();
+  renderActiveTab();
+}
+
+/* ============================================================================
+   6. PURE-JS OPENXML .XLSX & ZIP BUILDER (WITH MERGED CELLS, COLORS & FORMULAS)
+   ============================================================================ */
+class PureXlsxBuilder {
+  static colLetter(n) {
+    let s = "";
+    while (n > 0) {
+      const m = (n - 1) % 26;
+      s = String.fromCharCode(65 + m) + s;
+      n = Math.floor((n - m) / 26);
+    }
+    return s;
+  }
+
+  static escXml(v) {
+    return String(v)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  static buildWorkbookBlob() {
+    const meta = {
+      contractId: document.getElementById("metaContractId").value,
+      contractor: document.getElementById("metaContractor").value,
+      validity: document.getElementById("metaValidity").value,
+      contactStaff: document.getElementById("metaContactStaff").value,
+      billPeriod: document.getElementById("metaBillPeriod").value,
+      division: document.getElementById("metaDivision").value
+    };
+
+    const numDays = state.calendarConfig.length;
+    const sheets = [
+      this.buildSheet1Xml(meta, numDays),
+      this.buildSheet2Xml(meta, numDays),
+      this.buildSheet3Xml(meta)
+    ];
+
+    const files = {};
+    files["[Content_Types].xml"] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+  <Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+  <Override PartName="/xl/worksheets/sheet3.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+</Types>`;
+
+    files["_rels/.rels"] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`;
+
+    files["xl/workbook.xml"] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>
+    <sheet name="Page 1 - Attendance &amp; Rules" sheetId="1" r:id="rId1"/>
+    <sheet name="Page 2 - Daily Hours Matrix" sheetId="2" r:id="rId2"/>
+    <sheet name="Page 3 - CSCD GOCO Salary Bill" sheetId="3" r:id="rId3"/>
+  </sheets>
+</workbook>`;
+
+    files["xl/_rels/workbook.xml.rels"] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/>
+  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet3.xml"/>
+  <Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+
+    // Styles:
+    // 0: default, 1: title bold, 2: header gray, 3: data center, 4: data left, 5: bold center,
+    // 6: weekend gray, 7: holiday gold, 8: short75 light blue, 9: round24 pink, 10: time hh:mm, 11: dec 0.00, 12: dec 0.000, 13: currency #,##0.00
+    files["xl/styles.xml"] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <numFmts count="4">
+    <numFmt numFmtId="164" formatCode="hh:mm"/>
+    <numFmt numFmtId="165" formatCode="0.00"/>
+    <numFmt numFmtId="166" formatCode="0.000"/>
+    <numFmt numFmtId="167" formatCode="#,##0.00"/>
+  </numFmts>
+  <fonts count="3">
+    <font><sz val="10"/><name val="Calibri"/></font>
+    <font><b/><sz val="10"/><name val="Calibri"/></font>
+    <font><b/><sz val="13"/><name val="Calibri"/></font>
+  </fonts>
+  <fills count="7">
+    <fill><patternFill patternType="none"/></fill>
+    <fill><patternFill patternType="gray125"/></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFE5E7EB"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFD1D5DB"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFFDE68A"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFDBEAFE"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFFCE7F3"/></patternFill></fill>
+  </fills>
+  <borders count="2">
+    <border/>
+    <border>
+      <left style="thin"><color rgb="FF000000"/></left>
+      <right style="thin"><color rgb="FF000000"/></right>
+      <top style="thin"><color rgb="FF000000"/></top>
+      <bottom style="thin"><color rgb="FF000000"/></bottom>
+    </border>
+  </borders>
+  <cellXfs count="14">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>
+    <xf numFmtId="0" fontId="2" fillId="0" borderId="0" applyFont="1"/>
+    <xf numFmtId="0" fontId="1" fillId="2" borderId="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="1" fillId="0" borderId="1" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="1" fillId="3" borderId="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="1" fillId="4" borderId="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="1" fillId="5" borderId="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="1" fillId="6" borderId="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="164" fontId="0" fillId="0" borderId="1" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+    <xf numFmtId="165" fontId="0" fillId="0" borderId="1" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+    <xf numFmtId="166" fontId="0" fillId="0" borderId="1" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+    <xf numFmtId="167" fontId="1" fillId="0" borderId="1" applyFont="1" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>
+  </cellXfs>
+</styleSheet>`;
+
+    files["xl/worksheets/sheet1.xml"] = sheets[0];
+    files["xl/worksheets/sheet2.xml"] = sheets[1];
+    files["xl/worksheets/sheet3.xml"] = sheets[2];
+
+    const zipBytes = this.createZip(files);
+    return new Blob([zipBytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  }
+
+  static cellStr(ref, val, style = 3) {
+    return `<c r="${ref}" s="${style}" t="inlineStr"><is><t xml:space="preserve">${this.escXml(val)}</t></is></c>`;
+  }
+  static cellNum(ref, num, style = 3) {
+    return `<c r="${ref}" s="${style}"><v>${num}</v></c>`;
+  }
+  static cellFormula(ref, formula, cachedVal, style = 3) {
+    const vTag = cachedVal !== null && cachedVal !== undefined ? `<v>${cachedVal}</v>` : "";
+    return `<c r="${ref}" s="${style}"><f>${this.escXml(formula)}</f>${vTag}</c>`;
+  }
+
+  static buildSheet1Xml(meta, numDays) {
+    const lastColIdx = 3 + numDays + 4;
+    const lastColLet = this.colLetter(lastColIdx);
+    const merges = [`A1:${lastColLet}1`, `A2:${lastColLet}2`, "A4:C4", "A5:C5"];
+    const rowsXml = [];
+
+    rowsXml.push(`<row r="1" ht="24" customHeight="1">${this.cellStr("A1", `${meta.contractor} — ATTENDANCE & RULES (${meta.billPeriod})`, 1)}</row>`);
+    rowsXml.push(`<row r="2" ht="18" customHeight="1">${this.cellStr("A2", `Contract ID: ${meta.contractId} | Validity: ${meta.validity} | Contact Staff: ${meta.contactStaff}`, 4)}</row>`);
+
+    // Row 4: Calendar Day Type (R / W / H)
+    let r4 = `<row r="4" ht="20" customHeight="1">${this.cellStr("A4", "Calendar Day Type (R=Regular, W=Sat/Sun, H=Govt Holiday)", 2)}${this.cellStr("B4", "", 2)}${this.cellStr("C4", "", 2)}`;
+    // Row 5: 24-Hour Round-O-Clock Marker (Y / N)
+    let r5 = `<row r="5" ht="20" customHeight="1">${this.cellStr("A5", "24-Hour (Round-O-Clock) Day Marker (Y / N)", 9)}${this.cellStr("B5", "", 9)}${this.cellStr("C5", "", 9)}`;
+    // Row 6: Table Header
+    let r6 = `<row r="6" ht="28" customHeight="1">${this.cellStr("A6", "Sl No.", 2)}${this.cellStr("B6", "Employee Name", 2)}${this.cellStr("C6", "Extracted / Computed Metric", 2)}`;
+
+    state.calendarConfig.forEach((cfg, idx) => {
+      const colL = this.colLetter(4 + idx);
+      const st = cfg.type === "H" ? 7 : (cfg.type === "W" ? 6 : 2);
+      r4 += this.cellStr(`${colL}4`, cfg.type, st);
+      r5 += this.cellStr(`${colL}5`, cfg.is24h ? "Y" : "N", 9);
+      r6 += this.cellStr(`${colL}6`, `${cfg.dateStr}\n(${cfg.dayName})`, st);
+    });
+
+    const cDaysL = this.colLetter(4 + numDays);
+    const cBaseL = this.colLetter(5 + numDays);
+    const cExtL  = this.colLetter(6 + numDays);
+    const cTotL  = this.colLetter(7 + numDays);
+
+    r6 += `${this.cellStr(`${cDaysL}6`, "Days Worked", 2)}${this.cellStr(`${cBaseL}6`, "Base Hrs", 2)}${this.cellStr(`${cExtL}6`, "Extra Hrs", 2)}${this.cellStr(`${cTotL}6`, "Total Credited Hrs", 2)}</row>`;
+    r4 += `</row>`;
+    r5 += `</row>`;
+    rowsXml.push(r4, r5, r6);
+
+    let currRow = 7;
+    const credRows = [];
+
+    state.employees.forEach((emp, idx) => {
+      const rRaw  = currRow;
+      const rIn   = currRow + 1;
+      const rEin  = currRow + 2;
+      const rOut  = currRow + 3;
+      const rDur  = currRow + 4;
+      const rCred = currRow + 5;
+      credRows.push(rCred);
+
+      merges.push(`A${rRaw}:A${rCred}`, `B${rRaw}:B${rCred}`);
+      merges.push(`${cDaysL}${rRaw}:${cDaysL}${rCred}`, `${cBaseL}${rRaw}:${cBaseL}${rCred}`, `${cExtL}${rRaw}:${cExtL}${rCred}`, `${cTotL}${rRaw}:${cTotL}${rCred}`);
+
+      const metrics = computeEmployeeMetrics(emp);
+      const firstDayL = this.colLetter(4);
+      const lastDayL  = this.colLetter(3 + numDays);
+
+      const rowBuffers = [
+        `<row r="${rRaw}" ht="34" customHeight="1">${this.cellNum(`A${rRaw}`, idx + 1, 5)}${this.cellStr(`B${rRaw}`, emp.name, 5)}${this.cellStr(`C${rRaw}`, "1. Raw PDF Cell", 4)}`,
+        `<row r="${rIn}" ht="18" customHeight="1">${this.cellStr(`A${rIn}`, "", 3)}${this.cellStr(`B${rIn}`, "", 3)}${this.cellStr(`C${rIn}`, "2. Raw In Time", 4)}`,
+        `<row r="${rEin}" ht="18" customHeight="1">${this.cellStr(`A${rEin}`, "", 3)}${this.cellStr(`B${rEin}`, "", 3)}${this.cellStr(`C${rEin}`, "3. Effective In (>=08:45)", 4)}`,
+        `<row r="${rOut}" ht="18" customHeight="1">${this.cellStr(`A${rOut}`, "", 3)}${this.cellStr(`B${rOut}`, "", 3)}${this.cellStr(`C${rOut}`, "4. Out Time", 4)}`,
+        `<row r="${rDur}" ht="18" customHeight="1">${this.cellStr(`A${rDur}`, "", 3)}${this.cellStr(`B${rDur}`, "", 3)}${this.cellStr(`C${rDur}`, "5. Effective Work Hrs", 4)}`,
+        `<row r="${rCred}" ht="20" customHeight="1">${this.cellStr(`A${rCred}`, "", 3)}${this.cellStr(`B${rCred}`, "", 3)}${this.cellStr(`C${rCred}`, "6. Credited Payable Hrs", 5)}`
+      ];
+
+      metrics.daysEval.forEach((d, dIdx) => {
+        const colL = this.colLetter(4 + dIdx);
+        const cfg = state.calendarConfig[dIdx];
+        const baseSt = cfg.type === "H" ? 7 : (cfg.type === "W" ? 6 : 3);
+
+        rowBuffers[0] += this.cellStr(`${colL}${rRaw}`, emp.cells[dIdx] || "", baseSt);
+
+        if (d.status === "BLANK") {
+          for (let k = 1; k <= 5; k++) rowBuffers[k] += this.cellStr(`${colL}${currRow + k}`, "", baseSt);
+        } else if (d.status === "ABS") {
+          rowBuffers[1] += this.cellStr(`${colL}${rIn}`, "abs", baseSt);
+          rowBuffers[2] += this.cellStr(`${colL}${rEin}`, "", baseSt);
+          rowBuffers[3] += this.cellStr(`${colL}${rOut}`, "", baseSt);
+          rowBuffers[4] += this.cellStr(`${colL}${rDur}`, "", baseSt);
+          rowBuffers[5] += this.cellNum(`${colL}${rCred}`, 0, cfg.type === "H" ? 7 : (cfg.type === "W" ? 6 : 5));
+        } else {
+          const inMins = hhmmToMinutes(d.rawIn);
+          const outMins = hhmmToMinutes(d.rawOut);
+          const effInMins = hhmmToMinutes(d.effIn);
+
+          rowBuffers[1] += this.cellNum(`${colL}${rIn}`, (inMins / 1440).toFixed(6), cfg.type === "R" ? 10 : baseSt);
+          rowBuffers[2] += this.cellFormula(
+            `${colL}${rEin}`,
+            `IF(${colL}${rIn}="","",IF(AND(${colL}$4="R",${colL}$5<>"Y",${colL}${rIn}<TIME(8,45,0)),TIME(8,45,0),${colL}${rIn}))`,
+            (effInMins / 1440).toFixed(6),
+            cfg.type === "R" ? 10 : baseSt
+          );
+          rowBuffers[3] += this.cellNum(`${colL}${rOut}`, (outMins / 1440).toFixed(6), cfg.type === "R" ? 10 : baseSt);
+          rowBuffers[4] += this.cellFormula(
+            `${colL}${rDur}`,
+            `IF(OR(${colL}${rEin}="",${colL}${rOut}=""),"",ROUND((IF(${colL}${rOut}<${colL}${rEin},${colL}${rOut}+1-${colL}${rEin},${colL}${rOut}-${colL}${rEin}))*24,2))`,
+            d.effHrs,
+            cfg.type === "R" ? 11 : baseSt
+          );
+
+          const credFormula = `IF(${colL}${rDur}="","",IF(OR(${colL}$4="W",${colL}$4="H"),IF(AND(${colL}${rDur}>=6,${colL}${rDur}<=8),8,INT(${colL}${rDur}+0.5)),IF(${colL}${rDur}>=8,INT(${colL}${rDur}+0.5),IF(${colL}${rDur}>=7.5,8,IF(${colL}${rDur}>0,7,0)))))`;
+          const credStyle = cfg.type === "H" ? 7 : (cfg.type === "W" ? 6 : (d.flag === "SHORT75" ? 8 : 5));
+          rowBuffers[5] += this.cellFormula(`${colL}${rCred}`, credFormula, d.creditedHrs, credStyle);
+        }
+      });
+
+      // Summary Formulas on rRaw (merged down to rCred)
+      rowBuffers[0] += this.cellFormula(`${cDaysL}${rRaw}`, `COUNTIF(${firstDayL}${rCred}:${lastDayL}${rCred},">0")`, metrics.workedDays, 5);
+      rowBuffers[0] += this.cellFormula(`${cBaseL}${rRaw}`, `${cDaysL}${rRaw}*8`, metrics.baseHrs, 3);
+      rowBuffers[0] += this.cellFormula(`${cExtL}${rRaw}`, `MAX(0,${cTotL}${rRaw}-${cBaseL}${rRaw})`, metrics.extraHrs, 3);
+      rowBuffers[0] += this.cellFormula(`${cTotL}${rRaw}`, `SUM(${firstDayL}${rCred}:${lastDayL}${rCred})`, metrics.totalCredited, 5);
+
+      for (let k = 1; k <= 5; k++) {
+        rowBuffers[k] += `${this.cellStr(`${cDaysL}${currRow + k}`, "", 3)}${this.cellStr(`${cBaseL}${currRow + k}`, "", 3)}${this.cellStr(`${cExtL}${currRow + k}`, "", 3)}${this.cellStr(`${cTotL}${currRow + k}`, "", 3)}`;
+      }
+
+      for (let k = 0; k < 6; k++) rowsXml.push(rowBuffers[k] + "</row>");
+      currRow += 6;
+    });
+
+    const mergeXml = merges.length ? `<mergeCells count="${merges.length}">${merges.map(m => `<mergeCell ref="${m}"/>`).join("")}</mergeCells>` : "";
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <sheetViews><sheetView workbookViewId="0"/></sheetViews>
+  <sheetData>${rowsXml.join("")}</sheetData>
+  ${mergeXml}
+</worksheet>`;
+  }
+
+  static buildSheet2Xml(meta, numDays) {
+    const extColL = this.colLetter(3 + numDays);
+    const totColL = this.colLetter(4 + numDays);
+    const merges = [`A1:${totColL}1`, `A2:${totColL}2`, `C3:${this.colLetter(2 + numDays)}3`];
+    const rowsXml = [];
+
+    rowsXml.push(`<row r="1" ht="24" customHeight="1">${this.cellStr("A1", `DAILY CREDITED HOURS & EXTRA HOURS STATEMENT (${meta.billPeriod})`, 1)}</row>`);
+    rowsXml.push(`<row r="2" ht="18" customHeight="1">${this.cellStr("A2", `Contract ID: ${meta.contractId} | Contractor: ${meta.contractor} | Division: ${meta.division}`, 4)}</row>`);
+    rowsXml.push(`<row r="3" ht="20" customHeight="1">${this.cellStr("A3", "Sl.", 2)}${this.cellStr("B3", "Personnel", 2)}${this.cellStr("C3", meta.billPeriod, 2)}${this.cellStr(`${extColL}3`, "Summary", 2)}${this.cellStr(`${totColL}3`, "", 2)}</row>`);
+
+    let r4 = `<row r="4" ht="28" customHeight="1">${this.cellStr("A4", "Sl. No.", 2)}${this.cellStr("B4", "Name of Service Personnel (Shri/Smt)", 2)}`;
+    state.calendarConfig.forEach((cfg, idx) => {
+      const colL = this.colLetter(3 + idx);
+      const st = cfg.type === "H" ? 7 : (cfg.type === "W" ? 6 : 2);
+      r4 += this.cellStr(`${colL}4`, `${cfg.dateStr.split("-")[0]}\n(${cfg.dayName})`, st);
+    });
+    r4 += `${this.cellStr(`${extColL}4`, "Extra Hours", 2)}${this.cellStr(`${totColL}4`, "Total Hour", 2)}</row>`;
+    rowsXml.push(r4);
+
+    let sumExtra = 0, sumTotal = 0;
+    state.employees.forEach((emp, idx) => {
+      const rIdx = 5 + idx;
+      const p1RawRow = 7 + idx * 6;
+      const p1CredRow = p1RawRow + 5;
+      const m = computeEmployeeMetrics(emp);
+      sumExtra += m.extraHrs;
+      sumTotal += m.totalCredited;
+
+      let rowStr = `<row r="${rIdx}" ht="20" customHeight="1">${this.cellNum(`A${rIdx}`, idx + 1, 3)}${this.cellFormula(`B${rIdx}`, `'Page 1 - Attendance & Rules'!B${p1RawRow}`, emp.name, 4)}`;
+      state.calendarConfig.forEach((cfg, dIdx) => {
+        const colL = this.colLetter(3 + dIdx);
+        const p1ColL = this.colLetter(4 + dIdx);
+        const st = cfg.type === "H" ? 7 : (cfg.type === "W" ? 6 : 3);
+        const val = m.daysEval[dIdx].creditedHrs !== null ? m.daysEval[dIdx].creditedHrs : 0;
+        rowStr += this.cellFormula(`${colL}${rIdx}`, `IF('Page 1 - Attendance & Rules'!${p1ColL}${p1CredRow}="",0,'Page 1 - Attendance & Rules'!${p1ColL}${p1CredRow})`, val, st);
+      });
+
+      const firstD = this.colLetter(3);
+      const lastD  = this.colLetter(2 + numDays);
+      rowStr += this.cellFormula(`${extColL}${rIdx}`, `MAX(0,${totColL}${rIdx}-(COUNTIF(${firstD}${rIdx}:${lastD}${rIdx},">0")*8))`, m.extraHrs, 5);
+      rowStr += this.cellFormula(`${totColL}${rIdx}`, `SUM(${firstD}${rIdx}:${lastD}${rIdx})`, m.totalCredited, 5);
+      rowStr += `</row>`;
+      rowsXml.push(rowStr);
+    });
+
+    const totRow = 5 + state.employees.length;
+    merges.push(`A${totRow}:${this.colLetter(2 + numDays)}${totRow}`);
+    let rTot = `<row r="${totRow}" ht="24" customHeight="1">${this.cellStr(`A${totRow}`, "Total:", 2)}`;
+    for (let c = 2; c <= 2 + numDays; c++) rTot += this.cellStr(`${this.colLetter(c)}${totRow}`, "", 2);
+    rTot += this.cellFormula(`${extColL}${totRow}`, `SUM(${extColL}5:${extColL}${totRow - 1})`, sumExtra, 2);
+    rTot += this.cellFormula(`${totColL}${totRow}`, `SUM(${totColL}5:${totColL}${totRow - 1})`, sumTotal, 2);
+    rTot += `</row>`;
+    rowsXml.push(rTot);
+
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <sheetViews><sheetView workbookViewId="0"/></sheetViews>
+  <sheetData>${rowsXml.join("")}</sheetData>
+  <mergeCells count="${merges.length}">${merges.map(m => `<mergeCell ref="${m}"/>`).join("")}</mergeCells>
+</worksheet>`;
+  }
+
+  static buildSheet3Xml(meta) {
+    const numEmp = state.employees.length;
+    const p2TotColL = this.colLetter(4 + state.calendarConfig.length);
+    const bStart = 12;
+    const bEnd = bStart + numEmp - 1;
+    const bTotRow = bEnd + 1;
+
+    const merges = ["A1:H1", "H4:H8", "A9:B9", `A${bTotRow}:C${bTotRow}`, `A${bTotRow + 3}:C${bTotRow + 3}`, `F${bTotRow + 3}:H${bTotRow + 3}`];
+    const rowsXml = [];
+
+    rowsXml.push(`<row r="1" ht="26" customHeight="1">${this.cellStr("A1", `CSCD GOCO Bill - ${meta.billPeriod}`, 1)}</row>`);
+    rowsXml.push(`<row r="3" ht="36" customHeight="1">${this.cellStr("A3", "Sl No.", 2)}${this.cellStr("B3", "Item", 2)}${this.cellStr("C3", "Qty for 2 years", 2)}${this.cellStr("D3", "Unit Rate in Rs", 2)}${this.cellStr("E3", "Rate for 2 Years", 2)}${this.cellStr("F3", `Qty utilized from ${meta.billPeriod}`, 2)}${this.cellStr("G3", `Rate for ${meta.billPeriod}`, 2)}${this.cellStr("H3", "Division", 2)}</row>`);
+
+    const boq = [
+      [33, "Checkout Hardware EID Preparation & wiring", 640, 5719],
+      [34, "Software testing for CE/SDR/LVHM", 568, 4270],
+      [35, "Actuator testing and data analysis including Harness preparation and wiring", 400, 7027],
+      [36, "Calibration of checkout hardwares", 400, 4474],
+      [37, "PCB wiring and integration for checkout hardware", 600, 775]
+    ];
+
+    let grandCost = 0, grandDays = 0;
+    state.employees.forEach(e => {
+      const m = computeEmployeeMetrics(e);
+      grandDays += m.billDays;
+      grandCost += m.totalCost;
+    });
+
+    boq.forEach(([sl, desc, qty, rate], idx) => {
+      const r = 4 + idx;
+      const qUtilFormula = idx === 0 ? `ROUND(G${r}/D${r},5)` : "0";
+      const qUtilVal = idx === 0 ? Math.round((grandCost / rate) * 100000) / 100000 : 0;
+      const rUtilFormula = idx === 0 ? `H${bTotRow}` : `ROUND(F${r}*D${r},2)`;
+      const rUtilVal = idx === 0 ? grandCost : 0;
+
+      rowsXml.push(`<row r="${r}" ht="26" customHeight="1">
+        ${this.cellNum(`A${r}`, sl, 3)}
+        ${this.cellStr(`B${r}`, desc, 4)}
+        ${this.cellNum(`C${r}`, qty, 3)}
+        ${this.cellNum(`D${r}`, rate, 3)}
+        ${this.cellFormula(`E${r}`, `C${r}*D${r}`, qty * rate, 3)}
+        ${this.cellFormula(`F${r}`, qUtilFormula, qUtilVal, 12)}
+        ${this.cellFormula(`G${r}`, rUtilFormula, rUtilVal, 13)}
+        ${this.cellStr(`H${r}`, idx === 0 ? meta.division : "", 5)}
+      </row>`);
+    });
+
+    rowsXml.push(`<row r="9" ht="24" customHeight="1">
+      ${this.cellStr("A9", "Total for Two Year", 2)}${this.cellStr("B9", "", 2)}
+      ${this.cellFormula("C9", "SUM(C4:C8)", 2608, 2)}
+      ${this.cellFormula("D9", "SUM(D4:D8)", 22265, 2)}
+      ${this.cellFormula("E9", "SUM(E4:E8)", 11150920, 2)}
+      ${this.cellFormula("F9", "SUM(F4:F8)", Math.round((grandCost / 5719) * 100000) / 100000, 2)}
+      ${this.cellFormula("G9", "SUM(G4:G8)", grandCost, 2)}
+      ${this.cellStr("H9", "", 2)}
+    </row>`);
+
+    rowsXml.push(`<row r="11" ht="28" customHeight="1">${this.cellStr("A11", "SL No:", 2)}${this.cellStr("B11", "Name", 2)}${this.cellStr("C11", "Rate", 2)}${this.cellStr("D11", "Days", 2)}${this.cellStr("E11", "Pass No.", 2)}${this.cellStr("F11", "Category", 2)}${this.cellStr("G11", "Division", 2)}${this.cellStr("H11", "Total Cost", 2)}</row>`);
+
+    state.employees.forEach((emp, idx) => {
+      const r = bStart + idx;
+      const p2Row = 5 + idx;
+      const m = computeEmployeeMetrics(emp);
+      rowsXml.push(`<row r="${r}" ht="20" customHeight="1">
+        ${this.cellNum(`A${r}`, idx + 1, 3)}
+        ${this.cellFormula(`B${r}`, `'Page 2 - Daily Hours Matrix'!B${p2Row}`, emp.name, 4)}
+        ${this.cellNum(`C${r}`, emp.rate, 3)}
+        ${this.cellFormula(`D${r}`, `'Page 2 - Daily Hours Matrix'!${p2TotColL}${p2Row}/8`, m.billDays, 12)}
+        ${this.cellStr(`E${r}`, emp.passNo, 3)}
+        ${this.cellStr(`F${r}`, emp.category, 3)}
+        ${this.cellStr(`G${r}`, meta.division, 3)}
+        ${this.cellFormula(`H${r}`, `ROUND(C${r}*D${r},2)`, m.totalCost, 13)}
+      </row>`);
+    });
+
+    rowsXml.push(`<row r="${bTotRow}" ht="24" customHeight="1">
+      ${this.cellStr(`A${bTotRow}`, "Total:", 2)}${this.cellStr(`B${bTotRow}`, "", 2)}${this.cellStr(`C${bTotRow}`, "", 2)}
+      ${this.cellFormula(`D${bTotRow}`, `SUM(D${bStart}:D${bEnd})`, grandDays, 2)}
+      ${this.cellStr(`E${bTotRow}`, "", 2)}${this.cellStr(`F${bTotRow}`, "", 2)}${this.cellStr(`G${bTotRow}`, "", 2)}
+      ${this.cellFormula(`H${bTotRow}`, `SUM(H${bStart}:H${bEnd})`, grandCost, 13)}
+    </row>`);
+
+    rowsXml.push(`<row r="${bTotRow + 3}" ht="22" customHeight="1">
+      ${this.cellStr(`A${bTotRow + 3}`, "Prepared By:", 5)}
+      ${this.cellStr(`F${bTotRow + 3}`, "Verified By", 5)}
+    </row>`);
+
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <sheetViews><sheetView workbookViewId="0"/></sheetViews>
+  <sheetData>${rowsXml.join("")}</sheetData>
+  <mergeCells count="${merges.length}">${merges.map(m => `<mergeCell ref="${m}"/>`).join("")}</mergeCells>
+</worksheet>`;
+  }
+
+  static crc32(buf) {
+    let crc = ~0;
+    for (let i = 0; i < buf.length; i++) {
+      crc ^= buf[i];
+      for (let k = 0; k < 8; k++) crc = (crc >>> 1) ^ (0xEDB88320 & -(crc & 1));
+    }
+    return (~crc) >>> 0;
+  }
+
+  static createZip(filesObj) {
+    const enc = new TextEncoder();
+    const localParts = [];
+    const centralParts = [];
+    let offset = 0;
+
+    for (const [name, content] of Object.entries(filesObj)) {
+      const nameBytes = enc.encode(name);
+      const dataBytes = typeof content === "string" ? enc.encode(content) : content;
+      const crc = this.crc32(dataBytes);
+
+      const localHeader = new Uint8Array(30 + nameBytes.length);
+      const lv = new DataView(localHeader.buffer);
+      lv.setUint32(0, 0x04034b50, true);
+      lv.setUint16(4, 20, true);
+      lv.setUint16(8, 0, true);
+      lv.setUint32(14, crc, true);
+      lv.setUint32(18, dataBytes.length, true);
+      lv.setUint32(22, dataBytes.length, true);
+      lv.setUint16(26, nameBytes.length, true);
+      localHeader.set(nameBytes, 30);
+
+      localParts.push(localHeader, dataBytes);
+
+      const centralHeader = new Uint8Array(46 + nameBytes.length);
+      const cv = new DataView(centralHeader.buffer);
+      cv.setUint32(0, 0x02014b50, true);
+      cv.setUint16(4, 20, true);
+      cv.setUint16(6, 20, true);
+      cv.setUint32(16, crc, true);
+      cv.setUint32(20, dataBytes.length, true);
+      cv.setUint32(24, dataBytes.length, true);
+      cv.setUint16(28, nameBytes.length, true);
+      cv.setUint32(42, offset, true);
+      centralHeader.set(nameBytes, 46);
+
+      centralParts.push(centralHeader);
+      offset += localHeader.length + dataBytes.length;
+    }
+
+    const centralSize = centralParts.reduce((s, b) => s + b.length, 0);
+    const eocd = new Uint8Array(22);
+    const ev = new DataView(eocd.buffer);
+    ev.setUint32(0, 0x06054b50, true);
+    ev.setUint16(8, centralParts.length, true);
+    ev.setUint16(10, centralParts.length, true);
+    ev.setUint32(12, centralSize, true);
+    ev.setUint32(16, offset, true);
+
+    const out = new Uint8Array(offset + centralSize + 22);
+    let pos = 0;
+    for (const p of localParts) { out.set(p, pos); pos += p.length; }
+    for (const c of centralParts) { out.set(c, pos); pos += c.length; }
+    out.set(eocd, pos);
+    return out;
+  }
+}
+
+/* ============================================================================
+   7. WIRE UP EVENTS
+   ============================================================================ */
+const dropzone = document.getElementById("dropzone");
+const pdfInput = document.getElementById("pdfInput");
+
+dropzone.addEventListener("click", () => pdfInput.click());
+dropzone.addEventListener("dragover", e => { e.preventDefault(); dropzone.classList.add("dragover"); });
+dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+dropzone.addEventListener("drop", async e => {
+  e.preventDefault();
+  dropzone.classList.remove("dragover");
+  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    await handlePdfUpload(e.dataTransfer.files[0]);
+  }
+});
+pdfInput.addEventListener("change", async e => {
+  if (e.target.files && e.target.files[0]) {
+    await handlePdfUpload(e.target.files[0]);
+  }
+});
+
+async function handlePdfUpload(file) {
+  const statusEl = document.getElementById("statusMsg");
+  const badgeEl = document.getElementById("parseBadge");
+  badgeEl.textContent = `Parsing ${file.name}...`;
+  try {
+    const buf = await file.arrayBuffer();
+    const dataset = await OfflinePdfExtractor.parseFile(buf);
+    if (!dataset.employees || dataset.employees.length === 0) {
+      statusEl.style.color = "#f87171";
+      statusEl.textContent = "Could not detect selectable text rows in this PDF. Please verify it is a text-based PDF (not a flat image scan).";
+      return;
+    }
+    loadDataset(dataset);
+    badgeEl.textContent = `Loaded: ${file.name} (${dataset.employees.length} personnel)`;
+    statusEl.style.color = "#4ade80";
+    statusEl.textContent = `Successfully extracted ${dataset.employees.length} personnel across ${dataset.dateHeaders.length} dates from "${file.name}".`;
+  } catch (err) {
+    console.error(err);
+    statusEl.style.color = "#f87171";
+    statusEl.textContent = `Error reading PDF: ${err.message}`;
+  }
+}
+
+document.getElementById("btnLoadDemo").addEventListener("click", () => {
+  loadDataset(getDemoDataset());
+  document.getElementById("parseBadge").textContent = "Loaded Built-in 17-Personnel Attendance Dataset";
+  document.getElementById("statusMsg").textContent = "Loaded all 17 personnel across 15 dates (01-08 to 15-08) with 15-Aug Independence Day auto-marked as Central Govt Holiday (H).";
+});
+
+document.getElementById("personSelect").addEventListener("change", e => {
+  state.selectedPersonIdx = parseInt(e.target.value, 10);
+  renderPersonInspector();
+});
+document.getElementById("btnPrevPerson").addEventListener("click", () => {
+  state.selectedPersonIdx = (state.selectedPersonIdx - 1 + state.employees.length) % state.employees.length;
+  renderPersonInspector();
+});
+document.getElementById("btnNextPerson").addEventListener("click", () => {
+  state.selectedPersonIdx = (state.selectedPersonIdx + 1) % state.employees.length;
+  renderPersonInspector();
+});
+
+document.getElementById("personRateInput").addEventListener("change", e => {
+  state.employees[state.selectedPersonIdx].rate = parseFloat(e.target.value) || 0;
+  renderAll();
+});
+document.getElementById("personCatInput").addEventListener("change", e => {
+  state.employees[state.selectedPersonIdx].category = e.target.value;
+  renderActiveTab();
+});
+document.getElementById("personPassInput").addEventListener("change", e => {
+  state.employees[state.selectedPersonIdx].passNo = e.target.value;
+  renderActiveTab();
+});
+
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    state.activeTab = btn.dataset.tab;
+    renderActiveTab();
+  });
+});
+
+document.getElementById("btnExportXlsx").addEventListener("click", () => {
+  const blob = PureXlsxBuilder.buildWorkbookBlob();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  const periodClean = (document.getElementById("metaBillPeriod").value || "Salary_Bill").replace(/[^A-Za-z0-9_-]+/g, "_");
+  a.download = `CSCD_GOCO_Salary_Bill_${periodClean}.xlsx`;
+  a.click();
+});
+
+// Initialize with built-in demo so user sees everything immediately on open
+loadDataset(getDemoDataset());
+</script>
+</body>
+</html>

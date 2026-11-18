@@ -1,0 +1,2568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offline PDF to Exact Excel Pro Studio — GOCO Attendance & Salary Bill Generator</title>
+  <style>
+    /* =========================================================================
+       100% OFFLINE EXECUTIVE STUDIO DESIGN SYSTEM (ZERO EXTERNAL DEPENDENCIES)
+       ========================================================================= */
+    :root {
+      --navy-950: #09111e;
+      --navy-900: #0f1b2e;
+      --navy-800: #182842;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-500: #64748b;
+      --slate-700: #334155;
+      --slate-900: #0f172a;
+      --blue-600: #2563eb;
+      --blue-700: #1d4ed8;
+      --blue-50: #eff6ff;
+      --emerald-600: #059669;
+      --emerald-700: #047857;
+      --emerald-50: #ecfdf5;
+      --amber-100: #fef3c7;
+      --amber-300: #fcd34d;
+      --amber-800: #92400e;
+      --pink-100: #fce7f3;
+      --pink-700: #be185d;
+      --rose-100: #fee2e2;
+      --rose-800: #991b1b;
+      --sky-100: #dbeafe;
+      --sky-800: #1e40af;
+      --gray-weekend: #d1d5db;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--slate-100);
+      color: var(--slate-900);
+      line-height: 1.45;
+    }
+
+    /* Header Bar */
+    .topbar {
+      background: linear-gradient(135deg, var(--navy-950), var(--navy-800));
+      color: #ffffff;
+      padding: 16px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.18);
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #34d399;
+      flex-shrink: 0;
+    }
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .badge-offline {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.2);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    .brand-sub {
+      margin: 3px 0 0 0;
+      font-size: 12.5px;
+      color: #cbd5e1;
+    }
+    .top-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Buttons & Inputs */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 15px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--slate-300);
+      background: #ffffff;
+      color: var(--slate-900);
+      transition: all 0.15s ease;
+    }
+    .btn:hover:not(:disabled) { background: var(--slate-50); border-color: var(--slate-500); }
+    .btn:disabled { opacity: 0.48; cursor: not-allowed; }
+    .btn-primary {
+      background: var(--blue-600);
+      border-color: var(--blue-600);
+      color: #ffffff;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--blue-700); }
+    .btn-success {
+      background: var(--emerald-600);
+      border-color: var(--emerald-600);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.28);
+    }
+    .btn-success:hover:not(:disabled) { background: var(--emerald-700); }
+    .btn-dark-ghost {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.22);
+      color: #ffffff;
+    }
+    .btn-dark-ghost:hover:not(:disabled) { background: rgba(255, 255, 255, 0.18); }
+
+    select, input[type="text"], input[type="number"] {
+      padding: 7px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--slate-300);
+      background: #ffffff;
+      color: var(--slate-900);
+      font-size: 13px;
+      font-family: inherit;
+    }
+    select:focus, input:focus {
+      outline: 2px solid rgba(37, 99, 235, 0.35);
+      border-color: var(--blue-600);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1620px;
+      margin: 0 auto;
+      padding: 18px 20px 36px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid var(--slate-200);
+      border-radius: 14px;
+      padding: 16px 18px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+
+    .card-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--slate-200);
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--slate-700);
+      margin: 0;
+    }
+
+    /* Upload & Metadata Grid */
+    .setup-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1.85fr;
+      gap: 16px;
+    }
+    @media (max-width: 1024px) {
+      .setup-grid { grid-template-columns: 1fr; }
+    }
+
+    .dropzone {
+      border: 2px dashed var(--slate-300);
+      border-radius: 12px;
+      background: var(--slate-50);
+      padding: 18px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .dropzone:hover, .dropzone.drag-over {
+      border-color: var(--blue-600);
+      background: var(--blue-50);
+    }
+
+    .meta-fields {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+      gap: 10px;
+    }
+    .field-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--slate-500);
+      margin-bottom: 4px;
+    }
+    .field-group input { width: 100%; }
+
+    /* Interactive Calendar Strip */
+    .calendar-strip {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+    .cal-day-card {
+      min-width: 96px;
+      border-radius: 10px;
+      border: 1.5px solid var(--slate-300);
+      padding: 8px;
+      text-align: center;
+      background: #ffffff;
+      flex-shrink: 0;
+      transition: transform 0.12s ease;
+    }
+    .cal-day-card.type-W {
+      background: #e5e7eb;
+      border-color: #9ca3af;
+    }
+    .cal-day-card.type-H {
+      background: var(--amber-100);
+      border-color: #f59e0b;
+    }
+    .cal-day-card.is-24h {
+      box-shadow: 0 0 0 2px #ec4899;
+    }
+    .cal-date { font-weight: 700; font-size: 12.5px; color: var(--slate-900); }
+    .cal-dow { font-size: 11px; color: var(--slate-600); margin-bottom: 6px; }
+    .cal-btn-row {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+    }
+    .mini-pill {
+      border: 1px solid rgba(0,0,0,0.18);
+      border-radius: 6px;
+      padding: 3px 6px;
+      font-size: 10.5px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #ffffff;
+      color: var(--slate-900);
+    }
+    .mini-pill.active-R { background: #1e293b; color: #fff; }
+    .mini-pill.active-W { background: #4b5563; color: #fff; }
+    .mini-pill.active-H { background: #d97706; color: #fff; }
+    .mini-pill.active-24 { background: #db2777; color: #fff; border-color: #be185d; }
+
+    /* Rule Color Legend */
+    .legend-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--slate-300);
+      font-weight: 600;
+      font-size: 11.5px;
+    }
+    .swatch { width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.2); }
+
+    /* Navigation Tabs */
+    .tabs-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      border-bottom: 2px solid var(--slate-200);
+      padding-bottom: 10px;
+    }
+    .tab-btn {
+      padding: 9px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--slate-300);
+      background: var(--slate-50);
+      color: var(--slate-700);
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .tab-btn.active {
+      background: var(--navy-900);
+      border-color: var(--navy-900);
+      color: #ffffff;
+    }
+
+    /* Individual Employee Selector & KPI Cards */
+    .emp-selector-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      padding: 12px 14px;
+      border-radius: 12px;
+      margin-bottom: 14px;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .kpi-card {
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--slate-500); }
+    .kpi-val { font-size: 20px; font-weight: 800; color: var(--slate-900); margin-top: 2px; font-variant-numeric: tabular-nums; }
+
+    /* Spreadsheet Data Tables */
+    .table-wrap {
+      overflow: auto;
+      max-height: 62vh;
+      border: 1px solid var(--slate-300);
+      border-radius: 10px;
+    }
+    table.data-grid {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 12.5px;
+      background: #ffffff;
+    }
+    table.data-grid th {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: var(--navy-900);
+      color: #ffffff;
+      font-weight: 700;
+      padding: 8px 10px;
+      border: 1px solid var(--slate-400);
+      text-align: center;
+      white-space: nowrap;
+    }
+    table.data-grid td {
+      border: 1px solid var(--slate-300);
+      padding: 6px 9px;
+      text-align: center;
+      vertical-align: middle;
+      font-variant-numeric: tabular-nums;
+    }
+    table.data-grid td.left { text-align: left; }
+    table.data-grid td.right { text-align: right; }
+    table.data-grid td.bold { font-weight: 700; }
+
+    /* Cell Rule Color Coding */
+    .cell-weekend { background-color: #e5e7eb !important; }
+    .cell-holiday { background-color: #fef3c7 !important; }
+    .cell-grace75 { background-color: #dbeafe !important; color: #1e40af; font-weight: 700; }
+    .cell-below75 { background-color: #fee2e2 !important; color: #991b1b; font-weight: 700; }
+    .cell-24hr { background-color: #fce7f3 !important; color: #be185d; font-weight: 700; }
+    .cell-blank { background-color: #fafafa !important; color: #9ca3af; font-style: italic; }
+    .cell-total { background-color: #ecfdf5 !important; color: #065f46; font-weight: 800; }
+
+    .inline-edit {
+      width: 100%;
+      min-width: 68px;
+      padding: 4px 6px;
+      border: 1px solid var(--slate-300);
+      border-radius: 6px;
+      font-size: 12px;
+      text-align: center;
+    }
+    .inline-edit.left { text-align: left; }
+    .inline-edit.right { text-align: right; }
+
+    .status-toast {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .status-toast.show { display: flex; }
+    .status-toast.success { background: #ecfdf5; border: 1px solid #10b981; color: #065f46; }
+    .status-toast.info { background: #eff6ff; border: 1px solid #3b82f6; color: #1e40af; }
+    .status-toast.error { background: #fef2f2; border: 1px solid #ef4444; color: #991b1b; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Bar -->
+  <header class="topbar">
+    <div class="brand-area">
+      <div class="brand-icon">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="brand-title">
+          Offline PDF to Exact Excel Pro Studio
+          <span class="badge-offline">100% Air-Gapped • Live Excel Equations</span>
+        </h1>
+        <p class="brand-sub">
+          Extracts In/Out/(Hours) from Attendance PDFs • Applies 08:45 AM, Sat/Sun, Central Govt Holiday & 24-Hr Rules • Generates 3-Page Salary Bill (.xlsx)
+        </p>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <button id="btn-load-demo" class="btn btn-dark-ghost">
+        ⚡ Load Built-in Demo Data (17 Staff)
+      </button>
+      <button id="btn-export-xlsx" class="btn btn-success" disabled>
+        ⬇ Download 3-Page Excel Salary Bill (.xlsx)
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Toast Banner -->
+    <div id="toast" class="status-toast">
+      <span id="toast-msg"></span>
+      <button onclick="document.getElementById('toast').classList.remove('show')" style="background:none;border:none;cursor:pointer;font-weight:bold;">✕</button>
+    </div>
+
+    <!-- Row 1: PDF Upload & Bill Metadata -->
+    <section class="setup-grid">
+      <!-- Upload Card -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">1. Upload Selectable-Text Attendance PDF</h2>
+          <span id="parsed-badge" style="font-size:12px;font-weight:700;color:#2563eb;">Ready</span>
+        </div>
+        <div id="dropzone" class="dropzone">
+          <input type="file" id="pdf-input" accept=".pdf,application/pdf" class="hidden" />
+          <div style="font-weight:700;font-size:14px;color:#0f172a;margin-bottom:4px;">
+            📄 Drop Attendance PDF here or <span style="color:#2563eb;text-decoration:underline;">browse file</span>
+          </div>
+          <div style="font-size:12px;color:#64748b;">
+            Automatically extracts Name, In-Time, Out-Time, and (Bracket Hours) while keeping missing punch cells blank.
+          </div>
+          <div id="file-info" class="hidden" style="margin-top:8px;font-size:12px;font-weight:700;color:#059669;"></div>
+        </div>
+      </div>
+
+      <!-- Contract & Bill Period Metadata -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">2. Contract & GOCO Bill Header Details</h2>
+          <span style="font-size:11.5px;color:#64748b;">Auto-filled from PDF or editable below</span>
+        </div>
+        <div class="meta-fields">
+          <div class="field-group">
+            <label>Contract ID</label>
+            <input type="text" id="meta-contract" value="GC154696VS" />
+          </div>
+          <div class="field-group">
+            <label>Contractor Name</label>
+            <input type="text" id="meta-contractor" value="ISRO APPRENTICESHIP HOLDERS SOCIETY" />
+          </div>
+          <div class="field-group">
+            <label>Bill Period Title</label>
+            <input type="text" id="meta-period" value="01.08.2026 to 15.08.2026" />
+          </div>
+          <div class="field-group">
+            <label>Month / Year Banner (Page 2)</label>
+            <input type="text" id="meta-month" value="AUGUST 2026" />
+          </div>
+          <div class="field-group">
+            <label>Division</label>
+            <input type="text" id="meta-division" value="CSCD" />
+          </div>
+          <div class="field-group">
+            <label>Contact Staff</label>
+            <input type="text" id="meta-contact" value="PERUMAL A E" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Row 2: Interactive Calendar Controls (Sat/Sun, Central Govt Holidays & 24-Hour Round-O-Clock Days) -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">3. Calendar Day Type & 24-Hour (Round-O-Clock) Overtime Provision</h2>
+          <div style="font-size:12px;color:#64748b;margin-top:2px;">
+            Click <strong>R</strong> (Regular), <strong>W</strong> (Sat/Sun), or <strong>H</strong> (Indian Central Govt Holiday) to toggle day type, or click <strong>24h</strong> to mark Round-O-Clock 24-hour duty dates.
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button id="btn-auto-holidays" class="btn" style="font-size:12px;padding:6px 11px;">
+            🇮🇳 Auto-Detect Sat/Sun & Central Govt Holidays
+          </button>
+          <button id="btn-clear-24h" class="btn" style="font-size:12px;padding:6px 11px;">
+            Reset 24-Hr Markers
+          </button>
+        </div>
+      </div>
+
+      <div id="calendar-strip" class="calendar-strip">
+        <div style="font-size:12.5px;color:#64748b;padding:8px;">
+          Upload a PDF or click <strong>"Load Built-in Demo Data (17 Staff)"</strong> above to populate the interactive calendar.
+        </div>
+      </div>
+
+      <!-- Color & Rule Legend -->
+      <div class="legend-bar">
+        <span class="legend-item" style="background:#f8fafc;">
+          <span class="swatch" style="background:#ffffff;"></span>
+          Regular Day (R): Start ≥08:45 AM; ≥8.5h→9h; &lt;7.5h→7h
+        </span>
+        <span class="legend-item" style="background:#dbeafe;color:#1e40af;border-color:#93c5fd;">
+          <span class="swatch" style="background:#dbeafe;"></span>
+          7.5h to &lt;8.0h on Regular Day → Credited as 8h (Highlighted)
+        </span>
+        <span class="legend-item" style="background:#e5e7eb;color:#1f2937;border-color:#9ca3af;">
+          <span class="swatch" style="background:#d1d5db;"></span>
+          Sat / Sun (W): ≥6.0h to 8.0h → 8h; ≥8.5h → 9h+
+        </span>
+        <span class="legend-item" style="background:#fef3c7;color:#92400e;border-color:#f59e0b;">
+          <span class="swatch" style="background:#fde68a;"></span>
+          Indian Central Govt Holiday (H): ≥6.0h to 8.0h → 8h; ≥8.5h → 9h+
+        </span>
+        <span class="legend-item" style="background:#fce7f3;color:#be185d;border-color:#f472b6;">
+          <span class="swatch" style="background:#fbcfe8;"></span>
+          24-Hr Round-O-Clock Duty Day (No 08:45 clamp, 24h credited)
+        </span>
+      </div>
+    </section>
+
+    <!-- Row 3: Multi-View Workspace Tabs -->
+    <section class="card">
+      <div class="tabs-bar">
+        <button class="tab-btn active" data-tab="individual">👤 Individual Person Inspector (Name-by-Name)</button>
+        <button class="tab-btn" data-tab="page1">📋 Page 1: Master Attendance & Rules (All Staff)</button>
+        <button class="tab-btn" data-tab="page2">📊 Page 2: Daily Hours & Extra Hours Matrix</button>
+        <button class="tab-btn" data-tab="page3">💰 Page 3: CSCD GOCO Salary Bill & BOQ</button>
+      </div>
+
+      <!-- TAB 1: Individual Person Name-by-Name Display -->
+      <div id="tab-individual" style="margin-top:14px;">
+        <div class="emp-selector-bar">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <label for="emp-select" style="font-weight:700;font-size:13px;">Select Personnel:</label>
+            <button id="btn-prev-emp" class="btn" style="padding:6px 10px;" disabled>◀ Prev</button>
+            <select id="emp-select" style="min-width:250px;font-weight:700;" disabled>
+              <option>-- Load PDF or Demo Data First --</option>
+            </select>
+            <button id="btn-next-emp" class="btn" style="padding:6px 10px;" disabled>Next ▶</button>
+          </div>
+
+          <div id="emp-quick-edit" class="hidden" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div style="font-size:12px;">
+              <strong>Daily Rate (₹):</strong>
+              <input type="number" id="ind-rate" style="width:82px;padding:4px 7px;" />
+            </div>
+            <div style="font-size:12px;">
+              <strong>Pass No:</strong>
+              <input type="text" id="ind-pass" style="width:125px;padding:4px 7px;" />
+            </div>
+            <div style="font-size:12px;">
+              <strong>Category:</strong>
+              <select id="ind-cat" style="padding:4px 7px;">
+                <option value="B">B</option>
+                <option value="D">D</option>
+                <option value="I">I</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Individual KPI Cards -->
+        <div class="kpi-grid" id="ind-kpis">
+          <div class="kpi-card"><div class="kpi-label">Days Worked</div><div class="kpi-val" id="kpi-days">0</div></div>
+          <div class="kpi-card"><div class="kpi-label">Base Hours (8h/day)</div><div class="kpi-val" id="kpi-base">0</div></div>
+          <div class="kpi-card"><div class="kpi-label">Extra Hours (OT)</div><div class="kpi-val" id="kpi-extra" style="color:#2563eb;">0</div></div>
+          <div class="kpi-card"><div class="kpi-label">Total Credited Hours</div><div class="kpi-val" id="kpi-total" style="color:#059669;">0</div></div>
+          <div class="kpi-card"><div class="kpi-label">Payable Days (Hrs ÷ 8)</div><div class="kpi-val" id="kpi-paydays">0.000</div></div>
+          <div class="kpi-card"><div class="kpi-label">Gross Salary Cost (₹)</div><div class="kpi-val" id="kpi-salary" style="color:#047857;">₹0.00</div></div>
+        </div>
+
+        <!-- Individual Day-by-Day Table -->
+        <div class="table-wrap">
+          <table class="data-grid" id="ind-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Day</th>
+                <th>Calendar Type</th>
+                <th>24-Hr Duty</th>
+                <th>Raw PDF Cell (In / Out / Bracket)</th>
+                <th>Raw In Time</th>
+                <th>Effective In (≥08:45)</th>
+                <th>Out Time</th>
+                <th>Effective Work Hrs</th>
+                <th>Rule Applied</th>
+                <th>Credited Hours</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="11" style="padding:28px;color:#64748b;">Upload an attendance PDF or click "Load Built-in Demo Data" to inspect individual employee details.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 2: Page 1 Master Table Preview -->
+      <div id="tab-page1" class="hidden" style="margin-top:14px;">
+        <div style="font-size:12.5px;color:#475569;margin-bottom:10px;">
+          <strong>Excel Sheet 1 (`Page 1 - Attendance & Rules`):</strong> Exports all personnel with 6 rows per employee (Raw Cell, Raw In, Effective In ≥08:45, Out Time, Effective Work Hrs, and Rule-Credited Hours) plus live Excel formulas and color highlights.
+        </div>
+        <div class="table-wrap" id="page1-wrap"></div>
+      </div>
+
+      <!-- TAB 3: Page 2 Daily Hours & Extra Hours Matrix -->
+      <div id="tab-page2" class="hidden" style="margin-top:14px;">
+        <div style="font-size:12.5px;color:#475569;margin-bottom:10px;">
+          <strong>Excel Sheet 2 (`Page 2 - Daily Hours Matrix`):</strong> Replicates Bill File 2 with daily credited hours per employee, shaded Sat/Sun & Central Govt Holidays, <code>Extra Hours = MAX(0, Total - Days*8)</code>, and <code>Total Hour = SUM(...)</code> equations.
+        </div>
+        <div class="table-wrap" id="page2-wrap"></div>
+      </div>
+
+      <!-- TAB 4: Page 3 CSCD GOCO Salary Bill & BOQ -->
+      <div id="tab-page3" class="hidden" style="margin-top:14px;">
+        <div style="font-size:12.5px;color:#475569;margin-bottom:10px;">
+          <strong>Excel Sheet 3 (`Page 3 - CSCD GOCO Salary Bill`):</strong> Replicates Bill File 1 with the top BOQ Utilization Summary and bottom Personnel Salary Table (<code>Days = Total_Hours / 8</code>, <code>Total Cost = ROUND(Rate * Days, 2)</code>). Edit any Rate, Pass No., Category, or BOQ row directly below before exporting.
+        </div>
+        <div id="page3-wrap" style="display:flex;flex-direction:column;gap:16px;"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /* =========================================================================
+       1. PURE-JS OFFLINE PDF STREAM PARSER
+       Extracts selectable text items & vector lines from attendance PDFs
+       ========================================================================= */
+    class OfflinePdfParser {
+      constructor(buffer) {
+        this.bytes = new Uint8Array(buffer);
+        this.latin1 = new TextDecoder('latin1').decode(this.bytes);
+        this.objects = new Map();
+      }
+
+      async parse() {
+        const objRegex = /(\d+)\s+(\d+)\s+obj\b/g;
+        let m;
+        while ((m = objRegex.exec(this.latin1)) !== null) {
+          const num = parseInt(m[1], 10);
+          const start = m.index + m[0].length;
+          const end = this.latin1.indexOf('endobj', start);
+          if (end !== -1) {
+            this.objects.set(num, { num, raw: this.latin1.slice(start, end), byteStart: start, byteEnd: end });
+          }
+        }
+
+        const pages = [];
+        for (const [, obj] of this.objects) {
+          if (/\/Type\s*\/Page\b/.test(obj.raw) && !/\/Type\s*\/Pages\b/.test(obj.raw)) {
+            pages.push(obj);
+          }
+        }
+
+        const parsedPages = [];
+        for (let i = 0; i < pages.length; i++) {
+          const pObj = pages[i];
+          const mbMatch = pObj.raw.match(/\/(?:CropBox|MediaBox)\s*\[\s*([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s*\]/);
+          const mediaBox = mbMatch ? mbMatch.slice(1, 5).map(Number) : [0, 0, 612, 792];
+          const rotMatch = pObj.raw.match(/\/Rotate\s+(-?\d+)/);
+          const rotation = rotMatch ? parseInt(rotMatch[1], 10) : 0;
+          const resources = await this.parseResources(pObj.raw);
+
+          const cRefs = [];
+          const arrM = pObj.raw.match(/\/Contents\s*\[([\s\S]*?)\]/);
+          if (arrM) (arrM[1].match(/\d+\s+\d+\s+R/g) || []).forEach(r => cRefs.push(this.getObj(r)));
+          else {
+            const sM = pObj.raw.match(/\/Contents\s+(\d+\s+\d+\s+R)/);
+            if (sM) cRefs.push(this.getObj(sM[1]));
+          }
+
+          let streamText = '';
+          for (const c of cRefs) {
+            const d = await this.getStreamBytes(c);
+            if (d) streamText += '\n' + new TextDecoder('latin1').decode(d);
+          }
+
+          const out = { textItems: [], lines: [] };
+          await this.interpretStream(streamText, resources, mediaBox, [1, 0, 0, 1, 0, 0], out, 0);
+          parsedPages.push({
+            pageNumber: i + 1,
+            mediaBox,
+            rotation,
+            width: mediaBox[2] - mediaBox[0],
+            height: mediaBox[3] - mediaBox[1],
+            ...out
+          });
+        }
+        return parsedPages;
+      }
+
+      getObj(ref) {
+        const m = String(ref || '').match(/(\d+)\s+\d+\s+R/);
+        return m ? this.objects.get(parseInt(m[1], 10)) || null : null;
+      }
+
+      async getStreamBytes(obj) {
+        if (!obj) return null;
+        const sPos = obj.raw.indexOf('stream');
+        if (sPos === -1) return null;
+        let dStart = obj.byteStart + sPos + 6;
+        if (this.bytes[dStart] === 0x0d && this.bytes[dStart + 1] === 0x0a) dStart += 2;
+        else if (this.bytes[dStart] === 0x0a || this.bytes[dStart] === 0x0d) dStart += 1;
+
+        const ePos = obj.raw.indexOf('endstream', sPos);
+        if (ePos === -1) return null;
+        let dEnd = obj.byteStart + ePos;
+        if (this.bytes[dEnd - 1] === 0x0a) dEnd--;
+        if (this.bytes[dEnd - 1] === 0x0d) dEnd--;
+
+        let slice = this.bytes.slice(dStart, Math.max(dStart, dEnd));
+        const dict = obj.raw.slice(0, sPos);
+
+        if (/\/ASCIIHexDecode\b/.test(dict)) {
+          const hex = new TextDecoder('latin1').decode(slice).replace(/[^0-9A-Fa-f]/g, '');
+          const out = new Uint8Array(Math.floor(hex.length / 2));
+          for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+          slice = out;
+        }
+        if (/\/FlateDecode\b/.test(dict)) {
+          for (const fmt of ['deflate', 'deflate-raw']) {
+            try {
+              const ds = new DecompressionStream(fmt);
+              const w = ds.writable.getWriter();
+              w.write(slice);
+              w.close();
+              const r = ds.readable.getReader();
+              const chunks = [];
+              let len = 0;
+              while (true) {
+                const { done, value } = await r.read();
+                if (done) break;
+                chunks.push(value);
+                len += value.length;
+              }
+              const res = new Uint8Array(len);
+              let off = 0;
+              for (const c of chunks) { res.set(c, off); off += c.length; }
+              return res;
+            } catch (e) {}
+          }
+        }
+        return slice;
+      }
+
+      async parseResources(raw) {
+        const fontMaps = new Map();
+        const xobjects = new Map();
+        let resStr = raw;
+        const rRef = raw.match(/\/Resources\s+(\d+\s+\d+\s+R)/);
+        if (rRef) {
+          const rObj = this.getObj(rRef[1]);
+          if (rObj) resStr += '\n' + rObj.raw;
+        }
+
+        let fStr = '';
+        const fIn = resStr.match(/\/Font\s*<<([\s\S]*?)>>/);
+        if (fIn) fStr += fIn[1];
+        const fRef = resStr.match(/\/Font\s+(\d+\s+\d+\s+R)/);
+        if (fRef) { const fo = this.getObj(fRef[1]); if (fo) fStr += '\n' + fo.raw; }
+
+        const fReg = /\/([A-Za-z0-9_+.-]+)\s+(\d+\s+\d+\s+R)/g;
+        let fm;
+        while ((fm = fReg.exec(fStr)) !== null) {
+          const fObj = this.getObj(fm[2]);
+          if (!fObj) continue;
+          const cmap = new Map();
+          const tu = fObj.raw.match(/\/ToUnicode\s+(\d+\s+\d+\s+R)/);
+          if (tu) {
+            const cBytes = await this.getStreamBytes(this.getObj(tu[1]));
+            if (cBytes) this.parseCMap(new TextDecoder('latin1').decode(cBytes), cmap);
+          }
+          fontMaps.set(fm[1], cmap);
+        }
+
+        let xStr = '';
+        const xIn = resStr.match(/\/XObject\s*<<([\s\S]*?)>>/);
+        if (xIn) xStr += xIn[1];
+        const xRef = resStr.match(/\/XObject\s+(\d+\s+\d+\s+R)/);
+        if (xRef) { const xo = this.getObj(xRef[1]); if (xo) xStr += '\n' + xo.raw; }
+
+        const xReg = /\/([A-Za-z0-9_+.-]+)\s+(\d+\s+\d+\s+R)/g;
+        let xm;
+        while ((xm = xReg.exec(xStr)) !== null) {
+          const xo = this.getObj(xm[2]);
+          if (xo) xobjects.set(xm[1], xo);
+        }
+        return { fontMaps, xobjects };
+      }
+
+      parseCMap(str, cmap) {
+        (str.match(/beginbfchar([\s\S]*?)endbfchar/g) || []).forEach(b => {
+          const reg = /<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/g;
+          let m;
+          while ((m = reg.exec(b)) !== null) {
+            cmap.set(parseInt(m[1], 16), this.hexUtf16(m[2]));
+          }
+        });
+        (str.match(/beginbfrange([\s\S]*?)endbfrange/g) || []).forEach(b => {
+          const reg = /<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*(?:<([0-9A-Fa-f]+)>|\[([^\]]+)\])/g;
+          let m;
+          while ((m = reg.exec(b)) !== null) {
+            const s = parseInt(m[1], 16), e = parseInt(m[2], 16);
+            if (m[3]) {
+              let d = parseInt(m[3], 16);
+              for (let c = s; c <= e; c++, d++) cmap.set(c, String.fromCodePoint(d));
+            } else if (m[4]) {
+              (m[4].match(/<([0-9A-Fa-f]+)>/g) || []).forEach((h, idx) => {
+                cmap.set(s + idx, this.hexUtf16(h.replace(/[<>]/g, '')));
+              });
+            }
+          }
+        });
+      }
+
+      hexUtf16(hex) {
+        let out = '';
+        for (let i = 0; i < hex.length; i += 4) out += String.fromCharCode(parseInt(hex.slice(i, i + 4), 16));
+        return out;
+      }
+
+      async interpretStream(stream, resources, mediaBox, initCtm, out, depth) {
+        if (depth > 6) return;
+        let ctm = [...initCtm];
+        const stack = [];
+        let tm = [1, 0, 0, 1, 0, 0], tlm = [1, 0, 0, 1, 0, 0];
+        let fontSize = 10, curFont = null, leading = 0;
+        let curPt = null;
+
+        const mul = (a, b) => [
+          a[0] * b[0] + a[1] * b[2], a[0] * b[1] + a[1] * b[3],
+          a[2] * b[0] + a[3] * b[2], a[2] * b[1] + a[3] * b[3],
+          a[4] * b[0] + a[5] * b[2] + b[4], a[4] * b[1] + a[5] * b[3] + b[5]
+        ];
+        const pt = (x, y, m) => ({ x: x * m[0] + y * m[2] + m[4], y: x * m[1] + y * m[3] + m[5] });
+
+        const decStr = (tok) => {
+          const cmap = curFont ? resources.fontMaps.get(curFont) : null;
+          if (tok.startsWith('<') && tok.endsWith('>')) {
+            const hex = tok.slice(1, -1).replace(/\s+/g, '');
+            const step = cmap && cmap.size > 0 ? 4 : 2;
+            let s = '';
+            for (let i = 0; i < hex.length; i += step) {
+              const code = parseInt(hex.slice(i, i + step), 16);
+              s += (cmap && cmap.has(code)) ? cmap.get(code) : (code >= 32 ? String.fromCharCode(code) : '');
+            }
+            return s;
+          }
+          if (tok.startsWith('(') && tok.endsWith(')')) {
+            const inn = tok.slice(1, -1);
+            let s = '';
+            for (let i = 0; i < inn.length; i++) {
+              let ch = inn[i];
+              if (ch === '\\' && i + 1 < inn.length) {
+                const nx = inn[++i];
+                if (nx === 'n') ch = '\n';
+                else if (nx === 'r') ch = '\r';
+                else if (nx === 't') ch = '\t';
+                else if (/[0-7]/.test(nx)) {
+                  let oct = nx;
+                  while (oct.length < 3 && i + 1 < inn.length && /[0-7]/.test(inn[i + 1])) oct += inn[++i];
+                  ch = String.fromCharCode(parseInt(oct, 8));
+                } else ch = nx;
+              }
+              const code = ch.charCodeAt(0);
+              s += (cmap && cmap.has(code)) ? cmap.get(code) : ch;
+            }
+            return s;
+          }
+          return '';
+        };
+
+        const emit = (s) => {
+          const clean = s.replace(/\u0000/g, '').trim();
+          if (!clean) return;
+          const m = mul(tm, ctm);
+          const p = pt(0, 0, m);
+          const eff = Math.max(4, Math.hypot(m[0], m[1]) * fontSize || fontSize);
+          const w = clean.length * eff * 0.52;
+          out.textItems.push({ text: clean, x: p.x, y: mediaBox[3] - p.y, width: w, height: eff });
+          tm[4] += w;
+        };
+
+        const tokens = this.tokenize(stream);
+        const ops = [];
+        for (const t of tokens) {
+          if (t.type !== 'op') { ops.push(t.val); continue; }
+          switch (t.val) {
+            case 'q': stack.push([...ctm]); break;
+            case 'Q': if (stack.length) ctm = stack.pop(); break;
+            case 'cm': if (ops.length >= 6) ctm = mul(ops.slice(-6).map(Number), ctm); break;
+            case 'BT': tm = [1, 0, 0, 1, 0, 0]; tlm = [1, 0, 0, 1, 0, 0]; break;
+            case 'Tf':
+              if (ops.length >= 2) {
+                curFont = String(ops[ops.length - 2]).replace(/^\//, '');
+                fontSize = Math.abs(Number(ops[ops.length - 1])) || 10;
+              }
+              break;
+            case 'TL': if (ops.length >= 1) leading = Number(ops[ops.length - 1]) || 0; break;
+            case 'Td':
+              if (ops.length >= 2) {
+                tlm = mul([1, 0, 0, 1, Number(ops[ops.length - 2]) || 0, Number(ops[ops.length - 1]) || 0], tlm);
+                tm = [...tlm];
+              }
+              break;
+            case 'TD':
+              if (ops.length >= 2) {
+                const ty = Number(ops[ops.length - 1]) || 0;
+                leading = -ty;
+                tlm = mul([1, 0, 0, 1, Number(ops[ops.length - 2]) || 0, ty], tlm);
+                tm = [...tlm];
+              }
+              break;
+            case 'Tm':
+              if (ops.length >= 6) { tm = ops.slice(-6).map(Number); tlm = [...tm]; }
+              break;
+            case 'T*':
+              tlm = mul([1, 0, 0, 1, 0, -leading], tlm);
+              tm = [...tlm];
+              break;
+            case 'Tj': if (ops.length >= 1) emit(decStr(String(ops[ops.length - 1]))); break;
+            case 'TJ':
+              if (ops.length >= 1 && Array.isArray(ops[ops.length - 1])) {
+                let comb = '';
+                for (const it of ops[ops.length - 1]) {
+                  if (typeof it === 'string') comb += decStr(it);
+                  else if (typeof it === 'number' && it < -160) comb += ' ';
+                }
+                emit(comb);
+              }
+              break;
+            case 'm':
+              if (ops.length >= 2) {
+                const p = pt(Number(ops[ops.length - 2]), Number(ops[ops.length - 1]), ctm);
+                curPt = { x: p.x, y: mediaBox[3] - p.y };
+              }
+              break;
+            case 'l':
+              if (ops.length >= 2 && curPt) {
+                const p = pt(Number(ops[ops.length - 2]), Number(ops[ops.length - 1]), ctm);
+                const nx = { x: p.x, y: mediaBox[3] - p.y };
+                out.lines.push({ x1: curPt.x, y1: curPt.y, x2: nx.x, y2: nx.y });
+                curPt = nx;
+              }
+              break;
+            case 're':
+              if (ops.length >= 4) {
+                const [rx, ry, rw, rh] = ops.slice(-4).map(Number);
+                const p1 = pt(rx, ry, ctm), p2 = pt(rx + rw, ry + rh, ctm);
+                const x1 = Math.min(p1.x, p2.x), x2 = Math.max(p1.x, p2.x);
+                const y1 = Math.min(mediaBox[3] - p1.y, mediaBox[3] - p2.y), y2 = Math.max(mediaBox[3] - p1.y, mediaBox[3] - p2.y);
+                out.lines.push({ x1, y1, x2, y2: y1 }, { x1, y1: y2, x2, y2 }, { x1, y1, x2: x1, y2 }, { x1: x2, y1, x2, y2 });
+              }
+              break;
+            case 'Do':
+              if (ops.length >= 1) {
+                const xo = resources.xobjects.get(String(ops[ops.length - 1]).replace(/^\//, ''));
+                if (xo && /\/Subtype\s*\/Form\b/.test(xo.raw)) {
+                  const sBytes = await this.getStreamBytes(xo);
+                  if (sBytes) {
+                    await this.interpretStream(new TextDecoder('latin1').decode(sBytes), resources, mediaBox, ctm, out, depth + 1);
+                  }
+                }
+              }
+              break;
+          }
+          ops.length = 0;
+        }
+      }
+
+      tokenize(s) {
+        const tokens = [];
+        let i = 0, len = s.length;
+        const ws = c => c === ' ' || c === '\n' || c === '\r' || c === '\t' || c === '\f' || c === '\0';
+        const dl = c => ws(c) || c === '(' || c === ')' || c === '<' || c === '>' || c === '[' || c === ']' || c === '/' || c === '%';
+        while (i < len) {
+          const c = s[i];
+          if (ws(c)) { i++; continue; }
+          if (c === '%') { while (i < len && s[i] !== '\n' && s[i] !== '\r') i++; continue; }
+          if (c === '(') {
+            let d = 1, st = i++;
+            while (i < len && d > 0) { if (s[i] === '\\') { i += 2; continue; } if (s[i] === '(') d++; else if (s[i] === ')') d--; i++; }
+            tokens.push({ type: 'val', val: s.slice(st, i) }); continue;
+          }
+          if (c === '<' && s[i + 1] !== '<') {
+            let st = i++;
+            while (i < len && s[i] !== '>') i++;
+            tokens.push({ type: 'val', val: s.slice(st, ++i) }); continue;
+          }
+          if (c === '[') {
+            i++; const arr = [];
+            while (i < len && s[i] !== ']') {
+              if (ws(s[i])) { i++; continue; }
+              if (s[i] === '(') {
+                let d = 1, st = i++;
+                while (i < len && d > 0) { if (s[i] === '\\') { i += 2; continue; } if (s[i] === '(') d++; else if (s[i] === ')') d--; i++; }
+                arr.push(s.slice(st, i));
+              } else if (s[i] === '<') {
+                let st = i++; while (i < len && s[i] !== '>') i++; arr.push(s.slice(st, ++i));
+              } else {
+                let st = i; while (i < len && !dl(s[i])) i++; const n = s.slice(st, i); if (n) arr.push(Number(n));
+              }
+            }
+            if (s[i] === ']') i++;
+            tokens.push({ type: 'val', val: arr }); continue;
+          }
+          if (c === '/') {
+            let st = i++; while (i < len && !dl(s[i])) i++;
+            tokens.push({ type: 'val', val: s.slice(st, i) }); continue;
+          }
+          let st = i; while (i < len && !dl(s[i])) i++;
+          const w = s.slice(st, i);
+          if (!w) { i++; continue; }
+          tokens.push(/^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(w) ? { type: 'val', val: Number(w) } : { type: 'op', val: w });
+        }
+        return tokens;
+      }
+    }
+
+    /* =========================================================================
+       2. ATTENDANCE TABLE EXTRACTOR & INDIAN CENTRAL GOVT HOLIDAY / RULE ENGINE
+       ========================================================================= */
+    const INDIAN_CENTRAL_GOVT_HOLIDAYS = new Set([
+      '26-01', // Republic Day
+      '15-08', // Independence Day
+      '02-10', // Gandhi Jayanti
+      '25-12', // Christmas Day
+      '01-05'  // May Day / Labour Day
+    ]);
+
+    function parseAttendanceCell(rawText) {
+      if (!rawText || !rawText.trim()) {
+        return { isBlank: true, isAbs: false, rawText: '', inStr: '', outStr: '', bracketStr: '', inMins: null, outMins: null, bracketHrs: null };
+      }
+      const clean = rawText.trim();
+      if (/^abs$/i.test(clean)) {
+        return { isBlank: false, isAbs: true, rawText: 'abs', inStr: '', outStr: '', bracketStr: '', inMins: null, outMins: null, bracketHrs: 0 };
+      }
+
+      // Extract times (HH:MM or HH.MM) and bracketed total hours e.g. (7.37) or (8:03)
+      const lines = clean.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+      const bracketMatch = clean.match(/\(([\d.:]+)\)/);
+      const bracketStr = bracketMatch ? `(${bracketMatch[1]})` : '';
+      let bracketHrs = null;
+      if (bracketMatch) {
+        const bVal = bracketMatch[1].replace(':', '.');
+        const parts = bVal.split('.');
+        if (parts.length === 2) {
+          bracketHrs = parseInt(parts[0], 10) + parseInt(parts[1], 10) / 60;
+        } else {
+          bracketHrs = parseFloat(bVal);
+        }
+      }
+
+      // Find In-Time (1st time token) and Out-Time (2nd time token)
+      const timeTokens = [];
+      for (const ln of lines) {
+        if (ln.startsWith('(') && ln.endsWith(')')) continue;
+        const m = ln.match(/\b(\d{1,2})[:.](\d{2})\b/);
+        if (m) {
+          timeTokens.push(`${m[1].padStart(2, '0')}:${m[2]}`);
+        }
+      }
+
+      const inStr = timeTokens[0] || '';
+      const outStr = timeTokens[1] || '';
+      const toMins = (t) => {
+        if (!t) return null;
+        const [h, m] = t.split(':').map(Number);
+        return h * 60 + m;
+      };
+
+      return {
+        isBlank: false,
+        isAbs: false,
+        rawText: lines.join('\n'),
+        inStr,
+        outStr,
+        bracketStr,
+        inMins: toMins(inStr),
+        outMins: toMins(outStr),
+        bracketHrs
+      };
+    }
+
+    function evaluateCellRules(cell, dayInfo) {
+      // Rule 1: Blank cells (punching data loss) remain blank
+      if (cell.isBlank) {
+        return {
+          status: 'blank',
+          effInStr: '',
+          effWorkHrs: null,
+          creditedHrs: null,
+          ruleLabel: 'Blank (Data Loss — Left Blank)',
+          cssClass: 'cell-blank'
+        };
+      }
+
+      // Absent
+      if (cell.isAbs) {
+        return {
+          status: 'abs',
+          effInStr: '',
+          effWorkHrs: 0,
+          creditedHrs: 0,
+          ruleLabel: 'Absent (0h)',
+          cssClass: dayInfo.type === 'W' ? 'cell-weekend' : (dayInfo.type === 'H' ? 'cell-holiday' : '')
+        };
+      }
+
+      const is24Hr = !!dayInfo.is24Hr;
+      const isSpecialDay = dayInfo.type === 'W' || dayInfo.type === 'H';
+      const clampStartMins = 8 * 60 + 45; // 08:45 AM = 525 mins
+
+      // Effective In-Time: Regular working days clamp early punches before 08:45 AM to 08:45 AM
+      let effInMins = cell.inMins;
+      if (effInMins !== null && !isSpecialDay && !is24Hr && effInMins < clampStartMins) {
+        effInMins = clampStartMins;
+      }
+      const effInStr = effInMins !== null
+        ? `${String(Math.floor(effInMins / 60)).padStart(2, '0')}:${String(effInMins % 60).padStart(2, '0')}`
+        : cell.inStr;
+
+      // Effective Work Hours
+      let effWorkHrs = 0;
+      if (effInMins !== null && cell.outMins !== null) {
+        let diffMins = cell.outMins - effInMins;
+        if (diffMins < 0) diffMins += 24 * 60;
+        // Handle 24-hour continuous round-o-clock shift (e.g. 00:00 to 23:59 or 24-hr marked day)
+        if (is24Hr && diffMins >= 23 * 60) {
+          effWorkHrs = 24.0;
+        } else {
+          effWorkHrs = Math.round((diffMins / 60) * 100) / 100;
+        }
+      } else if (cell.bracketHrs !== null) {
+        effWorkHrs = cell.bracketHrs;
+      }
+
+      // Apply exact crediting & color rules
+      let creditedHrs = 0;
+      let ruleLabel = '';
+      let cssClass = '';
+
+      if (is24Hr && effWorkHrs >= 23.0) {
+        creditedHrs = 24;
+        ruleLabel = '24-Hr Round-O-Clock Duty → 24h';
+        cssClass = 'cell-24hr';
+      } else if (isSpecialDay) {
+        // Saturday, Sunday, or Indian Central Govt Special Holiday:
+        // >= 6.0h up to 8.0h -> 8h; above 8.0h -> 8.5h rounds to 9h, 9.5h to 10h, etc.
+        if (effWorkHrs >= 6.0 && effWorkHrs <= 8.0) {
+          creditedHrs = 8;
+          ruleLabel = `${dayInfo.type === 'H' ? 'Central Govt Holiday' : 'Sat/Sun'} (6–8h → 8h)`;
+        } else if (effWorkHrs > 8.0) {
+          creditedHrs = Math.floor(effWorkHrs + 0.5);
+          ruleLabel = `${dayInfo.type === 'H' ? 'Holiday' : 'Sat/Sun'} Overtime (≥.5 rounds up → ${creditedHrs}h)`;
+        } else {
+          creditedHrs = Math.floor(effWorkHrs + 0.5);
+          ruleLabel = `${dayInfo.type === 'H' ? 'Holiday' : 'Sat/Sun'} (<6h → ${creditedHrs}h)`;
+        }
+        cssClass = dayInfo.type === 'H' ? 'cell-holiday' : 'cell-weekend';
+      } else {
+        // Regular Working Day (R):
+        // >= 8.5h -> 9h, 9.5h -> 10h, etc.
+        // 7.5h to < 8.0h -> 8h (with distinct light blue highlight)
+        // < 7.5h (and > 0) -> 7h
+        if (effWorkHrs >= 8.0) {
+          creditedHrs = Math.floor(effWorkHrs + 0.5);
+          ruleLabel = effWorkHrs >= 8.5
+            ? `Regular Day (≥8.5h rounds up → ${creditedHrs}h)`
+            : 'Regular Day (Standard 8h)';
+          cssClass = '';
+        } else if (effWorkHrs >= 7.5) {
+          creditedHrs = 8;
+          ruleLabel = 'Regular Day (7.5h–7.99h → Credited 8h)';
+          cssClass = 'cell-grace75';
+        } else if (effWorkHrs > 0) {
+          creditedHrs = 7;
+          ruleLabel = 'Regular Day (<7.5h → Credited 7h)';
+          cssClass = 'cell-below75';
+        } else {
+          creditedHrs = 0;
+          ruleLabel = '0h';
+        }
+      }
+
+      return {
+        status: 'worked',
+        effInStr,
+        effWorkHrs,
+        creditedHrs,
+        ruleLabel,
+        cssClass
+      };
+    }
+
+    /* =========================================================================
+       3. APPLICATION STATE & DEMO DATASET
+       ========================================================================= */
+    const state = {
+      dates: [],      // [{ date: '01-08', dow: 'Sat', type: 'W'|'H'|'R', is24Hr: false }]
+      employees: [],  // [{ slNo, name, rate, passNo, category, division, cells: [] }]
+      boqItems: [
+        { slNo: 33, item: 'Checkout Hardware EID Preparation & wiring', qty2Yr: 640, unitRate: 5719, qtyUtilized: 17.51094 },
+        { slNo: 34, item: 'Software testing for CE/SDR/LVHM', qty2Yr: 568, unitRate: 4270, qtyUtilized: 0 },
+        { slNo: 35, item: 'Actuator testing and data analysis including Harness preparation and wiring', qty2Yr: 400, unitRate: 7027, qtyUtilized: 35 },
+        { slNo: 36, item: 'Calibration of checkout hardwares', qty2Yr: 400, unitRate: 4474, qtyUtilized: 18.194 },
+        { slNo: 37, item: 'PCB wiring and integration for checkout hardware', qty2Yr: 600, unitRate: 775, qtyUtilized: 18.896 }
+      ],
+      selectedEmpIdx: 0,
+      activeTab: 'individual'
+    };
+
+    function showToast(msg, type = 'info') {
+      const t = document.getElementById('toast');
+      const m = document.getElementById('toast-msg');
+      t.className = `status-toast show ${type}`;
+      m.textContent = msg;
+    }
+
+    /* =========================================================================
+       4. PDF ATTENDANCE EXTRACTOR (PARSES UPLOADED PDF INTO STRUCTURED STATE)
+       ========================================================================= */
+    async function extractAttendanceFromPdf(buffer) {
+      const parser = new OfflinePdfParser(buffer);
+      const pages = await parser.parse();
+      if (!pages.length) throw new Error('No readable pages found in PDF.');
+
+      // Combine text items across pages with normalized coordinates
+      const allText = [];
+      pages.forEach((p, pIdx) => {
+        const rot = ((p.rotation || 0) % 360 + 360) % 360;
+        p.textItems.forEach(it => {
+          let x = it.x, y = it.y;
+          if (rot === 90) { x = p.height - it.y; y = it.x; }
+          else if (rot === 270) { x = it.y; y = p.width - it.x; }
+          else if (rot === 180) { x = p.width - it.x; y = p.height - it.y; }
+          allText.push({ ...it, x, y: y + pIdx * 1000 });
+        });
+      });
+
+      if (!allText.length) {
+        throw new Error('This PDF contains no selectable text layer (it appears to be a scanned image PDF). Please upload a selectable-text PDF or use the Built-in Demo Dataset.');
+      }
+
+      // Extract Contract metadata if present
+      const fullStr = allText.map(t => t.text).join(' ');
+      const cIdM = fullStr.match(/Contract\s*ID:\s*([A-Z0-9]+)/i);
+      if (cIdM) document.getElementById('meta-contract').value = cIdM[1];
+      const staffM = fullStr.match(/Contact\s*Staff:\s*([A-Z\s]+?)(?=\s{2,}|Name|01-|$)/i);
+      if (staffM) document.getElementById('meta-contact').value = staffM[1].trim();
+
+      // Detect Date Headers matching DD-MM (e.g. 01-08, 02-08 ... 15-08)
+      const dateTokens = allText.filter(t => /^\d{2}-\d{2}$/.test(t.text.trim()));
+      dateTokens.sort((a, b) => a.x - b.x);
+      const colHeaders = [];
+      for (const dt of dateTokens) {
+        if (!colHeaders.some(c => Math.abs(c.x - dt.x) < 14)) {
+          // Look for day-of-week label directly below (e.g. (Sat), (Mon))
+          const dowTok = allText.find(t =>
+            Math.abs(t.x - dt.x) < 18 &&
+            t.y > dt.y && t.y - dt.y < 24 &&
+            /^\(?(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\)?$/i.test(t.text.trim())
+          );
+          const dowClean = dowTok ? dowTok.text.replace(/[()]/g, '').trim() : '';
+          colHeaders.push({ date: dt.text.trim(), dow: dowClean, x: dt.x, y: dt.y });
+        }
+      }
+
+      // Fallback if PDF uses 01..15 day headers
+      if (colHeaders.length < 5) {
+        throw new Error('Could not detect DD-MM date column headers in this PDF. Verify it is an attendance sheet PDF.');
+      }
+
+      const dates = colHeaders.map(ch => {
+        const isWknd = /^(Sat|Sun)$/i.test(ch.dow);
+        const isHol = INDIAN_CENTRAL_GOVT_HOLIDAYS.has(ch.date);
+        return {
+          date: ch.date,
+          dow: ch.dow || 'Day',
+          type: isHol ? 'H' : (isWknd ? 'W' : 'R'),
+          is24Hr: false
+        };
+      });
+
+      // Detect Employee Names to the left of the first date column
+      const firstDateX = colHeaders[0].x;
+      const nameCandidates = allText.filter(t =>
+        t.x < firstDateX - 25 &&
+        /^[A-Z][A-Z\s.]{2,}$/.test(t.text.trim()) &&
+        !/^(Name|Contract|Validity|Contact|ISRO|Total)/i.test(t.text.trim())
+      );
+      nameCandidates.sort((a, b) => a.y - b.y);
+
+      const empRows = [];
+      for (const nc of nameCandidates) {
+        if (!empRows.some(e => Math.abs(e.y - nc.y) < 18)) {
+          empRows.push({ name: nc.text.trim(), y: nc.y });
+        }
+      }
+
+      const employees = empRows.map((emp, idx) => {
+        const nextY = empRows[idx + 1] ? empRows[idx + 1].y - 10 : emp.y + 52;
+        const prevY = emp.y - 14;
+        const cells = colHeaders.map((ch, cIdx) => {
+          const leftBound = cIdx === 0 ? (firstDateX - 14) : ((colHeaders[cIdx - 1].x + ch.x) / 2);
+          const rightBound = cIdx === colHeaders.length - 1 ? (ch.x + 42) : ((ch.x + colHeaders[cIdx + 1].x) / 2);
+
+          const cellItems = allText
+            .filter(t => t.x >= leftBound && t.x < rightBound && t.y >= prevY && t.y < nextY)
+            .sort((a, b) => a.y - b.y);
+
+          const joined = cellItems.map(i => i.text.trim()).join('\n');
+          return parseAttendanceCell(joined);
+        });
+
+        return {
+          slNo: idx + 1,
+          name: emp.name,
+          rate: 1400,
+          passNo: `P${218900 + idx}VS`,
+          category: 'D',
+          division: document.getElementById('meta-division').value || 'CSCD',
+          cells
+        };
+      });
+
+      if (!employees.length) {
+        throw new Error('Detected date headers, but no employee rows were found.');
+      }
+
+      state.dates = dates;
+      state.employees = employees;
+      state.selectedEmpIdx = 0;
+      document.getElementById('meta-period').value = `${dates[0].date}.2026 to ${dates[dates.length - 1].date}.2026`;
+    }
+
+    /* =========================================================================
+       5. BUILT-IN 17-PERSONNEL DEMO DATASET (MATCHING YOUR ATTENDANCE PDF)
+       ========================================================================= */
+    function loadBuiltInDemoDataset() {
+      const rawDates = [
+        { date: '01-08', dow: 'Sat' }, { date: '02-08', dow: 'Sun' },
+        { date: '03-08', dow: 'Mon' }, { date: '04-08', dow: 'Tue' },
+        { date: '05-08', dow: 'Wed' }, { date: '06-08', dow: 'Thu' },
+        { date: '07-08', dow: 'Fri' }, { date: '08-08', dow: 'Sat' },
+        { date: '09-08', dow: 'Sun' }, { date: '10-08', dow: 'Mon' },
+        { date: '11-08', dow: 'Tue' }, { date: '12-08', dow: 'Wed' },
+        { date: '13-08', dow: 'Thu' }, { date: '14-08', dow: 'Fri' },
+        { date: '15-08', dow: 'Sat' }
+      ];
+
+      state.dates = rawDates.map(d => ({
+        date: d.date,
+        dow: d.dow,
+        type: INDIAN_CENTRAL_GOVT_HOLIDAYS.has(d.date) ? 'H' : (/^(Sat|Sun)$/.test(d.dow) ? 'W' : 'R'),
+        is24Hr: false
+      }));
+
+      const rawStaff = [
+        {
+          name: 'GAYATHRI J S', rate: 1400, passNo: 'P218924VS', category: 'D',
+          logs: ['', '', '09:29\n17:07\n(7.37)', '09:55\n17:03\n(7.08)', '09:13\n17:17\n(8.03)', '08:52\n17:06\n(8.14)', '09:32\n13:43\n(4.11)', '', '', '09:21\n17:23\n(8.02)', 'abs', 'abs', '08:28\n16:56\n(8.27)', '09:08\n17:09\n(8.00)', '09:07\n17:04\n(7.57)']
+        },
+        {
+          name: 'ABHAYAMBIKA S', rate: 1400, passNo: 'P201390VS', category: 'D',
+          logs: ['', '', '09:01\n16:55\n(7.54)', '08:50\n15:45\n(6.55)', 'abs', '09:03\n16:52\n(7.48)', '09:07\n17:15\n(8.08)', '', '', 'abs', 'abs', 'abs', '09:09\n16:56\n(7.46)', '09:12\n16:53\n(7.40)', 'abs']
+        },
+        {
+          name: 'SRAVYA B S', rate: 1400, passNo: 'P356680VS', category: 'D',
+          logs: ['', '', '10:01\n17:07\n(7.06)', 'abs', 'abs', 'abs', '08:43\n17:30\n(8.46)', '08:53\n14:37\n(5.44)', '', 'abs', 'abs', 'abs', 'abs', 'abs', '08:50\n17:07\n(8.16)']
+        },
+        {
+          name: 'SUJA S R', rate: 1625, passNo: 'P418801VS', category: 'D',
+          logs: ['', '', '09:28\n17:15\n(7.46)', '09:17\n15:00\n(5.43)', '09:07\n17:09\n(8.02)', '10:32\n17:32\n(6.59)', '09:46\n17:28\n(7.41)', '10:08\n16:08\n(6.00)', '', '10:04\n17:18\n(7.14)', 'abs', 'abs', '09:41\n15:51\n(6.10)', '09:12\n13:37\n(4.25)', '08:59\n17:20\n(8.20)']
+        },
+        {
+          name: 'VINEETHA VS', rate: 1400, passNo: 'P933566VS', category: 'D',
+          logs: ['', '', '09:09\n17:10\n(8.00)', '09:25\n13:30\n(4.04)', '09:07\n17:01\n(7.53)', '09:03\n16:53\n(7.50)', 'abs', '08:55\n14:56\n(6.01)', '', '08:59\n17:00\n(8.00)', 'abs', 'abs', '08:44\n16:46\n(8.02)', '08:41\n16:45\n(8.03)', '08:52\n16:58\n(8.05)']
+        },
+        {
+          name: 'SHAJEERA K', rate: 1105, passNo: 'P20260615VS311', category: 'I',
+          logs: ['', '', '09:22\n17:06\n(7.44)', 'abs', 'abs', 'abs', 'abs', '', '', '09:01\n14:38\n(5.37)', 'abs', 'abs', 'abs', 'abs', 'abs']
+        },
+        {
+          name: 'KRISHNAPRASAD K', rate: 1835, passNo: 'P490702VS', category: 'B',
+          logs: ['19:04\n23:59\n(4.55)', '00:00\n17:08\n(17.08)', 'abs', 'abs', 'abs', 'abs', 'abs', '', '', 'abs', 'abs', '08:11\n23:59\n(15.48)', '00:00\n17:03\n(17.03)', '07:07\n15:11\n(8.04)', '']
+        },
+        {
+          name: 'DEEPTHI S', rate: 1740, passNo: 'P752124VS', category: 'B',
+          logs: ['', '', '08:52\n17:04\n(8.12)', '08:42\n09:12\n(0.30)', 'abs', 'abs', '08:47\n17:06\n(8.19)', '', '', '08:53\n17:06\n(8.12)', '08:51\n17:08\n(8.17)', '08:41\n17:07\n(8.26)', '08:46\n17:07\n(8.21)', '08:51\n17:04\n(8.13)', '']
+        },
+        {
+          name: 'PREETHA KUMARI A', rate: 1740, passNo: 'P488790VS', category: 'B',
+          logs: ['', '', '09:50\n17:51\n(8.01)', '09:54\n18:44\n(8.49)', '09:44\n17:38\n(7.54)', '10:29\n18:25\n(7.57)', '09:40\n17:44\n(8.04)', '', '', '09:44\n17:52\n(8.08)', 'abs', '09:44\n17:38\n(7.53)', '09:26\n17:34\n(8.08)', '09:23\n17:28\n(8.04)', '']
+        },
+        {
+          name: 'SHEELA R', rate: 1570, passNo: 'P607698VS', category: 'D',
+          logs: ['', '', '08:47\n17:18\n(8.30)', '08:40\n17:23\n(8.43)', '08:43\n17:20\n(8.37)', '08:41\n13:01\n(4.19)', '08:41\n17:16\n(8.35)', '', '', '08:45\n14:25\n(5.40)', 'abs', 'abs', '08:46\n17:17\n(8.31)', '08:42\n17:18\n(8.35)', '']
+        },
+        {
+          name: 'SUJITH S', rate: 1835, passNo: 'P20260723VS137', category: 'B',
+          logs: ['', '', '10:11\n17:31\n(7.20)', '10:04\n17:43\n(7.38)', 'abs', '10:25\n17:35\n(7.09)', '09:57\n18:00\n(8.02)', '', '', '10:59\n15:27\n(4.28)', '12:13\n17:29\n(5.15)', 'abs', 'abs', '10:22\n17:59\n(7.37)', '']
+        },
+        {
+          name: 'SARAN AS', rate: 1400, passNo: 'P218940VS', category: 'D',
+          logs: ['', '', '08:52\n16:51\n(7.59)', '08:56\n16:57\n(8.01)', '08:41\n16:50\n(8.09)', 'abs', 'abs', '', '', '08:32\n17:00\n(8.28)', '08:45\n11:01\n(2.15)', '08:30\n16:50\n(8.20)', '08:35\n16:52\n(8.17)', '08:30\n17:02\n(8.31)', '']
+        },
+        {
+          name: 'SANTHOSHKUMAR S', rate: 1400, passNo: 'P218941VS', category: 'D',
+          logs: ['', '', '08:07\n16:50\n(8.43)', '08:01\n16:49\n(8.47)', '08:36\n16:46\n(8.09)', '08:13\n16:10\n(7.56)', 'abs', '', '', '08:15\n17:00\n(8.45)', '08:10\n16:46\n(8.35)', '08:07\n16:51\n(8.43)', '08:13\n16:53\n(8.39)', '08:09\n16:49\n(8.39)', '']
+        },
+        {
+          name: 'INDULEKHA C', rate: 1105, passNo: 'P218942VS', category: 'I',
+          logs: ['', '', '09:26\n17:27\n(8.00)', '09:12\n17:20\n(8.08)', '09:15\n17:19\n(8.03)', '09:09\n17:09\n(8.00)', '09:28\n17:30\n(8.02)', '', '', '09:11\n17:27\n(8.15)', '09:19\n17:25\n(8.05)', '09:17\n17:27\n(8.09)', '09:24\n17:27\n(8.03)', '09:15\n17:22\n(8.06)', '']
+        },
+        {
+          name: 'AJITHA R', rate: 1400, passNo: 'P218943VS', category: 'D',
+          logs: ['', '', '09:52\n17:53\n(8.01)', '09:56\n18:44\n(8.47)', '09:40\n16:14\n(6.34)', '09:47\n17:48\n(8.01)', '09:29\n17:30\n(8.00)', '', '', '10:58\n17:52\n(6.53)', 'abs', 'abs', '09:31\n17:34\n(8.02)', '09:18\n17:28\n(8.09)', '']
+        },
+        {
+          name: 'ARUNA ANAND', rate: 1400, passNo: 'P218944VS', category: 'D',
+          logs: ['', '', '09:11\n17:19\n(8.07)', '08:35\n17:12\n(8.36)', '08:57\n17:23\n(8.25)', '08:51\n17:04\n(8.12)', '08:50\n17:23\n(8.32)', '', '', '09:01\n17:03\n(8.02)', '08:46\n17:00\n(8.14)', 'abs', '08:58\n17:01\n(8.03)', '08:56\n17:02\n(8.06)', '']
+        },
+        {
+          name: 'STEFI V T', rate: 1105, passNo: 'P218945VS', category: 'I',
+          logs: ['', '', '08:22\n16:37\n(8.14)', '08:46\n17:12\n(8.25)', '08:51\n16:57\n(8.06)', '09:26\n17:32\n(8.06)', '09:14\n17:26\n(8.12)', '', '', '08:57\n17:06\n(8.09)', '08:39\n16:53\n(8.14)', '09:11\n17:26\n(8.15)', '09:14\n17:21\n(8.06)', '09:06\n17:22\n(8.15)', '']
+        }
+      ];
+
+      state.employees = rawStaff.map((st, idx) => ({
+        slNo: idx + 1,
+        name: st.name,
+        rate: st.rate,
+        passNo: st.passNo,
+        category: st.category,
+        division: 'CSCD',
+        cells: st.logs.map(raw => parseAttendanceCell(raw))
+      }));
+
+      state.selectedEmpIdx = 0;
+      document.getElementById('meta-contract').value = 'GC154696VS';
+      document.getElementById('meta-contractor').value = 'ISRO APPRENTICESHIP HOLDERS SOCIETY';
+      document.getElementById('meta-period').value = '01.08.2026 to 15.08.2026';
+      document.getElementById('meta-month').value = 'AUGUST 2026';
+      document.getElementById('meta-division').value = 'CSCD';
+      document.getElementById('meta-contact').value = 'PERUMAL A E';
+      document.getElementById('file-info').textContent = '✓ Loaded 17 Personnel Attendance Records (01-08 to 15-08)';
+      document.getElementById('file-info').classList.remove('hidden');
+      document.getElementById('parsed-badge').textContent = '17 Staff Loaded';
+    }
+
+    /* =========================================================================
+       6. UI RENDERING & INTERACTIVE RECALCULATION
+       ========================================================================= */
+    function computeEmployeeSummary(emp) {
+      let daysWorked = 0;
+      let totalCredited = 0;
+      const evaluated = emp.cells.map((cell, idx) => {
+        const res = evaluateCellRules(cell, state.dates[idx]);
+        if (res.creditedHrs !== null && res.creditedHrs > 0) {
+          daysWorked++;
+          totalCredited += res.creditedHrs;
+        }
+        return res;
+      });
+      const baseHrs = daysWorked * 8;
+      const extraHrs = Math.max(0, totalCredited - baseHrs);
+      const payableDays = totalCredited / 8;
+      const totalCost = Math.round(emp.rate * payableDays * 100) / 100;
+      return { evaluated, daysWorked, baseHrs, extraHrs, totalCredited, payableDays, totalCost };
+    }
+
+    function refreshAllViews() {
+      const hasData = state.employees.length > 0 && state.dates.length > 0;
+      document.getElementById('btn-export-xlsx').disabled = !hasData;
+      document.getElementById('emp-select').disabled = !hasData;
+      document.getElementById('btn-prev-emp').disabled = !hasData;
+      document.getElementById('btn-next-emp').disabled = !hasData;
+
+      if (!hasData) return;
+
+      renderCalendarStrip();
+      renderEmployeeSelector();
+      renderIndividualView();
+      renderPage1MasterView();
+      renderPage2MatrixView();
+      renderPage3SalaryBillView();
+    }
+
+    function renderCalendarStrip() {
+      const strip = document.getElementById('calendar-strip');
+      strip.innerHTML = '';
+      state.dates.forEach((d, idx) => {
+        const card = document.createElement('div');
+        card.className = `cal-day-card type-${d.type} ${d.is24Hr ? 'is-24h' : ''}`;
+        card.innerHTML = `
+          <div class="cal-date">${d.date}</div>
+          <div class="cal-dow">${d.dow} • ${d.type === 'H' ? 'Govt Hol' : (d.type === 'W' ? 'Sat/Sun' : 'Regular')}</div>
+          <div class="cal-btn-row">
+            <button class="mini-pill ${d.type === 'R' ? 'active-R' : ''}" data-t="R" title="Regular Working Day">R</button>
+            <button class="mini-pill ${d.type === 'W' ? 'active-W' : ''}" data-t="W" title="Saturday / Sunday">W</button>
+            <button class="mini-pill ${d.type === 'H' ? 'active-H' : ''}" data-t="H" title="Indian Central Govt Special Holiday">H</button>
+            <button class="mini-pill ${d.is24Hr ? 'active-24' : ''}" data-t="24" title="Mark 24-Hour Round-O-Clock Duty Day">24h</button>
+          </div>
+        `;
+        card.querySelectorAll('button').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const action = btn.getAttribute('data-t');
+            if (action === '24') {
+              state.dates[idx].is24Hr = !state.dates[idx].is24Hr;
+            } else {
+              state.dates[idx].type = action;
+            }
+            refreshAllViews();
+          });
+        });
+        strip.appendChild(card);
+      });
+    }
+
+    function renderEmployeeSelector() {
+      const sel = document.getElementById('emp-select');
+      sel.innerHTML = '';
+      state.employees.forEach((emp, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = `${emp.slNo}. ${emp.name}`;
+        if (idx === state.selectedEmpIdx) opt.selected = true;
+        sel.appendChild(opt);
+      });
+
+      const cur = state.employees[state.selectedEmpIdx];
+      const qe = document.getElementById('emp-quick-edit');
+      if (cur) {
+        qe.classList.remove('hidden');
+        document.getElementById('ind-rate').value = cur.rate;
+        document.getElementById('ind-pass').value = cur.passNo;
+        document.getElementById('ind-cat').value = cur.category;
+      }
+    }
+
+    function renderIndividualView() {
+      const emp = state.employees[state.selectedEmpIdx];
+      if (!emp) return;
+      const sum = computeEmployeeSummary(emp);
+
+      document.getElementById('kpi-days').textContent = sum.daysWorked;
+      document.getElementById('kpi-base').textContent = `${sum.baseHrs} hrs`;
+      document.getElementById('kpi-extra').textContent = `${sum.extraHrs} hrs`;
+      document.getElementById('kpi-total').textContent = `${sum.totalCredited} hrs`;
+      document.getElementById('kpi-paydays').textContent = sum.payableDays.toFixed(3);
+      document.getElementById('kpi-salary').textContent = `₹${sum.totalCost.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+      const tbody = document.querySelector('#ind-table tbody');
+      tbody.innerHTML = '';
+      state.dates.forEach((d, idx) => {
+        const cell = emp.cells[idx];
+        const ev = sum.evaluated[idx];
+        const tr = document.createElement('tr');
+        tr.className = ev.cssClass;
+        tr.innerHTML = `
+          <td class="bold">${d.date}</td>
+          <td>${d.dow}</td>
+          <td class="bold">${d.type === 'H' ? '🇮🇳 Holiday (H)' : (d.type === 'W' ? 'Sat/Sun (W)' : 'Regular (R)')}</td>
+          <td class="bold">${d.is24Hr ? '24-Hr Duty' : '—'}</td>
+          <td style="white-space:pre-line;font-family:monospace;font-size:11.5px;">${cell.isBlank ? '(blank)' : cell.rawText}</td>
+          <td>${cell.inStr || '—'}</td>
+          <td class="bold">${ev.effInStr || '—'}</td>
+          <td>${cell.outStr || '—'}</td>
+          <td>${ev.effWorkHrs !== null ? ev.effWorkHrs.toFixed(2) + ' h' : '—'}</td>
+          <td class="left" style="font-size:11.5px;">${ev.ruleLabel}</td>
+          <td class="bold" style="font-size:13.5px;">${ev.creditedHrs !== null ? ev.creditedHrs : ''}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderPage1MasterView() {
+      const wrap = document.getElementById('page1-wrap');
+      let html = `<table class="data-grid"><thead><tr>
+        <th>Sl</th><th>Employee Name</th><th>Parameter</th>`;
+      state.dates.forEach(d => {
+        html += `<th>${d.date}<br><span style="font-weight:400;font-size:10px;">${d.dow} (${d.type}${d.is24Hr ? '+24h' : ''})</span></th>`;
+      });
+      html += `<th>Days</th><th>Base Hrs</th><th>Extra Hrs</th><th>Total Credited</th></tr></thead><tbody>`;
+
+      state.employees.forEach(emp => {
+        const sum = computeEmployeeSummary(emp);
+        const labels = [
+          '1. Raw PDF Cell',
+          '2. Raw In Time',
+          '3. Effective In (≥08:45)',
+          '4. Out Time',
+          '5. Effective Work Hrs',
+          '6. Credited Hours (Rule)'
+        ];
+        labels.forEach((lbl, rIdx) => {
+          html += `<tr>`;
+          if (rIdx === 0) {
+            html += `<td rowspan="6" class="bold">${emp.slNo}</td>`;
+            html += `<td rowspan="6" class="left bold">${emp.name}</td>`;
+          }
+          html += `<td class="left" style="font-size:11.5px;font-weight:${rIdx === 5 ? '700' : '500'};">${lbl}</td>`;
+
+          state.dates.forEach((d, cIdx) => {
+            const cell = emp.cells[cIdx];
+            const ev = sum.evaluated[cIdx];
+            let val = '';
+            if (rIdx === 0) val = cell.isBlank ? '' : cell.rawText.replace(/\n/g, ' / ');
+            else if (rIdx === 1) val = cell.inStr;
+            else if (rIdx === 2) val = ev.effInStr;
+            else if (rIdx === 3) val = cell.outStr;
+            else if (rIdx === 4) val = ev.effWorkHrs !== null ? ev.effWorkHrs.toFixed(2) : '';
+            else if (rIdx === 5) val = ev.creditedHrs !== null ? ev.creditedHrs : '';
+
+            const cls = rIdx === 5 ? `${ev.cssClass} bold` : (cell.isBlank ? 'cell-blank' : (d.type === 'W' ? 'cell-weekend' : (d.type === 'H' ? 'cell-holiday' : '')));
+            html += `<td class="${cls}" style="font-size:11.5px;">${val}</td>`;
+          });
+
+          if (rIdx === 0) {
+            html += `<td rowspan="6" class="bold">${sum.daysWorked}</td>`;
+            html += `<td rowspan="6">${sum.baseHrs}</td>`;
+            html += `<td rowspan="6" class="bold" style="color:#2563eb;">${sum.extraHrs}</td>`;
+            html += `<td rowspan="6" class="cell-total">${sum.totalCredited}</td>`;
+          }
+          html += `</tr>`;
+        });
+      });
+
+      html += `</tbody></table>`;
+      wrap.innerHTML = html;
+    }
+
+    function renderPage2MatrixView() {
+      const wrap = document.getElementById('page2-wrap');
+      const monthTitle = document.getElementById('meta-month').value || 'AUGUST 2026';
+      let html = `<table class="data-grid"><thead>
+        <tr>
+          <th rowspan="2">SL. NO</th>
+          <th rowspan="2">Name of Service Personnel (Shri/Smt)</th>
+          <th colspan="${state.dates.length}">${monthTitle}</th>
+          <th rowspan="2">Extra Hours</th>
+          <th rowspan="2">Total Hour</th>
+        </tr>
+        <tr>`;
+      state.dates.forEach(d => {
+        html += `<th>${d.date.split('-')[0]}<br><span style="font-size:10px;font-weight:400;">${d.dow}</span></th>`;
+      });
+      html += `</tr></thead><tbody>`;
+
+      let grandExtra = 0;
+      let grandTotal = 0;
+      state.employees.forEach(emp => {
+        const sum = computeEmployeeSummary(emp);
+        grandExtra += sum.extraHrs;
+        grandTotal += sum.totalCredited;
+
+        html += `<tr><td class="bold">${emp.slNo}</td><td class="left bold">${emp.name}</td>`;
+        state.dates.forEach((d, idx) => {
+          const ev = sum.evaluated[idx];
+          const val = ev.creditedHrs !== null ? ev.creditedHrs : 0;
+          const cls = d.type === 'H' ? 'cell-holiday' : (d.type === 'W' ? 'cell-weekend' : (ev.cssClass === 'cell-grace75' ? 'cell-grace75' : ''));
+          html += `<td class="${cls}">${val}</td>`;
+        });
+        html += `<td class="bold" style="color:#2563eb;">${sum.extraHrs}</td>`;
+        html += `<td class="cell-total">${sum.totalCredited}</td></tr>`;
+      });
+
+      html += `<tr class="cell-total"><td colspan="${2 + state.dates.length}" class="right bold">TOTAL HOURS:</td><td class="bold">${grandExtra}</td><td class="bold">${grandTotal}</td></tr>`;
+      html += `</tbody></table>`;
+      wrap.innerHTML = html;
+    }
+
+    function renderPage3SalaryBillView() {
+      const wrap = document.getElementById('page3-wrap');
+      const period = document.getElementById('meta-period').value || '01.08.2026 to 15.08.2026';
+      const division = document.getElementById('meta-division').value || 'CSCD';
+
+      // Top Table: BOQ Utilization
+      let boqHtml = `<div class="table-wrap"><table class="data-grid">
+        <thead>
+          <tr><th colspan="8" style="font-size:14px;">${division} GOCO Bill - ${period}</th></tr>
+          <tr>
+            <th>Sl No.</th>
+            <th>Item</th>
+            <th>Qty for 2 years</th>
+            <th>Unit Rate in Rs</th>
+            <th>Rate for 2 Years</th>
+            <th>Qty utilized (${period})</th>
+            <th>Rate for ${period}</th>
+            <th>Division</th>
+          </tr>
+        </thead><tbody>`;
+
+      let totQty2 = 0, totUnit = 0, totRate2 = 0, totQtyUt = 0, totRatePeriod = 0;
+      state.boqItems.forEach((b, idx) => {
+        const rate2Yr = b.qty2Yr * b.unitRate;
+        const ratePeriod = Math.round(b.unitRate * b.qtyUtilized * 10000) / 10000;
+        totQty2 += b.qty2Yr;
+        totUnit += b.unitRate;
+        totRate2 += rate2Yr;
+        totQtyUt += b.qtyUtilized;
+        totRatePeriod += ratePeriod;
+
+        boqHtml += `<tr>
+          <td>${b.slNo}</td>
+          <td class="left">${b.item}</td>
+          <td>${b.qty2Yr}</td>
+          <td>${b.unitRate}</td>
+          <td>${rate2Yr.toLocaleString('en-IN')}</td>
+          <td><input type="number" step="0.001" class="inline-edit" value="${b.qtyUtilized}" data-boq-idx="${idx}" /></td>
+          <td class="right bold">${ratePeriod.toFixed(4)}</td>
+          ${idx === 0 ? `<td rowspan="${state.boqItems.length}" class="bold">${division}</td>` : ''}
+        </tr>`;
+      });
+
+      boqHtml += `<tr class="cell-total">
+        <td colspan="2" class="bold">Total for Two Year</td>
+        <td class="bold">${totQty2}</td>
+        <td class="bold">${totUnit}</td>
+        <td class="bold">${totRate2.toLocaleString('en-IN')}</td>
+        <td class="bold">${totQtyUt.toFixed(5)}</td>
+        <td class="right bold">${totRatePeriod.toFixed(4)}</td>
+        <td></td>
+      </tr></tbody></table></div>`;
+
+      // Bottom Table: Personnel Salary Bill
+      let staffHtml = `<div class="table-wrap"><table class="data-grid">
+        <thead>
+          <tr>
+            <th>SL No:</th>
+            <th>Name</th>
+            <th>Rate (₹/Day)</th>
+            <th>Days (Hrs ÷ 8)</th>
+            <th>Pass No.</th>
+            <th>Category</th>
+            <th>Division</th>
+            <th>Total Cost (₹)</th>
+          </tr>
+        </thead><tbody>`;
+
+      let grandBillCost = 0;
+      state.employees.forEach((emp, idx) => {
+        const sum = computeEmployeeSummary(emp);
+        grandBillCost += sum.totalCost;
+        staffHtml += `<tr>
+          <td class="bold">${emp.slNo}</td>
+          <td class="left bold">${emp.name}</td>
+          <td><input type="number" class="inline-edit" value="${emp.rate}" data-emp-field="rate" data-emp-idx="${idx}" /></td>
+          <td class="bold">${sum.payableDays.toFixed(3)}</td>
+          <td><input type="text" class="inline-edit" value="${emp.passNo}" data-emp-field="passNo" data-emp-idx="${idx}" /></td>
+          <td><input type="text" class="inline-edit" style="min-width:44px;" value="${emp.category}" data-emp-field="category" data-emp-idx="${idx}" /></td>
+          <td>${division}</td>
+          <td class="right bold">${sum.totalCost.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        </tr>`;
+      });
+
+      staffHtml += `<tr class="cell-total">
+        <td colspan="7" class="bold">Total:</td>
+        <td class="right bold">₹${grandBillCost.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+      </tr></tbody></table></div>`;
+
+      wrap.innerHTML = boqHtml + staffHtml;
+
+      // Bind live edits on BOQ and Personnel Salary Bill
+      wrap.querySelectorAll('input[data-boq-idx]').forEach(inp => {
+        inp.addEventListener('change', () => {
+          const i = parseInt(inp.getAttribute('data-boq-idx'), 10);
+          state.boqItems[i].qtyUtilized = parseFloat(inp.value) || 0;
+          renderPage3SalaryBillView();
+        });
+      });
+      wrap.querySelectorAll('input[data-emp-idx]').forEach(inp => {
+        inp.addEventListener('change', () => {
+          const i = parseInt(inp.getAttribute('data-emp-idx'), 10);
+          const field = inp.getAttribute('data-emp-field');
+          state.employees[i][field] = field === 'rate' ? (parseFloat(inp.value) || 0) : inp.value.trim();
+          refreshAllViews();
+        });
+      });
+    }
+
+    /* =========================================================================
+       7. NATIVE OPENXML (.XLSX) MULTI-SHEET GENERATOR WITH LIVE FORMULAS & MERGES
+       Generates Page 1 (Attendance & Rules), Page 2 (Daily Matrix), & Page 3 (Salary Bill)
+       ========================================================================= */
+    class GocoExcelWorkbookBuilder {
+      static colLet(idx) {
+        let s = '', n = idx + 1;
+        while (n > 0) {
+          const r = (n - 1) % 26;
+          s = String.fromCharCode(65 + r) + s;
+          n = Math.floor((n - 1) / 26);
+        }
+        return s;
+      }
+
+      static esc(s) {
+        return String(s ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&apos;');
+      }
+
+      static buildWorkbookBytes() {
+        const numDates = state.dates.length;
+        const numEmps = state.employees.length;
+        const division = document.getElementById('meta-division').value || 'CSCD';
+        const contractId = document.getElementById('meta-contract').value || 'GC154696VS';
+        const contractor = document.getElementById('meta-contractor').value || 'ISRO APPRENTICESHIP HOLDERS SOCIETY';
+        const period = document.getElementById('meta-period').value || '01.08.2026 to 15.08.2026';
+        const monthBanner = document.getElementById('meta-month').value || 'AUGUST 2026';
+
+        // Style IDs in xl/styles.xml:
+        // 0: default
+        // 1: thin border, left wrap
+        // 2: thin border, center wrap
+        // 3: thin border, bold center, navy header (#1E3A8A, white text)
+        // 4: thin border, bold center, slate subheader (#E2E8F0)
+        // 5: thin border, center, Weekend Gray (#D1D5DB)
+        // 6: thin border, center, Central Govt Holiday Gold (#FDE68A)
+        // 7: thin border, bold center, Grace 7.5-7.99h Light Blue (#DBEAFE)
+        // 8: thin border, bold center, Below 7.5h Soft Rose (#FEE2E2)
+        // 9: thin border, bold center, 24-Hr Marker / Duty Pink (#FCE7F3)
+        // 10: thin border, bold right/center, Total Emerald (#D1FAE5)
+        // 11: thin border, time format HH:MM, center
+        // 12: thin border, decimal 0.00, center
+        // 13: thin border, currency 0.00, right
+
+        // ---------------------------------------------------------------------
+        // SHEET 1: Page 1 - Attendance & Rules
+        // ---------------------------------------------------------------------
+        const s1Rows = [];
+        const s1Merges = [];
+        const lastColS1 = 3 + numDates + 3; // A=0(Sl), B=1(Name), C=2(Param), D..dates, then Days, Base, Extra, Total
+
+        // Row 1: Title Banner
+        const r1 = Array(lastColS1 + 1).fill({ v: '', s: 3 });
+        r1[0] = { v: `${contractor} (${contractId}) — Attendance & Salary Rules Master Sheet (${period})`, s: 3 };
+        s1Rows.push(r1);
+        s1Merges.push(`A1:${this.colLet(lastColS1)}1`);
+
+        // Row 2: Rules Note
+        const r2 = Array(lastColS1 + 1).fill({ v: '', s: 4 });
+        r2[0] = { v: 'Rules: Regular (R) In <08:45 clamped to 08:45; >=8.5h->9h+; 7.5–7.99h->8h (Blue); <7.5h->7h | Sat/Sun (W) & Central Govt Holiday (H): 6–8h->8h; >=8.5h->9h+ | Blanks preserved.', s: 4 };
+        s1Rows.push(r2);
+        s1Merges.push(`A2:${this.colLet(lastColS1)}2`);
+
+        // Row 3: Date Headers
+        const r3 = [
+          { v: 'Sl No.', s: 3 },
+          { v: 'Employee Name', s: 3 },
+          { v: 'Parameter', s: 3 }
+        ];
+        state.dates.forEach(d => r3.push({ v: d.date, s: 3 }));
+        r3.push({ v: 'Days Worked', s: 3 }, { v: 'Base Hrs (8h)', s: 3 }, { v: 'Extra Hrs (OT)', s: 3 }, { v: 'Total Credited Hours', s: 3 });
+        s1Rows.push(r3);
+
+        // Row 4: Day of Week
+        const r4 = [{ v: '', s: 4 }, { v: '', s: 4 }, { v: 'Day of Week', s: 4 }];
+        state.dates.forEach(d => r4.push({ v: d.dow, s: d.type === 'H' ? 6 : (d.type === 'W' ? 5 : 4) }));
+        r4.push({ v: '', s: 4 }, { v: '', s: 4 }, { v: '', s: 4 }, { v: '', s: 4 });
+        s1Rows.push(r4);
+
+        // Row 5: Calendar Day Type (R / W / H)
+        const r5 = [{ v: '', s: 4 }, { v: '', s: 4 }, { v: 'Calendar Day Type (R / W / H)', s: 4 }];
+        state.dates.forEach(d => r5.push({ v: d.type, s: d.type === 'H' ? 6 : (d.type === 'W' ? 5 : 2) }));
+        r5.push({ v: '', s: 4 }, { v: '', s: 4 }, { v: '', s: 4 }, { v: '', s: 4 });
+        s1Rows.push(r5);
+
+        // Row 6: 24-Hour Round-O-Clock Marker (Y / N)
+        const r6 = [{ v: '', s: 9 }, { v: '', s: 9 }, { v: '24-Hr Round-O-Clock Day (Y/N)', s: 9 }];
+        state.dates.forEach(d => r6.push({ v: d.is24Hr ? 'Y' : 'N', s: 9 }));
+        r6.push({ v: '', s: 9 }, { v: '', s: 9 }, { v: '', s: 9 }, { v: '', s: 9 });
+        s1Rows.push(r6);
+
+        // Merge A3:A6 and B3:B6
+        s1Merges.push('A3:A6', 'B3:B6');
+
+        // Employee 6-Row Blocks starting at Row 7 (1-based)
+        const empCreditedRowMap = []; // Stores 1-based Excel row index of each employee's "6. Credited Hours" row
+        const firstDateColLet = this.colLet(3);
+        const lastDateColLet = this.colLet(3 + numDates - 1);
+        const daysColLet = this.colLet(3 + numDates);
+        const baseColLet = this.colLet(3 + numDates + 1);
+        const extraColLet = this.colLet(3 + numDates + 2);
+        const totalColLet = this.colLet(3 + numDates + 3);
+
+        state.employees.forEach(emp => {
+          const startR = s1Rows.length + 1; // 1-based row index
+          const rRaw = startR;
+          const rIn = startR + 1;
+          const rEffIn = startR + 2;
+          const rOut = startR + 3;
+          const rWork = startR + 4;
+          const rCred = startR + 5;
+          empCreditedRowMap.push(rCred);
+
+          const sum = computeEmployeeSummary(emp);
+
+          const row0 = [{ v: emp.slNo, s: 2 }, { v: emp.name, s: 1 }, { v: '1. Raw PDF Cell', s: 1 }];
+          const row1 = [{ v: '', s: 2 }, { v: '', s: 1 }, { v: '2. Raw In Time', s: 1 }];
+          const row2 = [{ v: '', s: 2 }, { v: '', s: 1 }, { v: '3. Effective In (>=08:45)', s: 1 }];
+          const row3 = [{ v: '', s: 2 }, { v: '', s: 1 }, { v: '4. Out Time', s: 1 }];
+          const row4 = [{ v: '', s: 2 }, { v: '', s: 1 }, { v: '5. Effective Work Hrs', s: 1 }];
+          const row5 = [{ v: '', s: 2 }, { v: '', s: 1 }, { v: '6. Credited Hours (Rule)', s: 4 }];
+
+          state.dates.forEach((d, cIdx) => {
+            const cLet = this.colLet(3 + cIdx);
+            const cell = emp.cells[cIdx];
+            const ev = sum.evaluated[cIdx];
+            const baseDayStyle = d.type === 'H' ? 6 : (d.type === 'W' ? 5 : 2);
+
+            // Row 0: Raw text (blank preserved)
+            row0.push({ v: cell.isBlank ? '' : cell.rawText, s: baseDayStyle });
+
+            // Row 1: Raw In Time (as Excel serial time if valid)
+            if (cell.inMins !== null) {
+              row1.push({ v: cell.inMins / 1440, t: 'n', s: 11 });
+            } else {
+              row1.push({ v: '', s: baseDayStyle });
+            }
+
+            // Row 2: Effective In Time formula: =IF(ISBLANK(D8),"",IF(AND(D$5="R",D$6<>"Y",D8<TIME(8,45,0)),TIME(8,45,0),D8))
+            const fEffIn = `IF(ISBLANK(${cLet}${rIn}),"",IF(AND(${cLet}$5="R",${cLet}$6<>"Y",${cLet}${rIn}<TIME(8,45,0)),TIME(8,45,0),${cLet}${rIn}))`;
+            row2.push({
+              f: fEffIn,
+              v: ev.effInStr ? (parseInt(ev.effInStr.split(':')[0], 10) * 60 + parseInt(ev.effInStr.split(':')[1], 10)) / 1440 : '',
+              s: 11
+            });
+
+            // Row 3: Out Time
+            if (cell.outMins !== null) {
+              row3.push({ v: cell.outMins / 1440, t: 'n', s: 11 });
+            } else {
+              row3.push({ v: '', s: baseDayStyle });
+            }
+
+            // Row 4: Effective Work Hours formula: =IF(OR(ISBLANK(D9),ISBLANK(D10)),"",IF(AND(D$6="Y",D10=0),24,MOD(D10-D9,1)*24))
+            const fWork = `IF(OR(ISBLANK(${cLet}${rEffIn}),ISBLANK(${cLet}${rOut})),"",IF(AND(${cLet}$6="Y",${cLet}${rOut}=0),24,MOD(${cLet}${rOut}-${cLet}${rEffIn},1)*24))`;
+            row4.push({
+              f: fWork,
+              v: ev.effWorkHrs !== null ? ev.effWorkHrs : '',
+              s: 12
+            });
+
+            // Row 5: Credited Hours formula implementing all Sat/Sun, Central Govt Holiday, 7.5->8, <7.5->7, >=8.5->9+, and 24-Hr rules!
+            const fCred = `IF(ISBLANK(${cLet}${rWork}),"",IF(AND(${cLet}$6="Y",${cLet}${rWork}>=23),24,IF(OR(${cLet}$5="W",${cLet}$5="H"),IF(AND(${cLet}${rWork}>=6,${cLet}${rWork}<=8),8,INT(${cLet}${rWork}+0.5)),IF(${cLet}${rWork}>=8,INT(${cLet}${rWork}+0.5),IF(${cLet}${rWork}>=7.5,8,IF(${cLet}${rWork}>0,7,0))))))`;
+            let credStyle = baseDayStyle;
+            if (ev.cssClass === 'cell-24hr') credStyle = 9;
+            else if (ev.cssClass === 'cell-grace75') credStyle = 7;
+            else if (ev.cssClass === 'cell-below75') credStyle = 8;
+            else if (d.type === 'H') credStyle = 6;
+            else if (d.type === 'W') credStyle = 5;
+            else credStyle = 4;
+
+            row5.push({
+              f: fCred,
+              v: ev.creditedHrs !== null ? ev.creditedHrs : '',
+              s: credStyle
+            });
+          });
+
+          // Summary Columns with Live Excel Formulas (merged vertically across the 6 rows)
+          const fDays = `COUNTIF(${firstDateColLet}${rCred}:${lastDateColLet}${rCred},">0")`;
+          const fBase = `${daysColLet}${rRaw}*8`;
+          const fExtra = `MAX(0,${totalColLet}${rRaw}-${baseColLet}${rRaw})`;
+          const fTot = `SUM(${firstDateColLet}${rCred}:${lastDateColLet}${rCred})`;
+
+          row0.push(
+            { f: fDays, v: sum.daysWorked, s: 2 },
+            { f: fBase, v: sum.baseHrs, s: 2 },
+            { f: fExtra, v: sum.extraHrs, s: 2 },
+            { f: fTot, v: sum.totalCredited, s: 10 }
+          );
+          for (let k = 1; k <= 5; k++) {
+            const target = [row0, row1, row2, row3, row4, row5][k];
+            target.push({ v: '', s: 2 }, { v: '', s: 2 }, { v: '', s: 2 }, { v: '', s: 10 });
+          }
+
+          s1Rows.push(row0, row1, row2, row3, row4, row5);
+          s1Merges.push(
+            `A${rRaw}:A${rCred}`,
+            `B${rRaw}:B${rCred}`,
+            `${daysColLet}${rRaw}:${daysColLet}${rCred}`,
+            `${baseColLet}${rRaw}:${baseColLet}${rCred}`,
+            `${extraColLet}${rRaw}:${extraColLet}${rCred}`,
+            `${totalColLet}${rRaw}:${totalColLet}${rCred}`
+          );
+        });
+
+        // ---------------------------------------------------------------------
+        // SHEET 2: Page 2 - Daily Hours Matrix (Replicating Bill File 2)
+        // ---------------------------------------------------------------------
+        const s2Rows = [];
+        const s2Merges = [];
+        const lastColS2 = 2 + numDates + 1; // A=Sl, B=Name, C..(2+numDates-1)=Dates, Extra, Total
+
+        const s2r1 = Array(lastColS2 + 1).fill({ v: '', s: 3 });
+        s2r1[0] = { v: `${contractor} — DAILY HOURS & EXTRA HOURS STATEMENT (${period})`, s: 3 };
+        s2Rows.push(s2r1);
+        s2Merges.push(`A1:${this.colLet(lastColS2)}1`);
+
+        const s2r2 = [{ v: 'SL. NO', s: 3 }, { v: 'Name of Service Personnel (Shri/Smt)', s: 3 }];
+        s2r2.push({ v: monthBanner, s: 3 });
+        for (let k = 1; k < numDates; k++) s2r2.push({ v: '', s: 3 });
+        s2r2.push({ v: 'Extra Hours', s: 3 }, { v: 'Total Hour', s: 3 });
+        s2Rows.push(s2r2);
+
+        const s2r3 = [{ v: '', s: 3 }, { v: '', s: 3 }];
+        state.dates.forEach(d => s2r3.push({ v: `${d.date.split('-')[0]} (${d.dow})`, s: d.type === 'H' ? 6 : (d.type === 'W' ? 5 : 4) }));
+        s2r3.push({ v: '', s: 3 }, { v: '', s: 3 });
+        s2Rows.push(s2r3);
+
+        const s2ExtraCol = this.colLet(2 + numDates);
+        const s2TotalCol = this.colLet(2 + numDates + 1);
+        s2Merges.push('A2:A3', 'B2:B3', `C2:${this.colLet(2 + numDates - 1)}2`, `${s2ExtraCol}2:${s2ExtraCol}3`, `${s2TotalCol}2:${s2TotalCol}3`);
+
+        const s2FirstDataRow = 4;
+        state.employees.forEach((emp, idx) => {
+          const s1CredRow = empCreditedRowMap[idx];
+          const curR = s2Rows.length + 1;
+          const sum = computeEmployeeSummary(emp);
+
+          const rArr = [{ v: emp.slNo, s: 2 }, { v: emp.name, s: 1 }];
+          state.dates.forEach((d, cIdx) => {
+            const s1Col = this.colLet(3 + cIdx);
+            const ev = sum.evaluated[cIdx];
+            let st = d.type === 'H' ? 6 : (d.type === 'W' ? 5 : 2);
+            if (ev.cssClass === 'cell-grace75') st = 7;
+            if (ev.cssClass === 'cell-24hr') st = 9;
+            rArr.push({
+              f: `IF(ISBLANK('Page 1 - Attendance & Rules'!${s1Col}${s1CredRow}),0,'Page 1 - Attendance & Rules'!${s1Col}${s1CredRow})`,
+              v: ev.creditedHrs !== null ? ev.creditedHrs : 0,
+              s: st
+            });
+          });
+
+          const fStart = this.colLet(2);
+          const fEnd = this.colLet(2 + numDates - 1);
+          rArr.push(
+            { f: `MAX(0,${s2TotalCol}${curR}-(COUNTIF(${fStart}${curR}:${fEnd}${curR},">0")*8))`, v: sum.extraHrs, s: 4 },
+            { f: `SUM(${fStart}${curR}:${fEnd}${curR})`, v: sum.totalCredited, s: 10 }
+          );
+          s2Rows.push(rArr);
+        });
+
+        const s2LastDataRow = s2Rows.length;
+        const s2TotRow = Array(lastColS2 + 1).fill({ v: '', s: 10 });
+        s2TotRow[0] = { v: 'TOTAL HOURS', s: 10 };
+        s2TotRow[2 + numDates] = { f: `SUM(${s2ExtraCol}${s2FirstDataRow}:${s2ExtraCol}${s2LastDataRow})`, v: state.employees.reduce((s, e) => s + computeEmployeeSummary(e).extraHrs, 0), s: 10 };
+        s2TotRow[2 + numDates + 1] = { f: `SUM(${s2TotalCol}${s2FirstDataRow}:${s2TotalCol}${s2LastDataRow})`, v: state.employees.reduce((s, e) => s + computeEmployeeSummary(e).totalCredited, 0), s: 10 };
+        s2Rows.push(s2TotRow);
+        s2Merges.push(`A${s2LastDataRow + 1}:${this.colLet(2 + numDates - 1)}${s2LastDataRow + 1}`);
+
+        // ---------------------------------------------------------------------
+        // SHEET 3: Page 3 - CSCD GOCO Salary Bill (Replicating Bill File 1)
+        // ---------------------------------------------------------------------
+        const s3Rows = [];
+        const s3Merges = [];
+
+        // Top Table: BOQ Utilization
+        s3Rows.push([
+          { v: `${division} GOCO Bill - ${period}`, s: 3 },
+          { v: '', s: 3 }, { v: '', s: 3 }, { v: '', s: 3 }, { v: '', s: 3 }, { v: '', s: 3 }, { v: '', s: 3 }, { v: '', s: 3 }
+        ]);
+        s3Merges.push('A1:H1');
+
+        s3Rows.push([
+          { v: 'Sl No.', s: 3 },
+          { v: 'Item', s: 3 },
+          { v: 'Qty for 2 years', s: 3 },
+          { v: 'Unit Rate in Rs', s: 3 },
+          { v: 'Rate for 2 Years', s: 3 },
+          { v: `Qty utilized from ${period}`, s: 3 },
+          { v: `Rate for ${period}`, s: 3 },
+          { v: 'Division', s: 3 }
+        ]);
+
+        const boqStartRow = 3;
+        state.boqItems.forEach((b, idx) => {
+          const rNum = boqStartRow + idx;
+          const rate2 = b.qty2Yr * b.unitRate;
+          const rateP = Math.round(b.unitRate * b.qtyUtilized * 10000) / 10000;
+          s3Rows.push([
+            { v: b.slNo, s: 2 },
+            { v: b.item, s: 1 },
+            { v: b.qty2Yr, t: 'n', s: 2 },
+            { v: b.unitRate, t: 'n', s: 2 },
+            { f: `C${rNum}*D${rNum}`, v: rate2, s: 2 },
+            { v: b.qtyUtilized, t: 'n', s: 2 },
+            { f: `D${rNum}*F${rNum}`, v: rateP, s: 13 },
+            { v: idx === 0 ? division : '', s: 4 }
+          ]);
+        });
+        const boqEndRow = boqStartRow + state.boqItems.length - 1;
+        s3Merges.push(`H${boqStartRow}:H${boqEndRow}`);
+
+        const boqTotRow = boqEndRow + 1;
+        s3Rows.push([
+          { v: 'Total for Two Year', s: 10 },
+          { v: '', s: 10 },
+          { f: `SUM(C${boqStartRow}:C${boqEndRow})`, v: state.boqItems.reduce((s, b) => s + b.qty2Yr, 0), s: 10 },
+          { f: `SUM(D${boqStartRow}:D${boqEndRow})`, v: state.boqItems.reduce((s, b) => s + b.unitRate, 0), s: 10 },
+          { f: `SUM(E${boqStartRow}:E${boqEndRow})`, v: state.boqItems.reduce((s, b) => s + b.qty2Yr * b.unitRate, 0), s: 10 },
+          { f: `SUM(F${boqStartRow}:F${boqEndRow})`, v: state.boqItems.reduce((s, b) => s + b.qtyUtilized, 0), s: 10 },
+          { f: `SUM(G${boqStartRow}:G${boqEndRow})`, v: state.boqItems.reduce((s, b) => s + b.unitRate * b.qtyUtilized, 0), s: 13 },
+          { v: '', s: 10 }
+        ]);
+        s3Merges.push(`A${boqTotRow}:B${boqTotRow}`);
+
+        // Spacer Row
+        s3Rows.push(Array(8).fill({ v: '', s: 0 }));
+
+        // Bottom Table: Personnel Salary Bill
+        const salHeaderRow = s3Rows.length + 1;
+        s3Rows.push([
+          { v: 'SL No:', s: 3 },
+          { v: 'Name', s: 3 },
+          { v: 'Rate', s: 3 },
+          { v: 'Days', s: 3 },
+          { v: 'Pass No.', s: 3 },
+          { v: 'Category', s: 3 },
+          { v: 'Division', s: 3 },
+          { v: 'Total Cost', s: 3 }
+        ]);
+
+        const salStartRow = salHeaderRow + 1;
+        state.employees.forEach((emp, idx) => {
+          const rNum = salStartRow + idx;
+          const s2Row = s2FirstDataRow + idx;
+          const sum = computeEmployeeSummary(emp);
+          s3Rows.push([
+            { v: emp.slNo, s: 2 },
+            { v: emp.name, s: 1 },
+            { v: emp.rate, t: 'n', s: 2 },
+            { f: `'Page 2 - Daily Hours Matrix'!${s2TotalCol}${s2Row}/8`, v: sum.payableDays, s: 12 },
+            { v: emp.passNo, s: 2 },
+            { v: emp.category, s: 2 },
+            { v: division, s: 2 },
+            { f: `ROUND(C${rNum}*D${rNum},2)`, v: sum.totalCost, s: 13 }
+          ]);
+        });
+        const salEndRow = salStartRow + state.employees.length - 1;
+        const salTotRow = salEndRow + 1;
+        s3Rows.push([
+          { v: 'Total:', s: 10 },
+          { v: '', s: 10 }, { v: '', s: 10 }, { v: '', s: 10 }, { v: '', s: 10 }, { v: '', s: 10 }, { v: '', s: 10 },
+          { f: `SUM(H${salStartRow}:H${salEndRow})`, v: state.employees.reduce((s, e) => s + computeEmployeeSummary(e).totalCost, 0), s: 13 }
+        ]);
+        s3Merges.push(`A${salTotRow}:G${salTotRow}`);
+
+        // Sign-off footer
+        s3Rows.push(Array(8).fill({ v: '', s: 0 }));
+        const signRow = s3Rows.length + 1;
+        s3Rows.push([
+          { v: 'Prepared By:', s: 4 }, { v: '', s: 4 }, { v: '', s: 0 }, { v: '', s: 0 },
+          { v: 'Verified By:', s: 4 }, { v: '', s: 4 }, { v: '', s: 0 }, { v: '', s: 0 }
+        ]);
+        s3Merges.push(`A${signRow}:B${signRow}`, `E${signRow}:F${signRow}`);
+
+        // Build OpenXML ZIP Package
+        const sheets = [
+          { name: 'Page 1 - Attendance & Rules', rows: s1Rows, merges: s1Merges, colWidths: [7, 22, 26, ...Array(numDates).fill(11), 12, 13, 14, 16] },
+          { name: 'Page 2 - Daily Hours Matrix', rows: s2Rows, merges: s2Merges, colWidths: [8, 25, ...Array(numDates).fill(8), 13, 14] },
+          { name: 'Page 3 - CSCD GOCO Salary Bill', rows: s3Rows, merges: s3Merges, colWidths: [8, 42, 14, 14, 18, 16, 16, 16] }
+        ];
+
+        return this.packageXlsx(sheets);
+      }
+
+      static packageXlsx(sheets) {
+        const enc = new TextEncoder();
+        const files = [];
+
+        files.push({
+          name: '[Content_Types].xml',
+          data: enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+  ${sheets.map((_, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}
+</Types>`)
+        });
+
+        files.push({
+          name: '_rels/.rels',
+          data: enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`)
+        });
+
+        files.push({
+          name: 'xl/workbook.xml',
+          data: enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>
+    ${sheets.map((sh, i) => `<sheet name="${this.esc(sh.name)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join('')}
+  </sheets>
+</workbook>`)
+        });
+
+        files.push({
+          name: 'xl/_rels/workbook.xml.rels',
+          data: enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+  ${sheets.map((_, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join('')}
+</Relationships>`)
+        });
+
+        files.push({
+          name: 'xl/styles.xml',
+          data: enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <numFmts count="3">
+    <numFmt numFmtId="164" formatCode="hh:mm"/>
+    <numFmt numFmtId="165" formatCode="0.00"/>
+    <numFmt numFmtId="166" formatCode="#,##0.00"/>
+  </numFmts>
+  <fonts count="3">
+    <font><sz val="10"/><name val="Calibri"/></font>
+    <font><b/><sz val="10"/><name val="Calibri"/></font>
+    <font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>
+  </fonts>
+  <fills count="9">
+    <fill><patternFill patternType="none"/></fill>
+    <fill><patternFill patternType="gray125"/></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FF1E3A8A"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFE2E8F0"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFD1D5DB"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFFDE68A"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFDBEAFE"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFFEE2E2"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFFCE7F3"/></patternFill></fill>
+  </fills>
+  <borders count="2">
+    <border><left/><right/><top/><bottom/><diagonal/></border>
+    <border>
+      <left style="thin"><color rgb="FF94A3B8"/></left>
+      <right style="thin"><color rgb="FF94A3B8"/></right>
+      <top style="thin"><color rgb="FF94A3B8"/></top>
+      <bottom style="thin"><color rgb="FF94A3B8"/></bottom>
+      <diagonal/>
+    </border>
+  </borders>
+  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+  <cellXfs count="14">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="2" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="1" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="1" fillId="5" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="1" fillId="6" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="1" fillId="7" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="1" fillId="8" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="1" fillId="6" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+    <xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+    <xf numFmtId="166" fontId="1" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>
+  </cellXfs>
+</styleSheet>`)
+        });
+
+        sheets.forEach((sh, idx) => {
+          const colsXml = `<cols>${sh.colWidths.map((w, ci) => `<col min="${ci + 1}" max="${ci + 1}" width="${w}" customWidth="1"/>`).join('')}</cols>`;
+          let sdXml = '<sheetData>';
+          sh.rows.forEach((row, rIdx) => {
+            const rNum = rIdx + 1;
+            const hasMultiline = row.some(c => typeof c.v === 'string' && c.v.includes('\n'));
+            const ht = hasMultiline ? 38 : (rIdx === 0 ? 26 : 20);
+            sdXml += `<row r="${rNum}" ht="${ht}" customHeight="1">`;
+            row.forEach((cell, cIdx) => {
+              const ref = `${this.colLet(cIdx)}${rNum}`;
+              const st = cell.s ?? 1;
+              if (cell.f) {
+                const cached = (cell.v !== '' && cell.v !== null && cell.v !== undefined) ? `<v>${cell.v}</v>` : '';
+                sdXml += `<c r="${ref}" s="${st}"><f>${this.esc(cell.f)}</f>${cached}</c>`;
+              } else if (cell.v !== '' && cell.v !== null && cell.v !== undefined) {
+                if (typeof cell.v === 'number') {
+                  sdXml += `<c r="${ref}" s="${st}" t="n"><v>${cell.v}</v></c>`;
+                } else {
+                  sdXml += `<c r="${ref}" s="${st}" t="inlineStr"><is><t xml:space="preserve">${this.esc(cell.v)}</t></is></c>`;
+                }
+              } else {
+                sdXml += `<c r="${ref}" s="${st}"/>`;
+              }
+            });
+            sdXml += '</row>';
+          });
+          sdXml += '</sheetData>';
+
+          const mergeXml = sh.merges.length
+            ? `<mergeCells count="${sh.merges.length}">${sh.merges.map(m => `<mergeCell ref="${m}"/>`).join('')}</mergeCells>`
+            : '';
+
+          const wsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  ${colsXml}
+  ${sdXml}
+  ${mergeXml}
+</worksheet>`;
+          files.push({ name: `xl/worksheets/sheet${idx + 1}.xml`, data: enc.encode(wsXml) });
+        });
+
+        return this.createZip(files);
+      }
+
+      static crc32(buf) {
+        let crc = 0xFFFFFFFF;
+        for (let i = 0; i < buf.length; i++) {
+          crc ^= buf[i];
+          for (let j = 0; j < 8; j++) crc = (crc >>> 1) ^ (crc & 1 ? 0xEDB88320 : 0);
+        }
+        return (crc ^ 0xFFFFFFFF) >>> 0;
+      }
+
+      static createZip(files) {
+        const enc = new TextEncoder();
+        const local = [], central = [];
+        let offset = 0;
+        for (const f of files) {
+          const nb = enc.encode(f.name);
+          const crc = this.crc32(f.data);
+          const sz = f.data.length;
+
+          const lh = new Uint8Array(30 + nb.length);
+          const lv = new DataView(lh.buffer);
+          lv.setUint32(0, 0x04034b50, true);
+          lv.setUint16(4, 20, true);
+          lv.setUint16(6, 0x0800, true);
+          lv.setUint32(14, crc, true);
+          lv.setUint32(18, sz, true);
+          lv.setUint32(22, sz, true);
+          lv.setUint16(26, nb.length, true);
+          lh.set(nb, 30);
+          local.push(lh, f.data);
+
+          const ch = new Uint8Array(46 + nb.length);
+          const cv = new DataView(ch.buffer);
+          cv.setUint32(0, 0x02014b50, true);
+          cv.setUint16(4, 20, true);
+          cv.setUint16(6, 20, true);
+          cv.setUint16(8, 0x0800, true);
+          cv.setUint32(16, crc, true);
+          cv.setUint32(20, sz, true);
+          cv.setUint32(24, sz, true);
+          cv.setUint16(28, nb.length, true);
+          cv.setUint32(42, offset, true);
+          ch.set(nb, 46);
+          central.push(ch);
+
+          offset += lh.length + sz;
+        }
+        let cSize = 0;
+        for (const c of central) cSize += c.length;
+
+        const eocd = new Uint8Array(22);
+        const ev = new DataView(eocd.buffer);
+        ev.setUint32(0, 0x06054b50, true);
+        ev.setUint16(8, files.length, true);
+        ev.setUint16(10, files.length, true);
+        ev.setUint32(12, cSize, true);
+        ev.setUint32(16, offset, true);
+
+        const out = new Uint8Array(offset + cSize + 22);
+        let p = 0;
+        for (const l of local) { out.set(l, p); p += l.length; }
+        for (const c of central) { out.set(c, p); p += c.length; }
+        out.set(eocd, p);
+        return out;
+      }
+    }
+
+    /* =========================================================================
+       8. EVENT BINDINGS
+       ========================================================================= */
+    const dropzone = document.getElementById('dropzone');
+    const pdfInput = document.getElementById('pdf-input');
+
+    dropzone.addEventListener('click', () => pdfInput.click());
+    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+    dropzone.addEventListener('drop', async e => {
+      e.preventDefault();
+      dropzone.classList.remove('drag-over');
+      if (e.dataTransfer.files?.[0]) await handlePdfUpload(e.dataTransfer.files[0]);
+    });
+    pdfInput.addEventListener('change', async e => {
+      if (e.target.files?.[0]) await handlePdfUpload(e.target.files[0]);
+    });
+
+    async function handlePdfUpload(file) {
+      try {
+        showToast(`Parsing "${file.name}" offline...`, 'info');
+        const buf = await file.arrayBuffer();
+        await extractAttendanceFromPdf(buf);
+        document.getElementById('file-info').textContent = `✓ Extracted ${state.employees.length} Personnel across ${state.dates.length} Dates from ${file.name}`;
+        document.getElementById('file-info').classList.remove('hidden');
+        document.getElementById('parsed-badge').textContent = `${state.employees.length} Staff Extracted`;
+        refreshAllViews();
+        showToast(`Successfully parsed "${file.name}" and calculated all rules!`, 'success');
+      } catch (err) {
+        console.error(err);
+        showToast(err.message, 'error');
+      }
+    }
+
+    document.getElementById('btn-load-demo').addEventListener('click', () => {
+      loadBuiltInDemoDataset();
+      refreshAllViews();
+      showToast('Loaded 17 personnel records with Sat/Sun, Aug 15 Central Govt Holiday, 08:45 AM start clamping, and blank data-loss cells.', 'success');
+    });
+
+    document.getElementById('btn-auto-holidays').addEventListener('click', () => {
+      if (!state.dates.length) return;
+      state.dates.forEach(d => {
+        if (INDIAN_CENTRAL_GOVT_HOLIDAYS.has(d.date)) d.type = 'H';
+        else if (/^(Sat|Sun)$/i.test(d.dow)) d.type = 'W';
+        else d.type = 'R';
+      });
+      refreshAllViews();
+      showToast('Auto-detected Saturdays/Sundays (W) and Indian Central Govt Holidays (H).', 'info');
+    });
+
+    document.getElementById('btn-clear-24h').addEventListener('click', () => {
+      if (!state.dates.length) return;
+      state.dates.forEach(d => { d.is24Hr = false; });
+      refreshAllViews();
+    });
+
+    // Tab Switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.getAttribute('data-tab');
+        state.activeTab = tab;
+        ['individual', 'page1', 'page2', 'page3'].forEach(t => {
+          document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tab);
+        });
+      });
+    });
+
+    // Individual Employee Navigation & Quick Edits
+    document.getElementById('emp-select').addEventListener('change', e => {
+      state.selectedEmpIdx = parseInt(e.target.value, 10);
+      refreshAllViews();
+    });
+    document.getElementById('btn-prev-emp').addEventListener('click', () => {
+      if (!state.employees.length) return;
+      state.selectedEmpIdx = (state.selectedEmpIdx - 1 + state.employees.length) % state.employees.length;
+      refreshAllViews();
+    });
+    document.getElementById('btn-next-emp').addEventListener('click', () => {
+      if (!state.employees.length) return;
+      state.selectedEmpIdx = (state.selectedEmpIdx + 1) % state.employees.length;
+      refreshAllViews();
+    });
+
+    document.getElementById('ind-rate').addEventListener('change', e => {
+      const emp = state.employees[state.selectedEmpIdx];
+      if (emp) { emp.rate = parseFloat(e.target.value) || 0; refreshAllViews(); }
+    });
+    document.getElementById('ind-pass').addEventListener('change', e => {
+      const emp = state.employees[state.selectedEmpIdx];
+      if (emp) { emp.passNo = e.target.value.trim(); refreshAllViews(); }
+    });
+    document.getElementById('ind-cat').addEventListener('change', e => {
+      const emp = state.employees[state.selectedEmpIdx];
+      if (emp) { emp.category = e.target.value; refreshAllViews(); }
+    });
+
+    // Metadata live refresh
+    ['meta-contract', 'meta-contractor', 'meta-period', 'meta-month', 'meta-division', 'meta-contact'].forEach(id => {
+      document.getElementById(id).addEventListener('change', refreshAllViews);
+    });
+
+    // Export 3-Page Excel (.xlsx) Workbook
+    document.getElementById('btn-export-xlsx').addEventListener('click', () => {
+      if (!state.employees.length) return;
+      try {
+        const bytes = GocoExcelWorkbookBuilder.buildWorkbookBytes();
+        const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const divName = (document.getElementById('meta-division').value || 'CSCD').replace(/\s+/g, '_');
+        a.href = url;
+        a.download = `${divName}_GOCO_Attendance_and_Salary_Bill.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        showToast(`Downloaded "${a.download}" with all 3 sheets, merged cells, color coding, and live Excel equations!`, 'success');
+      } catch (err) {
+        console.error(err);
+        showToast(`Export error: ${err.message}`, 'error');
+      }
+    });
+  </script>
+</body>
+</html>

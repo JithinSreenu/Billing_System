@@ -1,0 +1,3194 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF → Exact Excel (.xlsx) Pro Studio — 100% Offline Engine</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    if (window.tailwind) {
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+              mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+            }
+          }
+        }
+      };
+    }
+  </script>
+  <style>
+    /* =========================================================================
+       COMPLETE OFFLINE CSS SYSTEM (ZERO INTERNET REQUIRED)
+       Full fallback variables & layout rules so UI looks crisp air-gapped
+       ========================================================================= */
+    :root {
+      --bg-app: #090d16;
+      --bg-panel: #111827;
+      --bg-card: #1a2234;
+      --bg-elevated: #243047;
+      --border-subtle: #2e3b52;
+      --text-primary: #f3f4f6;
+      --text-secondary: #9ca3af;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --merge-bg: rgba(59, 130, 246, 0.16);
+      --merge-border: #3b82f6;
+      --selected-bg: rgba(16, 185, 129, 0.24);
+    }
+
+    html.light {
+      --bg-app: #f1f5f9;
+      --bg-panel: #ffffff;
+      --bg-card: #f8fafc;
+      --bg-elevated: #e2e8f0;
+      --border-subtle: #cbd5e1;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --emerald: #059669;
+      --amber: #d97706;
+      --rose: #e11d48;
+      --merge-bg: rgba(37, 99, 235, 0.10);
+      --merge-border: #2563eb;
+      --selected-bg: rgba(5, 150, 105, 0.16);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-app);
+      color: var(--text-primary);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .app-panel {
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+    }
+
+    .app-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 11px;
+    }
+
+    .dropzone {
+      border: 2px dashed var(--border-subtle);
+      border-radius: 13px;
+      background: linear-gradient(145deg, rgba(59,130,246,0.05), rgba(16,185,129,0.04));
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .dropzone:hover, .dropzone.drag-over {
+      border-color: var(--accent);
+      background: rgba(59, 130, 246, 0.12);
+      transform: translateY(-1px);
+    }
+
+    /* Interactive Spreadsheet Preview */
+    .excel-grid-wrapper {
+      overflow: auto;
+      max-height: 62vh;
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      background-color: var(--bg-panel);
+      user-select: none;
+    }
+
+    table.excel-preview {
+      border-collapse: collapse;
+      width: max-content;
+      min-width: 100%;
+      font-size: 12.5px;
+      line-height: 1.35;
+    }
+
+    table.excel-preview th {
+      position: sticky;
+      top: 0;
+      z-index: 12;
+      background-color: var(--bg-elevated);
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 6px 10px;
+      border: 1px solid var(--border-subtle);
+      text-align: center;
+    }
+
+    table.excel-preview th.row-header {
+      left: 0;
+      z-index: 14;
+      width: 44px;
+      min-width: 44px;
+    }
+
+    table.excel-preview td.row-num {
+      position: sticky;
+      left: 0;
+      z-index: 6;
+      background-color: var(--bg-elevated);
+      color: var(--text-secondary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-align: center;
+      padding: 6px 8px;
+      border: 1px solid var(--border-subtle);
+      font-weight: 500;
+    }
+
+    table.excel-preview td.grid-cell {
+      border: 1px solid var(--border-subtle);
+      padding: 6px 9px;
+      min-width: 74px;
+      max-width: 300px;
+      vertical-align: middle;
+      white-space: pre-wrap;
+      word-break: break-word;
+      cursor: cell;
+      position: relative;
+      transition: outline 0.1s ease;
+    }
+
+    table.excel-preview td.grid-cell:hover {
+      outline: 1.5px solid var(--accent);
+      outline-offset: -1.5px;
+    }
+
+    table.excel-preview td.grid-cell.is-merged {
+      background-color: var(--merge-bg);
+      border: 1.5px solid var(--merge-border);
+    }
+
+    table.excel-preview td.grid-cell.is-selected {
+      background-color: var(--selected-bg) !important;
+      outline: 2px solid var(--emerald);
+      outline-offset: -2px;
+    }
+
+    .merge-badge {
+      position: absolute;
+      top: 2px;
+      right: 3px;
+      font-size: 9px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 0 4px;
+      border-radius: 4px;
+      background: var(--accent);
+      color: #fff;
+      opacity: 0.85;
+      pointer-events: none;
+    }
+
+    .formula-badge {
+      position: absolute;
+      bottom: 2px;
+      right: 3px;
+      font-size: 9px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 0 4px;
+      border-radius: 4px;
+      background: var(--emerald);
+      color: #fff;
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: 9px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border-subtle);
+      background-color: var(--bg-card);
+      color: var(--text-primary);
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn:hover:not(:disabled) {
+      background-color: var(--bg-elevated);
+    }
+    .btn:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background-color: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--accent-hover);
+    }
+    .btn-success {
+      background-color: var(--emerald);
+      border-color: var(--emerald);
+      color: #ffffff;
+    }
+    .btn-success:hover:not(:disabled) {
+      filter: brightness(1.08);
+    }
+    .btn-amber {
+      background-color: rgba(245, 158, 11, 0.16);
+      border-color: rgba(245, 158, 11, 0.45);
+      color: #fbbf24;
+    }
+    html.light .btn-amber { color: #b45309; }
+
+    select, input[type="range"], input[type="number"], input[type="text"].ctrl-input {
+      background-color: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 6px 9px;
+      font-size: 12.5px;
+    }
+
+    .file-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 9px;
+      border: 1px solid var(--border-subtle);
+      background-color: var(--bg-card);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .file-pill.active {
+      border-color: var(--accent);
+      background-color: rgba(59, 130, 246, 0.16);
+    }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+  </style>
+</head>
+<body class="min-h-screen p-3 sm:p-4 md:p-6">
+
+  <!-- Top Header & Batch Export Controls -->
+  <header class="max-w-[1660px] mx-auto mb-4 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3.5 app-panel p-4 sm:p-5">
+    <div class="flex items-start sm:items-center gap-3.5">
+      <div class="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </div>
+      <div>
+        <div class="flex flex-wrap items-center gap-2">
+          <h1 class="text-base sm:text-xl font-bold tracking-tight">PDF → Exact Excel (.xlsx) Pro Studio</h1>
+          <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+            Zero-Dependency Offline Core
+          </span>
+          <span id="diag-badge" class="hidden px-2.5 py-0.5 text-xs font-mono rounded-full bg-blue-500/15 text-blue-300 border border-blue-500/30">
+            0 pages | 0 XObj | 0 lines | 0 fills | 0 merges
+          </span>
+        </div>
+        <p class="text-xs sm:text-sm mt-0.5" style="color: var(--text-secondary)">
+          Parses Form XObjects, vector borders, shaded fills, embedded images, and merged spans locally—with draggable divider snapping & batch export.
+        </p>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <button id="btn-save-profile" class="btn text-xs" disabled title="Save current grid dividers & rules as reusable JSON">
+        💾 Save Profile (.json)
+      </button>
+      <button id="btn-load-profile" class="btn text-xs" title="Load a saved JSON layout profile">
+        📂 Load Profile
+      </button>
+      <input type="file" id="profile-input" accept=".json,application/json" class="hidden" />
+      <button id="btn-theme-toggle" class="btn text-xs" title="Switch Light / Dark Theme">
+        <span id="theme-label">☀️ Light</span>
+      </button>
+      <button id="btn-export-batch-zip" class="btn btn-amber text-xs" disabled title="Export all loaded PDFs as individual .xlsx files inside a .zip archive">
+        📦 Export Batch (.zip)
+      </button>
+      <button id="btn-download-xlsx" class="btn btn-success text-xs shadow-lg" disabled>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        Download Exact Excel (.xlsx)
+      </button>
+    </div>
+  </header>
+
+  <!-- Live Status Banner -->
+  <div id="status-banner" class="max-w-[1660px] mx-auto mb-4 hidden">
+    <div id="status-box" class="px-4 py-2.5 rounded-xl border text-xs sm:text-sm flex items-center justify-between gap-3">
+      <span id="status-text"></span>
+      <button onclick="document.getElementById('status-banner').classList.add('hidden')" class="text-xs opacity-75 hover:opacity-100 px-2 py-0.5 rounded">✕</button>
+    </div>
+  </div>
+
+  <!-- Main Two-Column Studio Layout -->
+  <main class="max-w-[1660px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-4">
+
+    <!-- Left Control Panel (4 cols) -->
+    <aside class="xl:col-span-4 flex flex-col gap-4">
+
+      <!-- 1. Multi-PDF Batch Queue & Upload -->
+      <section class="app-panel p-4">
+        <div class="flex items-center justify-between mb-2.5">
+          <h2 class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-secondary)">1. Selectable PDF Queue (Batch Ready)</h2>
+          <span id="queue-count" class="text-xs font-mono text-blue-400">0 files</span>
+        </div>
+
+        <div id="dropzone" class="dropzone p-5 text-center flex flex-col items-center justify-center gap-1.5">
+          <input type="file" id="pdf-input" accept=".pdf,application/pdf" multiple class="hidden" />
+          <div class="w-10 h-10 rounded-full bg-blue-500/15 flex items-center justify-center text-blue-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+          </div>
+          <p class="font-semibold text-xs sm:text-sm">Drop one or multiple PDFs here, or <span class="text-blue-400 underline">browse</span></p>
+          <p class="text-[11px]" style="color: var(--text-secondary)">Supports Form XObjects, shaded borderless tables, multi-page reports & embedded images</p>
+        </div>
+
+        <!-- Loaded Files Queue List -->
+        <div id="file-queue-list" class="mt-2.5 flex flex-col gap-1.5 max-h-36 overflow-y-auto"></div>
+
+        <div class="mt-2.5 flex gap-2">
+          <button id="btn-load-sample" class="btn text-xs w-full">
+            ⚡ Load Complex Demo PDF (XObjects + Shaded Header + Merged Cells)
+          </button>
+        </div>
+      </section>
+
+      <!-- 2. Intelligent Reconstruction Rules -->
+      <section class="app-panel p-4 flex flex-col gap-3.5">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-secondary)">2. Intelligent Reconstruction Rules</h2>
+          <button id="btn-reprocess" class="btn btn-primary text-xs py-1 px-2.5" disabled>
+            ↻ Re-Analyze
+          </button>
+        </div>
+
+        <!-- Grid Detection Mode -->
+        <div>
+          <label class="block text-xs font-semibold mb-1" style="color: var(--text-secondary)">Table Extraction Strategy</label>
+          <select id="opt-mode" class="w-full">
+            <option value="hybrid" selected>Hybrid (Vector Lines + Shaded Fills + Spatial)</option>
+            <option value="vector">Strict Vector Gridlines (Ruled Borders Only)</option>
+            <option value="shaded">Borderless / Shaded Row & Box Detection</option>
+            <option value="spatial">Smart Spatial Clustering (Whitespace Columns)</option>
+          </select>
+        </div>
+
+        <!-- Multi-Line Cell Handling & Multi-Page Stitching -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-xs font-semibold mb-1" style="color: var(--text-secondary)">Multi-Line Cell Mode</label>
+            <select id="opt-multiline-mode" class="w-full">
+              <option value="stacked" selected>Keep Stacked in 1 Cell</option>
+              <option value="subcols">Split into Sub-Columns</option>
+              <option value="subrows">Split into Sub-Rows</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1" style="color: var(--text-secondary)">Multi-Page Stitching</label>
+            <select id="opt-pages" class="w-full">
+              <option value="separate" selected>Separate Sheet per Page</option>
+              <option value="stitch">Stitch into 1 Sheet</option>
+              <option value="stitch_dedupe">Stitch & Dedupe Headers</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Orientation & Tolerance Sliders -->
+        <div class="app-card p-3 flex flex-col gap-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <label class="text-xs font-medium">Page Rotation</label>
+            <select id="opt-rotation" class="py-1 px-2 text-xs">
+              <option value="auto" selected>Auto (/Rotate)</option>
+              <option value="0">0° Normal</option>
+              <option value="90">90° CW</option>
+              <option value="180">180° Flip</option>
+              <option value="270">270° CCW</option>
+            </select>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs mb-0.5">
+              <span>Column Snap Tolerance</span>
+              <span id="val-col-tol" class="font-mono text-blue-400">6 pt</span>
+            </div>
+            <input type="range" id="opt-col-tol" min="2" max="24" value="6" class="w-full p-0" />
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs mb-0.5">
+              <span>Row / Line Grouping Tolerance</span>
+              <span id="val-row-tol" class="font-mono text-blue-400">5 pt</span>
+            </div>
+            <input type="range" id="opt-row-tol" min="2" max="24" value="5" class="w-full p-0" />
+          </div>
+
+          <div class="pt-1 border-t space-y-1.5" style="border-color: var(--border-subtle)">
+            <label class="flex items-center gap-2 text-xs cursor-pointer select-none">
+              <input type="checkbox" id="opt-detect-merges" checked />
+              <span>Auto-detect horizontal & vertical merged cells</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs cursor-pointer select-none">
+              <input type="checkbox" id="opt-smart-types" checked />
+              <span>Auto-cast numeric cells & inject <code class="font-mono text-emerald-400">=SUM()</code> on Total rows</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs cursor-pointer select-none">
+              <input type="checkbox" id="opt-preserve-fills" checked />
+              <span>Preserve PDF header/row background colors in Excel</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs cursor-pointer select-none">
+              <input type="checkbox" id="opt-embed-images" checked />
+              <span>Embed extracted PDF cell images into Excel</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Detailed Extraction Diagnostics -->
+      <section class="app-panel p-4">
+        <h2 class="text-xs font-bold uppercase tracking-wider mb-2.5" style="color: var(--text-secondary)">3. Parser & Geometry Diagnostics</h2>
+        <div class="grid grid-cols-3 gap-2">
+          <div class="app-card p-2.5">
+            <div class="text-[11px]" style="color: var(--text-secondary)">Grid Size</div>
+            <div id="stat-dims" class="text-sm font-bold font-mono mt-0.5">0 × 0</div>
+          </div>
+          <div class="app-card p-2.5">
+            <div class="text-[11px]" style="color: var(--text-secondary)">Merged Spans</div>
+            <div id="stat-merges" class="text-sm font-bold font-mono text-blue-400 mt-0.5">0</div>
+          </div>
+          <div class="app-card p-2.5">
+            <div class="text-[11px]" style="color: var(--text-secondary)">Form XObjects</div>
+            <div id="stat-xobj" class="text-sm font-bold font-mono text-amber-400 mt-0.5">0</div>
+          </div>
+          <div class="app-card p-2.5">
+            <div class="text-[11px]" style="color: var(--text-secondary)">Vector Lines</div>
+            <div id="stat-lines" class="text-sm font-bold font-mono text-cyan-400 mt-0.5">0</div>
+          </div>
+          <div class="app-card p-2.5">
+            <div class="text-[11px]" style="color: var(--text-secondary)">Shaded Boxes</div>
+            <div id="stat-fills" class="text-sm font-bold font-mono text-purple-400 mt-0.5">0</div>
+          </div>
+          <div class="app-card p-2.5">
+            <div class="text-[11px]" style="color: var(--text-secondary)">Images / Text</div>
+            <div id="stat-img-txt" class="text-sm font-bold font-mono text-emerald-400 mt-0.5">0 / 0</div>
+          </div>
+        </div>
+      </section>
+
+    </aside>
+
+    <!-- Right Workspace: Interactive Geometry Canvas + Editable Spreadsheet (8 cols) -->
+    <section class="xl:col-span-8 app-panel p-4 flex flex-col gap-3.5">
+
+      <!-- Sheet Tabs & Structure Toolbar -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 pb-3 border-b" style="border-color: var(--border-subtle)">
+        <div id="sheet-tabs" class="flex flex-wrap items-center gap-1.5">
+          <span class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600/20 text-blue-400 border border-blue-500/40">Sheet 1</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-1.5">
+          <button id="btn-toggle-geom" class="btn btn-primary text-xs" disabled>
+            📐 Visual Divider Inspector
+          </button>
+          <button id="btn-merge-cells" class="btn text-xs" disabled title="Select 2+ cells (Click + Shift-Click) to merge">
+            ⊞ Merge
+          </button>
+          <button id="btn-unmerge-cells" class="btn text-xs" disabled title="Unmerge selected merged region">
+            ⊟ Unmerge
+          </button>
+          <button id="btn-add-row" class="btn text-xs" disabled title="Insert row below selection">+ Row</button>
+          <button id="btn-del-row" class="btn text-xs" disabled title="Delete selected row">- Row</button>
+          <button id="btn-add-col" class="btn text-xs" disabled title="Insert column right of selection">+ Col</button>
+          <button id="btn-del-col" class="btn text-xs" disabled title="Delete selected column">- Col</button>
+          <button id="btn-toggle-shade" class="btn text-xs" disabled title="Toggle header highlight fill on selected cell">🎨 Fill</button>
+        </div>
+      </div>
+
+      <!-- Interactive PDF Geometry Inspector with Draggable Column & Row Dividers -->
+      <div id="geometry-panel" class="hidden app-card p-3 flex flex-col gap-2.5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <span class="font-bold text-amber-400">Interactive Grid Divider Editor:</span>
+            <span style="color: var(--text-secondary)">Drag orange/cyan lines to adjust columns/rows • Double-click a line to delete •</span>
+            <select id="divider-add-type" class="py-0.5 px-2 text-xs">
+              <option value="col">Click Canvas: + Vertical Col Divider</option>
+              <option value="row">Click Canvas: + Horizontal Row Divider</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <button id="btn-zoom-out" class="btn py-1 px-2 text-xs">−</button>
+            <span id="zoom-label" class="font-mono text-xs px-1">100%</span>
+            <button id="btn-zoom-in" class="btn py-1 px-2 text-xs">+</button>
+            <button id="btn-snap-dividers" class="btn btn-success py-1 px-2.5 text-xs">
+              ✓ Re-run Grid Snap
+            </button>
+            <button onclick="document.getElementById('geometry-panel').classList.add('hidden')" class="btn py-1 px-2 text-xs">✕</button>
+          </div>
+        </div>
+
+        <div class="overflow-auto max-h-[380px] bg-slate-950 rounded-lg p-2 border" style="border-color: var(--border-subtle)">
+          <canvas id="geometry-canvas" class="block mx-auto cursor-crosshair"></canvas>
+        </div>
+      </div>
+
+      <!-- Formula / Active Cell Editor Bar -->
+      <div class="flex items-center gap-2 app-card px-3 py-2">
+        <span id="active-cell-ref" class="font-mono text-xs font-bold px-2 py-1 rounded bg-blue-500/20 text-blue-400 min-w-[56px] text-center">--</span>
+        <span class="text-xs font-mono opacity-50">fx</span>
+        <input id="active-cell-editor" type="text" placeholder="Click any cell to inspect/edit text or =SUM() formula (Shift+Click to select range for merging)..." class="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-mono" disabled />
+      </div>
+
+      <!-- Interactive Editable Spreadsheet Grid -->
+      <div id="grid-container" class="excel-grid-wrapper">
+        <div class="p-12 text-center flex flex-col items-center justify-center gap-3" style="color: var(--text-secondary)">
+          <svg class="w-12 h-12 opacity-40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          <p class="text-sm font-medium">Drop selectable-text PDFs on the left to start</p>
+          <p class="text-xs max-w-lg">Or click <strong>"Load Complex Demo PDF"</strong> to test Form XObject parsing, shaded header fills, multi-line splitting, live <code class="font-mono">=SUM()</code> formulas, and draggable column/row dividers.</p>
+        </div>
+      </div>
+
+      <!-- Legend & Keyboard Shortcuts -->
+      <div class="flex flex-wrap items-center justify-between gap-2 text-xs" style="color: var(--text-secondary)">
+        <div class="flex flex-wrap items-center gap-4">
+          <span class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded-sm inline-block border border-blue-500 bg-blue-500/20"></span>
+            Merged Cell (<code class="font-mono">colspan / rowspan</code>)
+          </span>
+          <span class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded-sm inline-block border border-emerald-500 bg-emerald-500/20"></span>
+            Selected Range (<code class="font-mono">Shift+Click</code>)
+          </span>
+          <span class="flex items-center gap-1.5">
+            <span class="px-1 rounded text-[10px] font-mono bg-emerald-500 text-white">fx</span>
+            Live Excel Formula
+          </span>
+        </div>
+        <span>Double-click any cell to edit inline • Ctrl+S saves this entire studio offline</span>
+      </div>
+
+    </section>
+  </main>
+
+  <script>
+    /* =========================================================================
+       1. ADVANCED ZERO-DEPENDENCY PDF BINARY & STREAM ENGINE
+       - Supports /FlateDecode, /ASCIIHexDecode, /ASCII85Decode
+       - Parses /ToUnicode CMap & Font /Widths for accurate word spacing
+       - Recursively resolves Form XObjects (/Subtype /Form) via 'Do' operator
+       - Extracts Vector Lines, Filled/Shaded Rectangles (rg/g/k), & Embedded Images
+       ========================================================================= */
+    class AdvancedPdfEngine {
+      constructor(arrayBuffer) {
+        this.bytes = new Uint8Array(arrayBuffer);
+        this.latin1 = new TextDecoder('latin1').decode(this.bytes);
+        this.objects = new Map();
+      }
+
+      async parse() {
+        this.indexObjects();
+        return await this.extractPages();
+      }
+
+      indexObjects() {
+        const regex = /(\d+)\s+(\d+)\s+obj\b/g;
+        let match;
+        while ((match = regex.exec(this.latin1)) !== null) {
+          const objNum = parseInt(match[1], 10);
+          const startIdx = match.index + match[0].length;
+          const endIdx = this.latin1.indexOf('endobj', startIdx);
+          if (endIdx !== -1) {
+            this.objects.set(objNum, {
+              num: objNum,
+              raw: this.latin1.slice(startIdx, endIdx),
+              byteStart: startIdx,
+              byteEnd: endIdx
+            });
+          }
+        }
+      }
+
+      getObject(refOrNum) {
+        if (!refOrNum) return null;
+        if (typeof refOrNum === 'number') return this.objects.get(refOrNum) || null;
+        const m = String(refOrNum).match(/(\d+)\s+\d+\s+R/);
+        return m ? (this.objects.get(parseInt(m[1], 10)) || null) : null;
+      }
+
+      resolveDictText(rawOrRef) {
+        if (!rawOrRef) return '';
+        const str = String(rawOrRef);
+        const refMatch = str.match(/^\s*(\d+\s+\d+\s+R)\s*$/);
+        if (refMatch) {
+          const obj = this.getObject(refMatch[1]);
+          return obj ? obj.raw : '';
+        }
+        return str;
+      }
+
+      async getStreamData(obj) {
+        if (!obj) return null;
+        const streamPos = obj.raw.indexOf('stream');
+        if (streamPos === -1) return null;
+
+        let dataStart = obj.byteStart + streamPos + 6;
+        if (this.bytes[dataStart] === 0x0d && this.bytes[dataStart + 1] === 0x0a) dataStart += 2;
+        else if (this.bytes[dataStart] === 0x0a || this.bytes[dataStart] === 0x0d) dataStart += 1;
+
+        const endStreamPos = obj.raw.indexOf('endstream', streamPos);
+        if (endStreamPos === -1) return null;
+        let dataEnd = obj.byteStart + endStreamPos;
+        if (this.bytes[dataEnd - 1] === 0x0a) dataEnd--;
+        if (this.bytes[dataEnd - 1] === 0x0d) dataEnd--;
+
+        let data = this.bytes.slice(dataStart, Math.max(dataStart, dataEnd));
+        const dictPart = obj.raw.slice(0, streamPos);
+
+        // Apply filter chain in order
+        if (/\/ASCIIHexDecode\b/.test(dictPart)) {
+          data = this.decodeAsciiHex(data);
+        }
+        if (/\/ASCII85Decode\b/.test(dictPart)) {
+          data = this.decodeAscii85(data);
+        }
+        if (/\/FlateDecode\b/.test(dictPart)) {
+          data = await this.inflateBytes(data);
+        }
+        return data;
+      }
+
+      decodeAsciiHex(bytes) {
+        const hex = new TextDecoder('latin1').decode(bytes).replace(/[^0-9A-Fa-f]/g, '');
+        const out = new Uint8Array(Math.floor(hex.length / 2));
+        for (let i = 0; i < out.length; i++) {
+          out[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+        }
+        return out;
+      }
+
+      decodeAscii85(bytes) {
+        let str = new TextDecoder('latin1').decode(bytes).replace(/^<~/, '').replace(/~>[\s\S]*$/, '').replace(/\s+/g, '');
+        const out = [];
+        let i = 0;
+        while (i < str.length) {
+          if (str[i] === 'z') {
+            out.push(0, 0, 0, 0);
+            i++;
+            continue;
+          }
+          const chunk = str.slice(i, i + 5);
+          const pad = 5 - chunk.length;
+          const padded = chunk + 'u'.repeat(pad);
+          let val = 0;
+          for (let j = 0; j < 5; j++) {
+            val = val * 85 + (padded.charCodeAt(j) - 33);
+          }
+          const b = [(val >>> 24) & 0xff, (val >>> 16) & 0xff, (val >>> 8) & 0xff, val & 0xff];
+          for (let j = 0; j < 4 - pad; j++) out.push(b[j]);
+          i += chunk.length;
+        }
+        return new Uint8Array(out);
+      }
+
+      async inflateBytes(compressed) {
+        for (const format of ['deflate', 'deflate-raw']) {
+          try {
+            const ds = new DecompressionStream(format);
+            const writer = ds.writable.getWriter();
+            writer.write(compressed);
+            writer.close();
+            const reader = ds.readable.getReader();
+            const chunks = [];
+            let totalLen = 0;
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              chunks.push(value);
+              totalLen += value.length;
+            }
+            const out = new Uint8Array(totalLen);
+            let offset = 0;
+            for (const c of chunks) {
+              out.set(c, offset);
+              offset += c.length;
+            }
+            return out;
+          } catch (e) { /* try next */ }
+        }
+        return compressed;
+      }
+
+      parseMediaBox(dictStr, fallback = [0, 0, 612, 792]) {
+        const m = dictStr.match(/\/(?:CropBox|MediaBox)\s*\[\s*([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s*\]/);
+        return m ? m.slice(1, 5).map(Number) : fallback;
+      }
+
+      parseRotate(dictStr, fallback = 0) {
+        const m = dictStr.match(/\/Rotate\s+(-?\d+)/);
+        return m ? parseInt(m[1], 10) : fallback;
+      }
+
+      async parseResources(ownerRaw) {
+        const fontInfos = new Map();
+        const xobjects = new Map();
+
+        let resText = ownerRaw;
+        const resRef = ownerRaw.match(/\/Resources\s+(\d+\s+\d+\s+R)/);
+        if (resRef) {
+          const resObj = this.getObject(resRef[1]);
+          if (resObj) resText += '\n' + resObj.raw;
+        }
+
+        // 1. Parse Fonts (/ToUnicode CMap + /Widths glyph metrics)
+        let fontDictStr = '';
+        const fontInline = resText.match(/\/Font\s*<<([\s\S]*?)>>/);
+        if (fontInline) fontDictStr += fontInline[1];
+        const fontRef = resText.match(/\/Font\s+(\d+\s+\d+\s+R)/);
+        if (fontRef) {
+          const fObj = this.getObject(fontRef[1]);
+          if (fObj) fontDictStr += '\n' + fObj.raw;
+        }
+
+        const fontRegex = /\/([A-Za-z0-9_+.-]+)\s+(\d+\s+\d+\s+R)/g;
+        let fm;
+        while ((fm = fontRegex.exec(fontDictStr)) !== null) {
+          const alias = fm[1];
+          const fontObj = this.getObject(fm[2]);
+          if (!fontObj) continue;
+
+          const cmap = new Map();
+          const toUniMatch = fontObj.raw.match(/\/ToUnicode\s+(\d+\s+\d+\s+R)/);
+          if (toUniMatch) {
+            const cmapObj = this.getObject(toUniMatch[1]);
+            const cmapBytes = await this.getStreamData(cmapObj);
+            if (cmapBytes) {
+              this.parseCMap(new TextDecoder('latin1').decode(cmapBytes), cmap);
+            }
+          }
+
+          // Extract /FirstChar & /Widths for smart kerning width estimation
+          let firstChar = 32;
+          const fcMatch = fontObj.raw.match(/\/FirstChar\s+(\d+)/);
+          if (fcMatch) firstChar = parseInt(fcMatch[1], 10);
+
+          let widths = [];
+          const wInline = fontObj.raw.match(/\/Widths\s*\[([\s\S]*?)\]/);
+          if (wInline) {
+            widths = wInline[1].trim().split(/\s+/).map(Number);
+          } else {
+            const wRef = fontObj.raw.match(/\/Widths\s+(\d+\s+\d+\s+R)/);
+            if (wRef) {
+              const wObj = this.getObject(wRef[1]);
+              if (wObj) {
+                const arrM = wObj.raw.match(/\[([\s\S]*?)\]/);
+                if (arrM) widths = arrM[1].trim().split(/\s+/).map(Number);
+              }
+            }
+          }
+
+          fontInfos.set(alias, { cmap, firstChar, widths, avgWidth: 520 });
+        }
+
+        // 2. Parse XObjects (Form XObjects & Embedded Images)
+        let xobjDictStr = '';
+        const xInline = resText.match(/\/XObject\s*<<([\s\S]*?)>>/);
+        if (xInline) xobjDictStr += xInline[1];
+        const xRef = resText.match(/\/XObject\s+(\d+\s+\d+\s+R)/);
+        if (xRef) {
+          const xObj = this.getObject(xRef[1]);
+          if (xObj) xobjDictStr += '\n' + xObj.raw;
+        }
+
+        const xRegex = /\/([A-Za-z0-9_+.-]+)\s+(\d+\s+\d+\s+R)/g;
+        let xm;
+        while ((xm = xRegex.exec(xobjDictStr)) !== null) {
+          const xName = xm[1];
+          const xObj = this.getObject(xm[2]);
+          if (xObj) xobjects.set(xName, xObj);
+        }
+
+        return { fontInfos, xobjects };
+      }
+
+      parseCMap(cmapStr, cmap) {
+        const bfcharBlocks = cmapStr.match(/beginbfchar([\s\S]*?)endbfchar/g) || [];
+        for (const block of bfcharBlocks) {
+          const pairRegex = /<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/g;
+          let m;
+          while ((m = pairRegex.exec(block)) !== null) {
+            cmap.set(parseInt(m[1], 16), this.hexToUtf16(m[2]));
+          }
+        }
+        const bfrangeBlocks = cmapStr.match(/beginbfrange([\s\S]*?)endbfrange/g) || [];
+        for (const block of bfrangeBlocks) {
+          const rangeRegex = /<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*(?:<([0-9A-Fa-f]+)>|\[([^\]]+)\])/g;
+          let m;
+          while ((m = rangeRegex.exec(block)) !== null) {
+            const start = parseInt(m[1], 16);
+            const end = parseInt(m[2], 16);
+            if (m[3]) {
+              let dstCode = parseInt(m[3], 16);
+              for (let code = start; code <= end; code++, dstCode++) {
+                cmap.set(code, String.fromCodePoint(dstCode));
+              }
+            } else if (m[4]) {
+              const arr = m[4].match(/<([0-9A-Fa-f]+)>/g) || [];
+              arr.forEach((hexToken, idx) => {
+                cmap.set(start + idx, this.hexToUtf16(hexToken.replace(/[<>]/g, '')));
+              });
+            }
+          }
+        }
+      }
+
+      hexToUtf16(hex) {
+        let out = '';
+        for (let i = 0; i < hex.length; i += 4) {
+          const chunk = hex.slice(i, i + 4);
+          out += String.fromCharCode(parseInt(chunk, 16));
+        }
+        return out;
+      }
+
+      async extractPages() {
+        const pageObjects = [];
+        for (const [, obj] of this.objects) {
+          if (/\/Type\s*\/Page\b/.test(obj.raw) && !/\/Type\s*\/Pages\b/.test(obj.raw)) {
+            pageObjects.push(obj);
+          }
+        }
+
+        const results = [];
+        for (let pIdx = 0; pIdx < pageObjects.length; pIdx++) {
+          const pObj = pageObjects[pIdx];
+          const mediaBox = this.parseMediaBox(pObj.raw);
+          const rotation = this.parseRotate(pObj.raw);
+          const resources = await this.parseResources(pObj.raw);
+
+          const contentRefs = [];
+          const arrMatch = pObj.raw.match(/\/Contents\s*\[([\s\S]*?)\]/);
+          if (arrMatch) {
+            const refs = arrMatch[1].match(/\d+\s+\d+\s+R/g) || [];
+            refs.forEach(r => contentRefs.push(this.getObject(r)));
+          } else {
+            const singleMatch = pObj.raw.match(/\/Contents\s+(\d+\s+\d+\s+R)/);
+            if (singleMatch) contentRefs.push(this.getObject(singleMatch[1]));
+          }
+
+          let combinedStream = '';
+          for (const cObj of contentRefs) {
+            const decoded = await this.getStreamData(cObj);
+            if (decoded) combinedStream += '\n' + new TextDecoder('latin1').decode(decoded);
+          }
+
+          const stateOut = {
+            textItems: [],
+            lines: [],
+            shadedRects: [],
+            images: [],
+            xobjectCount: 0
+          };
+
+          await this.interpretStreamRecursive(
+            combinedStream,
+            resources,
+            mediaBox,
+            [1, 0, 0, 1, 0, 0],
+            stateOut,
+            0
+          );
+
+          results.push({
+            pageNumber: pIdx + 1,
+            mediaBox,
+            rotation,
+            width: mediaBox[2] - mediaBox[0],
+            height: mediaBox[3] - mediaBox[1],
+            ...stateOut
+          });
+        }
+        return results;
+      }
+
+      async interpretStreamRecursive(stream, resources, mediaBox, initialCtm, out, depth) {
+        if (depth > 8) return; // Guard against circular XObject references
+
+        let ctm = [...initialCtm];
+        const ctmStack = [];
+        let tm = [1, 0, 0, 1, 0, 0];
+        let tlm = [1, 0, 0, 1, 0, 0];
+        let fontSize = 10;
+        let currentFont = null;
+        let leading = 0;
+        let fillColorHex = 'FFFFFF';
+
+        let pathSegments = [];
+        let pathRects = [];
+        let currentPt = null;
+        let subpathStart = null;
+
+        const multiplyMatrix = (m1, m2) => [
+          m1[0] * m2[0] + m1[1] * m2[2],
+          m1[0] * m2[1] + m1[1] * m2[3],
+          m1[2] * m2[0] + m1[3] * m2[2],
+          m1[2] * m2[1] + m1[3] * m2[3],
+          m1[4] * m2[0] + m1[5] * m2[2] + m2[4],
+          m1[4] * m2[1] + m1[5] * m2[3] + m2[5]
+        ];
+
+        const transformPt = (x, y, m) => ({
+          x: x * m[0] + y * m[2] + m[4],
+          y: x * m[1] + y * m[3] + m[5]
+        });
+
+        const rgbToHex = (r, g, b) => {
+          const clamp = v => Math.max(0, Math.min(255, Math.round(v * 255)));
+          return [clamp(r), clamp(g), clamp(b)].map(x => x.toString(16).padStart(2, '0').toUpperCase()).join('');
+        };
+
+        const decodePdfString = (token) => {
+          const fInfo = currentFont ? resources.fontInfos.get(currentFont) : null;
+          const cmap = fInfo ? fInfo.cmap : null;
+          if (token.startsWith('<') && token.endsWith('>')) {
+            const hex = token.slice(1, -1).replace(/\s+/g, '');
+            let str = '';
+            const step = cmap && cmap.size > 0 ? 4 : 2;
+            for (let i = 0; i < hex.length; i += step) {
+              const code = parseInt(hex.slice(i, i + step), 16);
+              if (cmap && cmap.has(code)) str += cmap.get(code);
+              else if (code >= 32 && code < 65535) str += String.fromCharCode(code);
+            }
+            return str;
+          } else if (token.startsWith('(') && token.endsWith(')')) {
+            const inner = token.slice(1, -1);
+            let str = '';
+            for (let i = 0; i < inner.length; i++) {
+              let ch = inner[i];
+              if (ch === '\\' && i + 1 < inner.length) {
+                const next = inner[++i];
+                if (next === 'n') ch = '\n';
+                else if (next === 'r') ch = '\r';
+                else if (next === 't') ch = '\t';
+                else if (/[0-7]/.test(next)) {
+                  let oct = next;
+                  while (oct.length < 3 && i + 1 < inner.length && /[0-7]/.test(inner[i + 1])) oct += inner[++i];
+                  ch = String.fromCharCode(parseInt(oct, 8));
+                } else ch = next;
+              }
+              const code = ch.charCodeAt(0);
+              if (cmap && cmap.has(code)) str += cmap.get(code);
+              else str += ch;
+            }
+            return str;
+          }
+          return '';
+        };
+
+        const estimateStringWidth = (str, effSize) => {
+          const fInfo = currentFont ? resources.fontInfos.get(currentFont) : null;
+          if (fInfo && fInfo.widths.length > 0) {
+            let totalUnits = 0;
+            for (let i = 0; i < str.length; i++) {
+              const idx = str.charCodeAt(i) - fInfo.firstChar;
+              const w = (idx >= 0 && idx < fInfo.widths.length) ? fInfo.widths[idx] : fInfo.avgWidth;
+              totalUnits += (w || 500);
+            }
+            return (totalUnits / 1000) * effSize;
+          }
+          return str.length * effSize * 0.52;
+        };
+
+        const emitText = (str) => {
+          const clean = str.replace(/\u0000/g, '').trim();
+          if (!clean) return;
+          const fullM = multiplyMatrix(tm, ctm);
+          const pos = transformPt(0, 0, fullM);
+          const effFontSize = Math.max(4, Math.hypot(fullM[0], fullM[1]) * fontSize || fontSize);
+          const estWidth = estimateStringWidth(clean, effFontSize);
+          const normY = mediaBox[3] - pos.y;
+          out.textItems.push({
+            text: clean,
+            x: pos.x,
+            y: normY,
+            width: estWidth,
+            height: effFontSize
+          });
+          tm[4] += estWidth;
+        };
+
+        const flushStroke = () => {
+          for (const seg of pathSegments) out.lines.push(seg);
+          for (const rc of pathRects) {
+            out.lines.push({ x1: rc.x1, y1: rc.y1, x2: rc.x2, y2: rc.y1 });
+            out.lines.push({ x1: rc.x1, y1: rc.y2, x2: rc.x2, y2: rc.y2 });
+            out.lines.push({ x1: rc.x1, y1: rc.y1, x2: rc.x1, y2: rc.y2 });
+            out.lines.push({ x1: rc.x2, y1: rc.y1, x2: rc.x2, y2: rc.y2 });
+          }
+        };
+
+        const flushFill = () => {
+          for (const rc of pathRects) {
+            const w = Math.abs(rc.x2 - rc.x1);
+            const h = Math.abs(rc.y2 - rc.y1);
+            // Thin filled rectangles (< 3pt) act as vector border lines!
+            if (h <= 3 && w > 4) {
+              const yMid = (rc.y1 + rc.y2) / 2;
+              out.lines.push({ x1: rc.x1, y1: yMid, x2: rc.x2, y2: yMid });
+            } else if (w <= 3 && h > 4) {
+              const xMid = (rc.x1 + rc.x2) / 2;
+              out.lines.push({ x1: xMid, y1: rc.y1, x2: xMid, y2: rc.y2 });
+            } else if (w > 6 && h > 6 && fillColorHex !== 'FFFFFF') {
+              out.shadedRects.push({
+                x1: rc.x1,
+                y1: rc.y1,
+                x2: rc.x2,
+                y2: rc.y2,
+                color: fillColorHex
+              });
+            }
+          }
+        };
+
+        const clearPath = () => {
+          pathSegments = [];
+          pathRects = [];
+          currentPt = null;
+          subpathStart = null;
+        };
+
+        const tokens = this.tokenizeStream(stream);
+        const operands = [];
+
+        for (let i = 0; i < tokens.length; i++) {
+          const tok = tokens[i];
+          if (tok.type !== 'op') {
+            operands.push(tok.val);
+            continue;
+          }
+
+          const op = tok.val;
+          switch (op) {
+            case 'q': ctmStack.push([...ctm]); break;
+            case 'Q': if (ctmStack.length) ctm = ctmStack.pop(); break;
+            case 'cm':
+              if (operands.length >= 6) ctm = multiplyMatrix(operands.slice(-6).map(Number), ctm);
+              break;
+            case 'rg': // RGB Fill Color
+              if (operands.length >= 3) {
+                const [r, g, b] = operands.slice(-3).map(Number);
+                fillColorHex = rgbToHex(r, g, b);
+              }
+              break;
+            case 'g': // Grayscale Fill Color
+              if (operands.length >= 1) {
+                const gray = Number(operands[operands.length - 1]);
+                fillColorHex = rgbToHex(gray, gray, gray);
+              }
+              break;
+            case 'k': // CMYK Fill Color
+              if (operands.length >= 4) {
+                const [c, m, y, k] = operands.slice(-4).map(Number);
+                fillColorHex = rgbToHex((1 - c) * (1 - k), (1 - m) * (1 - k), (1 - y) * (1 - k));
+              }
+              break;
+            case 'BT':
+              tm = [1, 0, 0, 1, 0, 0];
+              tlm = [1, 0, 0, 1, 0, 0];
+              break;
+            case 'Tf':
+              if (operands.length >= 2) {
+                currentFont = String(operands[operands.length - 2]).replace(/^\//, '');
+                fontSize = Math.abs(Number(operands[operands.length - 1])) || 10;
+              }
+              break;
+            case 'TL':
+              if (operands.length >= 1) leading = Number(operands[operands.length - 1]) || 0;
+              break;
+            case 'Td':
+              if (operands.length >= 2) {
+                const tx = Number(operands[operands.length - 2]) || 0;
+                const ty = Number(operands[operands.length - 1]) || 0;
+                tlm = multiplyMatrix([1, 0, 0, 1, tx, ty], tlm);
+                tm = [...tlm];
+              }
+              break;
+            case 'TD':
+              if (operands.length >= 2) {
+                const tx = Number(operands[operands.length - 2]) || 0;
+                const ty = Number(operands[operands.length - 1]) || 0;
+                leading = -ty;
+                tlm = multiplyMatrix([1, 0, 0, 1, tx, ty], tlm);
+                tm = [...tlm];
+              }
+              break;
+            case 'Tm':
+              if (operands.length >= 6) {
+                const m = operands.slice(-6).map(Number);
+                tm = [...m];
+                tlm = [...m];
+              }
+              break;
+            case 'T*':
+              tlm = multiplyMatrix([1, 0, 0, 1, 0, -leading], tlm);
+              tm = [...tlm];
+              break;
+            case 'Tj':
+              if (operands.length >= 1) emitText(decodePdfString(String(operands[operands.length - 1])));
+              break;
+            case 'TJ':
+              if (operands.length >= 1 && Array.isArray(operands[operands.length - 1])) {
+                let combined = '';
+                for (const item of operands[operands.length - 1]) {
+                  if (typeof item === 'string') combined += decodePdfString(item);
+                  else if (typeof item === 'number' && item < -160) combined += ' ';
+                }
+                emitText(combined);
+              }
+              break;
+            case "'":
+              tlm = multiplyMatrix([1, 0, 0, 1, 0, -leading], tlm);
+              tm = [...tlm];
+              if (operands.length >= 1) emitText(decodePdfString(String(operands[operands.length - 1])));
+              break;
+            case 'm':
+              if (operands.length >= 2) {
+                const p = transformPt(Number(operands[operands.length - 2]), Number(operands[operands.length - 1]), ctm);
+                currentPt = { x: p.x, y: mediaBox[3] - p.y };
+                subpathStart = currentPt;
+              }
+              break;
+            case 'l':
+              if (operands.length >= 2 && currentPt) {
+                const p = transformPt(Number(operands[operands.length - 2]), Number(operands[operands.length - 1]), ctm);
+                const nextPt = { x: p.x, y: mediaBox[3] - p.y };
+                pathSegments.push({ x1: currentPt.x, y1: currentPt.y, x2: nextPt.x, y2: nextPt.y });
+                currentPt = nextPt;
+              }
+              break;
+            case 're':
+              if (operands.length >= 4) {
+                const [rx, ry, rw, rh] = operands.slice(-4).map(Number);
+                const p1 = transformPt(rx, ry, ctm);
+                const p2 = transformPt(rx + rw, ry + rh, ctm);
+                pathRects.push({
+                  x1: Math.min(p1.x, p2.x),
+                  x2: Math.max(p1.x, p2.x),
+                  y1: Math.min(mediaBox[3] - p1.y, mediaBox[3] - p2.y),
+                  y2: Math.max(mediaBox[3] - p1.y, mediaBox[3] - p2.y)
+                });
+              }
+              break;
+            case 'h':
+              if (subpathStart && currentPt) {
+                pathSegments.push({ x1: currentPt.x, y1: currentPt.y, x2: subpathStart.x, y2: subpathStart.y });
+              }
+              break;
+            case 'S':
+            case 's':
+              flushStroke();
+              clearPath();
+              break;
+            case 'f':
+            case 'F':
+            case 'f*':
+              flushFill();
+              clearPath();
+              break;
+            case 'B':
+            case 'B*':
+            case 'b':
+            case 'b*':
+              flushFill();
+              flushStroke();
+              clearPath();
+              break;
+            case 'n':
+              clearPath();
+              break;
+            case 'Do':
+              // Invoke Form XObject or Embedded Image XObject!
+              if (operands.length >= 1) {
+                const xName = String(operands[operands.length - 1]).replace(/^\//, '');
+                const xObj = resources.xobjects.get(xName);
+                if (xObj) {
+                  if (/\/Subtype\s*\/Form\b/.test(xObj.raw)) {
+                    out.xobjectCount++;
+                    let subCtm = [...ctm];
+                    const matM = xObj.raw.match(/\/Matrix\s*\[\s*([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s*\]/);
+                    if (matM) {
+                      subCtm = multiplyMatrix(matM.slice(1, 7).map(Number), subCtm);
+                    }
+                    const subRes = await this.parseResources(xObj.raw);
+                    // Merge parent resources as fallback
+                    for (const [k, v] of resources.fontInfos) if (!subRes.fontInfos.has(k)) subRes.fontInfos.set(k, v);
+                    for (const [k, v] of resources.xobjects) if (!subRes.xobjects.has(k)) subRes.xobjects.set(k, v);
+
+                    const subBytes = await this.getStreamData(xObj);
+                    if (subBytes) {
+                      const subStream = new TextDecoder('latin1').decode(subBytes);
+                      await this.interpretStreamRecursive(subStream, subRes, mediaBox, subCtm, out, depth + 1);
+                    }
+                  } else if (/\/Subtype\s*\/Image\b/.test(xObj.raw) && /\/DCTDecode\b/.test(xObj.raw)) {
+                    // Extract embedded JPEG image + bounding box
+                    const streamPos = xObj.raw.indexOf('stream');
+                    const endStreamPos = xObj.raw.indexOf('endstream', streamPos);
+                    if (streamPos !== -1 && endStreamPos !== -1) {
+                      let dStart = xObj.byteStart + streamPos + 6;
+                      if (this.bytes[dStart] === 0x0d && this.bytes[dStart + 1] === 0x0a) dStart += 2;
+                      else if (this.bytes[dStart] === 0x0a || this.bytes[dStart] === 0x0d) dStart += 1;
+                      let dEnd = xObj.byteStart + endStreamPos;
+                      if (this.bytes[dEnd - 1] === 0x0a) dEnd--;
+                      if (this.bytes[dEnd - 1] === 0x0d) dEnd--;
+                      const jpegBytes = this.bytes.slice(dStart, Math.max(dStart, dEnd));
+
+                      const p0 = transformPt(0, 0, ctm);
+                      const p1 = transformPt(1, 1, ctm);
+                      out.images.push({
+                        bytes: jpegBytes,
+                        ext: 'jpeg',
+                        x: Math.min(p0.x, p1.x),
+                        y: Math.min(mediaBox[3] - p0.y, mediaBox[3] - p1.y),
+                        width: Math.abs(p1.x - p0.x),
+                        height: Math.abs(p1.y - p0.y)
+                      });
+                    }
+                  }
+                }
+              }
+              break;
+          }
+          operands.length = 0;
+        }
+      }
+
+      tokenizeStream(s) {
+        const tokens = [];
+        let i = 0;
+        const len = s.length;
+        const isWs = (c) => c === ' ' || c === '\n' || c === '\r' || c === '\t' || c === '\f' || c === '\0';
+        const isDelim = (c) => isWs(c) || c === '(' || c === ')' || c === '<' || c === '>' || c === '[' || c === ']' || c === '/' || c === '%';
+
+        while (i < len) {
+          const c = s[i];
+          if (isWs(c)) { i++; continue; }
+          if (c === '%') { while (i < len && s[i] !== '\n' && s[i] !== '\r') i++; continue; }
+          if (c === '(') {
+            let depth = 1, st = i++;
+            while (i < len && depth > 0) {
+              if (s[i] === '\\') { i += 2; continue; }
+              if (s[i] === '(') depth++;
+              else if (s[i] === ')') depth--;
+              i++;
+            }
+            tokens.push({ type: 'val', val: s.slice(st, i) });
+            continue;
+          }
+          if (c === '<' && s[i + 1] !== '<') {
+            let st = i++;
+            while (i < len && s[i] !== '>') i++;
+            i++;
+            tokens.push({ type: 'val', val: s.slice(st, i) });
+            continue;
+          }
+          if (c === '[') {
+            i++;
+            const arr = [];
+            while (i < len && s[i] !== ']') {
+              if (isWs(s[i])) { i++; continue; }
+              if (s[i] === '(') {
+                let depth = 1, st = i++;
+                while (i < len && depth > 0) {
+                  if (s[i] === '\\') { i += 2; continue; }
+                  if (s[i] === '(') depth++;
+                  else if (s[i] === ')') depth--;
+                  i++;
+                }
+                arr.push(s.slice(st, i));
+              } else if (s[i] === '<') {
+                let st = i++;
+                while (i < len && s[i] !== '>') i++;
+                i++;
+                arr.push(s.slice(st, i));
+              } else {
+                let st = i;
+                while (i < len && !isDelim(s[i])) i++;
+                const numStr = s.slice(st, i);
+                if (numStr) arr.push(Number(numStr));
+              }
+            }
+            if (s[i] === ']') i++;
+            tokens.push({ type: 'val', val: arr });
+            continue;
+          }
+          if (c === '/') {
+            let st = i++;
+            while (i < len && !isDelim(s[i])) i++;
+            tokens.push({ type: 'val', val: s.slice(st, i) });
+            continue;
+          }
+          let st = i;
+          while (i < len && !isDelim(s[i])) i++;
+          const word = s.slice(st, i);
+          if (!word) { i++; continue; }
+          if (/^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(word)) tokens.push({ type: 'val', val: Number(word) });
+          else tokens.push({ type: 'op', val: word });
+        }
+        return tokens;
+      }
+    }
+
+    /* =========================================================================
+       2. INTELLIGENT GRID, SHADING, MULTI-LINE & FORMULA RECONSTRUCTOR
+       ========================================================================= */
+    class IntelligentGridBuilder {
+      static buildSheet(pageData, options, customTracks = null) {
+        const {
+          mode, rotation, colTol, rowTol,
+          detectMerges, multilineMode, smartTypes, preserveFills, embedImages
+        } = options;
+
+        const rot = rotation === 'auto' ? (pageData.rotation || 0) : parseInt(rotation, 10);
+        const geom = this.applyRotation(pageData, rot);
+
+        if (geom.textItems.length === 0 && geom.lines.length === 0 && geom.shadedRects.length === 0) {
+          return {
+            name: `Page ${pageData.pageNumber}`,
+            rows: [['(No selectable text or vector table found on this page)']],
+            fills: [['']],
+            formulas: [['']],
+            merges: [],
+            images: [],
+            colTracks: [0, 300],
+            rowTracks: [0, 30],
+            geometry: { ...geom, colTracks: [0, 300], rowTracks: [0, 30] }
+          };
+        }
+
+        // Extract orthogonal stroke lines
+        const hLines = [];
+        const vLines = [];
+        for (const ln of geom.lines) {
+          const dx = Math.abs(ln.x2 - ln.x1);
+          const dy = Math.abs(ln.y2 - ln.y1);
+          if (dy <= 2.5 && dx > 4) {
+            hLines.push({ y: (ln.y1 + ln.y2) / 2, x1: Math.min(ln.x1, ln.x2), x2: Math.max(ln.x1, ln.x2) });
+          } else if (dx <= 2.5 && dy > 4) {
+            vLines.push({ x: (ln.x1 + ln.x2) / 2, y1: Math.min(ln.y1, ln.y2), y2: Math.max(ln.y1, ln.y2) });
+          }
+        }
+
+        // Include edges of shaded boxes as virtual grid boundaries
+        if (mode === 'shaded' || mode === 'hybrid') {
+          for (const sr of geom.shadedRects) {
+            hLines.push({ y: sr.y1, x1: sr.x1, x2: sr.x2 });
+            hLines.push({ y: sr.y2, x1: sr.x1, x2: sr.x2 });
+            vLines.push({ x: sr.x1, y1: sr.y1, y2: sr.y2 });
+            vLines.push({ x: sr.x2, y1: sr.y1, y2: sr.y2 });
+          }
+        }
+
+        let colTracks = [];
+        let rowTracks = [];
+
+        if (customTracks && customTracks.colTracks?.length >= 2 && customTracks.rowTracks?.length >= 2) {
+          colTracks = [...customTracks.colTracks].sort((a, b) => a - b);
+          rowTracks = [...customTracks.rowTracks].sort((a, b) => a - b);
+        } else {
+          const useVectors = (mode === 'vector' || mode === 'hybrid' || mode === 'shaded') && (vLines.length >= 2 || hLines.length >= 2);
+          const useSpatial = (mode === 'spatial' || mode === 'hybrid');
+
+          if (useVectors) {
+            colTracks = this.clusterCoords(vLines.map(l => l.x), colTol);
+            rowTracks = this.clusterCoords(hLines.map(l => l.y), rowTol);
+          }
+
+          if (useSpatial) {
+            colTracks = this.inferSpatialCols(geom.textItems, colTol * 1.4, colTracks);
+            rowTracks = this.inferSpatialRows(geom.textItems, rowTol * 1.35, rowTracks, hLines);
+          }
+
+          if (geom.textItems.length > 0) {
+            const minX = Math.min(...geom.textItems.map(t => t.x)) - 4;
+            const maxX = Math.max(...geom.textItems.map(t => t.x + t.width)) + 4;
+            const minY = Math.min(...geom.textItems.map(t => t.y - t.height)) - 4;
+            const maxY = Math.max(...geom.textItems.map(t => t.y + 4)) + 4;
+
+            if (!colTracks.length || colTracks[0] > minX + colTol) colTracks.unshift(minX);
+            if (colTracks[colTracks.length - 1] < maxX - colTol) colTracks.push(maxX);
+            if (!rowTracks.length || rowTracks[0] > minY + rowTol) rowTracks.unshift(minY);
+            if (rowTracks[rowTracks.length - 1] < maxY - rowTol) rowTracks.push(maxY);
+          }
+
+          colTracks = this.dedupeSorted(colTracks, Math.max(4, colTol));
+          rowTracks = this.dedupeSorted(rowTracks, Math.max(4, rowTol));
+        }
+
+        const numRows = Math.max(1, rowTracks.length - 1);
+        const numCols = Math.max(1, colTracks.length - 1);
+
+        // Bucket text items into cells
+        const cellBuckets = Array.from({ length: numRows }, () => Array.from({ length: numCols }, () => []));
+        for (const item of geom.textItems) {
+          const cx = item.x + Math.min(item.width * 0.35, 12);
+          const cy = item.y - item.height * 0.35;
+          const r = this.findInterval(rowTracks, cy);
+          const c = this.findInterval(colTracks, cx);
+          if (r >= 0 && r < numRows && c >= 0 && c < numCols) {
+            cellBuckets[r][c].push(item);
+          }
+        }
+
+        // Sort lines inside each cell
+        const cellLinesGrid = Array.from({ length: numRows }, (_, r) =>
+          Array.from({ length: numCols }, (_, c) => {
+            const items = cellBuckets[r][c];
+            if (!items.length) return [];
+            items.sort((a, b) => (Math.abs(a.y - b.y) > rowTol * 0.75 ? a.y - b.y : a.x - b.x));
+            const linesOut = [];
+            let curLine = [items[0]];
+            for (let k = 1; k < items.length; k++) {
+              if (Math.abs(items[k].y - curLine[curLine.length - 1].y) <= rowTol * 0.85) {
+                curLine.push(items[k]);
+              } else {
+                linesOut.push(curLine.map(x => x.text).join(' '));
+                curLine = [items[k]];
+              }
+            }
+            linesOut.push(curLine.map(x => x.text).join(' '));
+            return linesOut;
+          })
+        );
+
+        // Map background shading fills per cell
+        const fillsGrid = Array.from({ length: numRows }, (_, r) =>
+          Array.from({ length: numCols }, (_, c) => {
+            if (!preserveFills || !geom.shadedRects.length) return '';
+            const midX = (colTracks[c] + colTracks[c + 1]) / 2;
+            const midY = (rowTracks[r] + rowTracks[r + 1]) / 2;
+            const hit = geom.shadedRects.find(sr => midX >= sr.x1 && midX <= sr.x2 && midY >= sr.y1 && midY <= sr.y2);
+            return hit ? hit.color : '';
+          })
+        );
+
+        // Detect Merged Cells
+        let grid = cellLinesGrid.map(row => row.map(lines => lines.join('\n')));
+        let merges = detectMerges
+          ? this.detectMerges(grid, cellBuckets, fillsGrid, colTracks, rowTracks, hLines, vLines, colTol, rowTol)
+          : [];
+
+        // Consolidate text inside merged regions
+        for (const m of merges) {
+          for (let r = m.s.r; r <= m.e.r; r++) {
+            for (let c = m.s.c; c <= m.e.c; c++) {
+              if (r === m.s.r && c === m.s.c) continue;
+              if (grid[r][c]) {
+                grid[m.s.r][m.s.c] = (grid[m.s.r][m.s.c] + '\n' + grid[r][c]).trim();
+                grid[r][c] = '';
+                cellLinesGrid[m.s.r][m.s.c] = grid[m.s.r][m.s.c].split('\n');
+                cellLinesGrid[r][c] = [];
+              }
+            }
+          }
+        }
+
+        // Apply Multi-Line Cell Splitting (Sub-Columns or Sub-Rows) if selected
+        if (multilineMode === 'subcols') {
+          const expanded = this.expandMultiLineToSubCols(cellLinesGrid, fillsGrid, merges);
+          grid = expanded.grid;
+          fillsGrid.splice(0, fillsGrid.length, ...expanded.fills);
+          merges = expanded.merges;
+        } else if (multilineMode === 'subrows') {
+          const expanded = this.expandMultiLineToSubRows(cellLinesGrid, fillsGrid, merges);
+          grid = expanded.grid;
+          fillsGrid.splice(0, fillsGrid.length, ...expanded.fills);
+          merges = expanded.merges;
+        }
+
+        // Smart Data Typing & =SUM() Formula Injection on Total Rows
+        const formulasGrid = Array.from({ length: grid.length }, () => Array(grid[0].length).fill(''));
+        if (smartTypes) {
+          this.injectSmartFormulas(grid, formulasGrid);
+        }
+
+        // Map embedded images to nearest cell coordinates
+        const mappedImages = [];
+        if (embedImages && geom.images.length > 0) {
+          for (const img of geom.images) {
+            const cx = img.x + img.width / 2;
+            const cy = img.y + img.height / 2;
+            const r = Math.max(0, this.findInterval(rowTracks, cy));
+            const c = Math.max(0, this.findInterval(colTracks, cx));
+            mappedImages.push({ ...img, row: r, col: c });
+          }
+        }
+
+        return {
+          name: `Page ${pageData.pageNumber}`,
+          rows: grid,
+          fills: fillsGrid,
+          formulas: formulasGrid,
+          merges,
+          images: mappedImages,
+          colTracks,
+          rowTracks,
+          geometry: { ...geom, colTracks, rowTracks }
+        };
+      }
+
+      static expandMultiLineToSubCols(cellLinesGrid, fillsGrid, merges) {
+        const numRows = cellLinesGrid.length;
+        const numCols = cellLinesGrid[0].length;
+        const colSplitCounts = Array(numCols).fill(1);
+
+        for (let c = 0; c < numCols; c++) {
+          for (let r = 0; r < numRows; r++) {
+            const isMergedHoriz = merges.some(m => r >= m.s.r && r <= m.e.r && c >= m.s.c && c <= m.e.c && m.e.c > m.s.c);
+            if (!isMergedHoriz && cellLinesGrid[r][c].length > 1) {
+              colSplitCounts[c] = Math.max(colSplitCounts[c], Math.min(4, cellLinesGrid[r][c].length));
+            }
+          }
+        }
+
+        const colMap = [];
+        let acc = 0;
+        for (let c = 0; c < numCols; c++) {
+          colMap.push({ start: acc, count: colSplitCounts[c] });
+          acc += colSplitCounts[c];
+        }
+
+        const newGrid = Array.from({ length: numRows }, () => Array(acc).fill(''));
+        const newFills = Array.from({ length: numRows }, () => Array(acc).fill(''));
+        const newMerges = [];
+
+        for (let r = 0; r < numRows; r++) {
+          for (let c = 0; c < numCols; c++) {
+            const lines = cellLinesGrid[r][c];
+            const { start, count } = colMap[c];
+            for (let k = 0; k < count; k++) newFills[r][start + k] = fillsGrid[r][c];
+
+            const m = merges.find(mg => mg.s.r === r && mg.s.c === c);
+            if (m) {
+              const endCol = colMap[m.e.c].start + colMap[m.e.c].count - 1;
+              newGrid[r][start] = lines.join('\n');
+              newMerges.push({ s: { r: m.s.r, c: start }, e: { r: m.e.r, c: endCol } });
+            } else if (count > 1 && lines.length === 1) {
+              newGrid[r][start] = lines[0];
+              newMerges.push({ s: { r, c: start }, e: { r, c: start + count - 1 } });
+            } else {
+              for (let k = 0; k < count; k++) {
+                newGrid[r][start + k] = lines[k] ?? '';
+              }
+            }
+          }
+        }
+        return { grid: newGrid, fills: newFills, merges: newMerges };
+      }
+
+      static expandMultiLineToSubRows(cellLinesGrid, fillsGrid, merges) {
+        const numRows = cellLinesGrid.length;
+        const numCols = cellLinesGrid[0].length;
+        const rowSplitCounts = Array(numRows).fill(1);
+
+        for (let r = 0; r < numRows; r++) {
+          for (let c = 0; c < numCols; c++) {
+            if (cellLinesGrid[r][c].length > 1) {
+              rowSplitCounts[r] = Math.max(rowSplitCounts[r], Math.min(5, cellLinesGrid[r][c].length));
+            }
+          }
+        }
+
+        const rowMap = [];
+        let acc = 0;
+        for (let r = 0; r < numRows; r++) {
+          rowMap.push({ start: acc, count: rowSplitCounts[r] });
+          acc += rowSplitCounts[r];
+        }
+
+        const newGrid = Array.from({ length: acc }, () => Array(numCols).fill(''));
+        const newFills = Array.from({ length: acc }, () => Array(numCols).fill(''));
+        const newMerges = [];
+
+        for (let r = 0; r < numRows; r++) {
+          const { start, count } = rowMap[r];
+          for (let c = 0; c < numCols; c++) {
+            const lines = cellLinesGrid[r][c];
+            for (let k = 0; k < count; k++) newFills[start + k][c] = fillsGrid[r][c];
+
+            const m = merges.find(mg => mg.s.r === r && mg.s.c === c);
+            if (m) {
+              const endRow = rowMap[m.e.r].start + rowMap[m.e.r].count - 1;
+              newGrid[start][c] = lines.join('\n');
+              newMerges.push({ s: { r: start, c: m.s.c }, e: { r: endRow, c: m.e.c } });
+            } else if (count > 1 && lines.length === 1) {
+              newGrid[start][c] = lines[0];
+              newMerges.push({ s: { r: start, c }, e: { r: start + count - 1, c } });
+            } else {
+              for (let k = 0; k < count; k++) {
+                newGrid[start + k][c] = lines[k] ?? '';
+              }
+            }
+          }
+        }
+        return { grid: newGrid, fills: newFills, merges: newMerges };
+      }
+
+      static injectSmartFormulas(grid, formulasGrid) {
+        const numRows = grid.length;
+        const numCols = grid[0].length;
+        for (let r = 1; r < numRows; r++) {
+          const rowLabel = grid[r].slice(0, 3).join(' ').toLowerCase();
+          if (/\b(total|grand total|subtotal|sum)\b/.test(rowLabel)) {
+            for (let c = 1; c < numCols; c++) {
+              const rawVal = String(grid[r][c] ?? '').replace(/[,$₹€£\s]/g, '');
+              if (/^-?\d+(\.\d+)?$/.test(rawVal)) {
+                // Find contiguous numeric rows above this total row
+                let startR = r - 1;
+                while (startR > 0) {
+                  const above = String(grid[startR][c] ?? '').replace(/[,$₹€£\s]/g, '');
+                  if (/^-?\d+(\.\d+)?$/.test(above)) startR--;
+                  else break;
+                }
+                startR++;
+                if (startR < r) {
+                  const colLet = PureXlsxBuilder.colIndexToLetter(c);
+                  formulasGrid[r][c] = `SUM(${colLet}${startR + 1}:${colLet}${r})`;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      static applyRotation(pageData, rot) {
+        const normRot = ((rot % 360) + 360) % 360;
+        let { width, height } = pageData;
+        const tf = (x, y) => {
+          if (normRot === 90) return { x: height - y, y: x };
+          if (normRot === 180) return { x: width - x, y: height - y };
+          if (normRot === 270) return { x: y, y: width - x };
+          return { x, y };
+        };
+
+        const textItems = pageData.textItems.map(t => {
+          const p = tf(t.x, t.y);
+          return {
+            ...t,
+            x: p.x,
+            y: p.y,
+            width: normRot === 90 || normRot === 270 ? t.height : t.width,
+            height: normRot === 90 || normRot === 270 ? t.width : t.height
+          };
+        });
+
+        const lines = pageData.lines.map(l => {
+          const p1 = tf(l.x1, l.y1), p2 = tf(l.x2, l.y2);
+          return { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y };
+        });
+
+        const shadedRects = (pageData.shadedRects || []).map(sr => {
+          const p1 = tf(sr.x1, sr.y1), p2 = tf(sr.x2, sr.y2);
+          return {
+            x1: Math.min(p1.x, p2.x),
+            x2: Math.max(p1.x, p2.x),
+            y1: Math.min(p1.y, p2.y),
+            y2: Math.max(p1.y, p2.y),
+            color: sr.color
+          };
+        });
+
+        const images = (pageData.images || []).map(im => {
+          const p1 = tf(im.x, im.y), p2 = tf(im.x + im.width, im.y + im.height);
+          return {
+            ...im,
+            x: Math.min(p1.x, p2.x),
+            y: Math.min(p1.y, p2.y),
+            width: Math.abs(p2.x - p1.x),
+            height: Math.abs(p2.y - p1.y)
+          };
+        });
+
+        if (normRot === 90 || normRot === 270) [width, height] = [height, width];
+        return { textItems, lines, shadedRects, images, width, height };
+      }
+
+      static clusterCoords(coords, tol) {
+        if (!coords.length) return [];
+        const sorted = [...coords].sort((a, b) => a - b);
+        const clusters = [[sorted[0]]];
+        for (let i = 1; i < sorted.length; i++) {
+          const last = clusters[clusters.length - 1];
+          const avg = last.reduce((s, v) => s + v, 0) / last.length;
+          if (Math.abs(sorted[i] - avg) <= tol) last.push(sorted[i]);
+          else clusters.push([sorted[i]]);
+        }
+        return clusters.map(cl => cl.reduce((s, v) => s + v, 0) / cl.length);
+      }
+
+      static inferSpatialCols(textItems, tol, existing) {
+        const tracks = [...existing];
+        const clustered = this.clusterCoords(textItems.map(t => t.x), tol);
+        for (const cx of clustered) {
+          if (!tracks.some(ex => Math.abs(ex - cx) <= tol * 1.1)) tracks.push(cx - 3);
+        }
+        return tracks.sort((a, b) => a - b);
+      }
+
+      static inferSpatialRows(textItems, tol, existing, hLines) {
+        if (existing.length >= 3 && hLines.length >= 4) return [...existing].sort((a, b) => a - b);
+        const tracks = [...existing];
+        const clustered = this.clusterCoords(textItems.map(t => t.y - t.height), tol * 1.5);
+        for (const cy of clustered) {
+          if (!tracks.some(ex => Math.abs(ex - cy) <= tol * 1.3)) tracks.push(cy - 2);
+        }
+        return tracks.sort((a, b) => a - b);
+      }
+
+      static dedupeSorted(arr, minGap) {
+        const sorted = [...arr].sort((a, b) => a - b);
+        const out = [];
+        for (const v of sorted) {
+          if (!out.length || v - out[out.length - 1] >= minGap) out.push(v);
+        }
+        return out;
+      }
+
+      static findInterval(tracks, val) {
+        if (val < tracks[0]) return 0;
+        for (let i = 0; i < tracks.length - 1; i++) {
+          if (val >= tracks[i] && val < tracks[i + 1]) return i;
+        }
+        return tracks.length - 2;
+      }
+
+      static detectMerges(grid, cellBuckets, fillsGrid, colTracks, rowTracks, hLines, vLines, colTol, rowTol) {
+        const numRows = grid.length;
+        const numCols = grid[0].length;
+        const visited = Array.from({ length: numRows }, () => Array(numCols).fill(false));
+        const merges = [];
+
+        const hasVDivider = (x, y1, y2) => {
+          if (vLines.length < 2) return true;
+          const midY = (y1 + y2) / 2;
+          return vLines.some(vl => Math.abs(vl.x - x) <= colTol * 1.2 && vl.y1 <= midY + 2 && vl.y2 >= midY - 2);
+        };
+
+        const hasHDivider = (y, x1, x2) => {
+          if (hLines.length < 2) return true;
+          const midX = (x1 + x2) / 2;
+          return hLines.some(hl => Math.abs(hl.y - y) <= rowTol * 1.2 && hl.x1 <= midX + 2 && hl.x2 >= midX - 2);
+        };
+
+        for (let r = 0; r < numRows; r++) {
+          for (let c = 0; c < numCols; c++) {
+            if (visited[r][c]) continue;
+            let endC = c;
+            let endR = r;
+
+            if (vLines.length >= 2 && hLines.length >= 2) {
+              while (
+                endC + 1 < numCols &&
+                !visited[r][endC + 1] &&
+                !hasVDivider(colTracks[endC + 1], rowTracks[r], rowTracks[r + 1])
+              ) {
+                endC++;
+              }
+              while (endR + 1 < numRows) {
+                let ok = true;
+                for (let cc = c; cc <= endC; cc++) {
+                  if (visited[endR + 1][cc] || hasHDivider(rowTracks[endR + 1], colTracks[cc], colTracks[cc + 1])) {
+                    ok = false;
+                    break;
+                  }
+                }
+                if (ok) endR++;
+                else break;
+              }
+            }
+
+            if (endC === c && cellBuckets[r][c].length > 0) {
+              const maxRightX = Math.max(...cellBuckets[r][c].map(it => it.x + it.width));
+              while (
+                endC + 1 < numCols &&
+                !visited[r][endC + 1] &&
+                grid[r][endC + 1] === '' &&
+                maxRightX > colTracks[endC + 1] + 6 &&
+                !hasVDivider(colTracks[endC + 1], rowTracks[r], rowTracks[r + 1])
+              ) {
+                endC++;
+              }
+            }
+
+            if (endR > r || endC > c) {
+              for (let rr = r; rr <= endR; rr++) {
+                for (let cc = c; cc <= endC; cc++) visited[rr][cc] = true;
+              }
+              merges.push({ s: { r, c }, e: { r: endR, c: endC } });
+            } else {
+              visited[r][c] = true;
+            }
+          }
+        }
+        return merges;
+      }
+    }
+
+    /* =========================================================================
+       3. PURE-JS OPENXML (.XLSX) & ZIP ARCHIVE BUILDER
+       Supports dynamic background fill colors, numeric types, live =SUM()
+       formulas, exact <mergeCells>, and embedded JPEG drawings!
+       ========================================================================= */
+    class PureXlsxBuilder {
+      static colIndexToLetter(idx) {
+        let letters = '';
+        let n = idx + 1;
+        while (n > 0) {
+          const rem = (n - 1) % 26;
+          letters = String.fromCharCode(65 + rem) + letters;
+          n = Math.floor((n - 1) / 26);
+        }
+        return letters;
+      }
+
+      static escapeXml(str) {
+        return String(str ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&apos;');
+      }
+
+      static generateXlsxBytes(sheets, smartTypes = true) {
+        const files = [];
+        const enc = new TextEncoder();
+
+        // Collect unique hex background colors across all sheets
+        const uniqueHexColors = new Set();
+        sheets.forEach(sh => {
+          (sh.fills || []).forEach(row => row.forEach(hex => {
+            if (hex && /^[0-9A-Fa-f]{6}$/.test(hex) && hex.toUpperCase() !== 'FFFFFF') {
+              uniqueHexColors.add(hex.toUpperCase());
+            }
+          }));
+        });
+        const colorList = Array.from(uniqueHexColors);
+        const colorToStyleIdx = new Map();
+        colorList.forEach((hex, idx) => colorToStyleIdx.set(hex, 2 + idx));
+
+        // 1. [Content_Types].xml
+        let overrides = '';
+        let imageCount = 0;
+        let drawingCount = 0;
+
+        sheets.forEach((sh, i) => {
+          overrides += `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`;
+          if (sh.images && sh.images.length > 0) {
+            drawingCount++;
+            overrides += `<Override PartName="/xl/drawings/drawing${drawingCount}.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>`;
+            sh.images.forEach(() => { imageCount++; });
+          }
+        });
+
+        const defaultJpeg = imageCount > 0 ? `<Default Extension="jpeg" ContentType="image/jpeg"/>` : '';
+        const contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  ${defaultJpeg}
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+  ${overrides}
+</Types>`;
+        files.push({ name: '[Content_Types].xml', data: enc.encode(contentTypesXml) });
+
+        // 2. _rels/.rels
+        files.push({
+          name: '_rels/.rels',
+          data: enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`)
+        });
+
+        // 3. xl/workbook.xml & xl/_rels/workbook.xml.rels
+        let sheetsXml = '';
+        let wbRelsXml = `<Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`;
+        sheets.forEach((sh, i) => {
+          const safeName = this.escapeXml(sh.name.slice(0, 31).replace(/[\\/?*\[\]:]/g, '_'));
+          sheetsXml += `<sheet name="${safeName}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`;
+          wbRelsXml += `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`;
+        });
+
+        files.push({
+          name: 'xl/workbook.xml',
+          data: enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>${sheetsXml}</sheets>
+</workbook>`)
+        });
+
+        files.push({
+          name: 'xl/_rels/workbook.xml.rels',
+          data: enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${wbRelsXml}</Relationships>`)
+        });
+
+        // 4. xl/styles.xml (Dynamic fills for every PDF shaded color)
+        let extraFillsXml = '';
+        let extraCellXfsXml = '';
+        colorList.forEach((hex, idx) => {
+          extraFillsXml += `<fill><patternFill patternType="solid"><fgColor rgb="FF${hex}"/></patternFill></fill>`;
+          extraCellXfsXml += `<xf numFmtId="0" fontId="1" fillId="${2 + idx}" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>`;
+        });
+
+        const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <fonts count="2">
+    <font><sz val="10"/><name val="Calibri"/></font>
+    <font><b/><sz val="10"/><name val="Calibri"/></font>
+  </fonts>
+  <fills count="${2 + colorList.length}">
+    <fill><patternFill patternType="none"/></fill>
+    <fill><patternFill patternType="gray125"/></fill>
+    ${extraFillsXml}
+  </fills>
+  <borders count="2">
+    <border><left/><right/><top/><bottom/><diagonal/></border>
+    <border>
+      <left style="thin"><color rgb="FF9CA3AF"/></left>
+      <right style="thin"><color rgb="FF9CA3AF"/></right>
+      <top style="thin"><color rgb="FF9CA3AF"/></top>
+      <bottom style="thin"><color rgb="FF9CA3AF"/></bottom>
+      <diagonal/>
+    </border>
+  </borders>
+  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+  <cellXfs count="${2 + colorList.length}">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1">
+      <alignment horizontal="left" vertical="center" wrapText="1"/>
+    </xf>
+    ${extraCellXfsXml}
+  </cellXfs>
+</styleSheet>`;
+        files.push({ name: 'xl/styles.xml', data: enc.encode(stylesXml) });
+
+        // 5. Worksheets + Optional Embedded Images/Drawings
+        let globalImgIdx = 0;
+        let globalDrawIdx = 0;
+
+        sheets.forEach((sh, idx) => {
+          let hasDrawing = false;
+          if (sh.images && sh.images.length > 0) {
+            hasDrawing = true;
+            globalDrawIdx++;
+            let drawingAnchorsXml = '';
+            let drawingRelsXml = '';
+
+            sh.images.forEach((im, localImgIdx) => {
+              globalImgIdx++;
+              const imgPath = `xl/media/image${globalImgIdx}.jpeg`;
+              files.push({ name: imgPath, data: im.bytes });
+
+              drawingRelsXml += `<Relationship Id="rId${localImgIdx + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image${globalImgIdx}.jpeg"/>`;
+              const cx = Math.max(380000, Math.round(im.width * 12700));
+              const cy = Math.max(380000, Math.round(im.height * 12700));
+              drawingAnchorsXml += `
+<xdr:oneCellAnchor>
+  <xdr:from><xdr:col>${im.col}</xdr:col><xdr:colOff>15000</xdr:colOff><xdr:row>${im.row}</xdr:row><xdr:rowOff>15000</xdr:rowOff></xdr:from>
+  <xdr:ext cx="${cx}" cy="${cy}"/>
+  <xdr:pic>
+    <xdr:nvPicPr><xdr:cNvPr id="${localImgIdx + 2}" name="Picture ${globalImgIdx}"/><xdr:cNvPicPr/></xdr:nvPicPr>
+    <xdr:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="rId${localImgIdx + 1}"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill>
+    <xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr>
+  </xdr:pic>
+  <xdr:clientData/>
+</xdr:oneCellAnchor>`;
+            });
+
+            const drawingXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+  ${drawingAnchorsXml}
+</xdr:wsDr>`;
+            files.push({ name: `xl/drawings/drawing${globalDrawIdx}.xml`, data: enc.encode(drawingXml) });
+            files.push({
+              name: `xl/drawings/_rels/drawing${globalDrawIdx}.xml.rels`,
+              data: enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${drawingRelsXml}</Relationships>`)
+            });
+            files.push({
+              name: `xl/worksheets/_rels/sheet${idx + 1}.xml.rels`,
+              data: enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdDraw1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing${globalDrawIdx}.xml"/></Relationships>`)
+            });
+          }
+
+          const sheetXml = this.buildWorksheetXml(sh, colorToStyleIdx, smartTypes, hasDrawing);
+          files.push({ name: `xl/worksheets/sheet${idx + 1}.xml`, data: enc.encode(sheetXml) });
+        });
+
+        return this.createZip(files);
+      }
+
+      static buildWorksheetXml(sheet, colorToStyleIdx, smartTypes, hasDrawing) {
+        const rows = sheet.rows || [[]];
+        const fills = sheet.fills || [];
+        const formulas = sheet.formulas || [];
+        const merges = sheet.merges || [];
+        const numRows = rows.length;
+        const numCols = Math.max(1, ...rows.map(r => r.length));
+
+        const colWidths = Array(numCols).fill(11);
+        for (let r = 0; r < numRows; r++) {
+          for (let c = 0; c < numCols; c++) {
+            const isHorizMerge = merges.some(m => m.s.r === r && m.s.c === c && m.e.c > m.s.c);
+            if (isHorizMerge) continue;
+            const val = String(rows[r][c] ?? '');
+            const maxLineLen = Math.max(0, ...val.split('\n').map(l => l.length));
+            colWidths[c] = Math.min(44, Math.max(colWidths[c], maxLineLen + 3));
+          }
+        }
+
+        let colsXml = '<cols>';
+        for (let c = 0; c < numCols; c++) {
+          colsXml += `<col min="${c + 1}" max="${c + 1}" width="${colWidths[c]}" customWidth="1"/>`;
+        }
+        colsXml += '</cols>';
+
+        let sheetDataXml = '<sheetData>';
+        for (let r = 0; r < numRows; r++) {
+          let maxLines = 1;
+          for (let c = 0; c < numCols; c++) {
+            const lineCount = String(rows[r][c] ?? '').split('\n').length;
+            if (lineCount > maxLines) maxLines = lineCount;
+          }
+          const rowHeight = Math.max(20, maxLines * 15 + 6);
+          sheetDataXml += `<row r="${r + 1}" ht="${rowHeight}" customHeight="1">`;
+
+          for (let c = 0; c < numCols; c++) {
+            const ref = `${this.colIndexToLetter(c)}${r + 1}`;
+            const val = String(rows[r][c] ?? '');
+            const formula = formulas[r]?.[c] || '';
+            const hexFill = (fills[r]?.[c] || '').toUpperCase();
+            const styleIdx = colorToStyleIdx.has(hexFill) ? colorToStyleIdx.get(hexFill) : 1;
+
+            if (formula) {
+              const cleanNum = val.replace(/[,$₹€£\s]/g, '');
+              const cached = /^-?\d+(\.\d+)?$/.test(cleanNum) ? `<v>${cleanNum}</v>` : '';
+              sheetDataXml += `<c r="${ref}" s="${styleIdx}"><f>${this.escapeXml(formula)}</f>${cached}</c>`;
+            } else if (val.length > 0) {
+              const cleanNum = val.replace(/,/g, '');
+              if (smartTypes && /^-?\d+(\.\d+)?$/.test(cleanNum) && !/^0\d+/.test(cleanNum)) {
+                sheetDataXml += `<c r="${ref}" s="${styleIdx}" t="n"><v>${cleanNum}</v></c>`;
+              } else {
+                sheetDataXml += `<c r="${ref}" s="${styleIdx}" t="inlineStr"><is><t xml:space="preserve">${this.escapeXml(val)}</t></is></c>`;
+              }
+            } else {
+              sheetDataXml += `<c r="${ref}" s="${styleIdx}"/>`;
+            }
+          }
+          sheetDataXml += '</row>';
+        }
+        sheetDataXml += '</sheetData>';
+
+        let mergeXml = '';
+        if (merges.length > 0) {
+          mergeXml = `<mergeCells count="${merges.length}">`;
+          for (const m of merges) {
+            mergeXml += `<mergeCell ref="${this.colIndexToLetter(m.s.c)}${m.s.r + 1}:${this.colIndexToLetter(m.e.c)}${m.e.r + 1}"/>`;
+          }
+          mergeXml += '</mergeCells>';
+        }
+
+        const drawTag = hasDrawing ? `<drawing xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rIdDraw1"/>` : '';
+        return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  ${colsXml}
+  ${sheetDataXml}
+  ${mergeXml}
+  ${drawTag}
+</worksheet>`;
+      }
+
+      static crc32(buf) {
+        let crc = 0xFFFFFFFF;
+        for (let i = 0; i < buf.length; i++) {
+          crc ^= buf[i];
+          for (let j = 0; j < 8; j++) crc = (crc >>> 1) ^ (crc & 1 ? 0xEDB88320 : 0);
+        }
+        return (crc ^ 0xFFFFFFFF) >>> 0;
+      }
+
+      static createZip(files) {
+        const enc = new TextEncoder();
+        const localParts = [];
+        const centralParts = [];
+        let offset = 0;
+
+        for (const f of files) {
+          const nameBytes = enc.encode(f.name);
+          const crc = this.crc32(f.data);
+          const size = f.data.length;
+
+          const lh = new Uint8Array(30 + nameBytes.length);
+          const lv = new DataView(lh.buffer);
+          lv.setUint32(0, 0x04034b50, true);
+          lv.setUint16(4, 20, true);
+          lv.setUint16(6, 0x0800, true);
+          lv.setUint32(14, crc, true);
+          lv.setUint32(18, size, true);
+          lv.setUint32(22, size, true);
+          lv.setUint16(26, nameBytes.length, true);
+          lh.set(nameBytes, 30);
+          localParts.push(lh, f.data);
+
+          const ch = new Uint8Array(46 + nameBytes.length);
+          const cv = new DataView(ch.buffer);
+          cv.setUint32(0, 0x02014b50, true);
+          cv.setUint16(4, 20, true);
+          cv.setUint16(6, 20, true);
+          cv.setUint16(8, 0x0800, true);
+          cv.setUint32(16, crc, true);
+          cv.setUint32(20, size, true);
+          cv.setUint32(24, size, true);
+          cv.setUint16(28, nameBytes.length, true);
+          cv.setUint32(42, offset, true);
+          ch.set(nameBytes, 46);
+          centralParts.push(ch);
+
+          offset += lh.length + size;
+        }
+
+        const centralStart = offset;
+        let centralSize = 0;
+        for (const c of centralParts) centralSize += c.length;
+
+        const eocd = new Uint8Array(22);
+        const ev = new DataView(eocd.buffer);
+        ev.setUint32(0, 0x06054b50, true);
+        ev.setUint16(8, files.length, true);
+        ev.setUint16(10, files.length, true);
+        ev.setUint32(12, centralSize, true);
+        ev.setUint32(16, centralStart, true);
+
+        const out = new Uint8Array(offset + centralSize + 22);
+        let pos = 0;
+        for (const p of localParts) { out.set(p, pos); pos += p.length; }
+        for (const c of centralParts) { out.set(c, pos); pos += c.length; }
+        out.set(eocd, pos);
+        return out;
+      }
+    }
+
+    /* =========================================================================
+       4. STUDIO STATE, DRAGGABLE CANVAS DIVIDERS & BATCH WORKFLOW CONTROLLER
+       ========================================================================= */
+    const state = {
+      files: [], // Array of { id, name, rawPages, sheets, customTracksPerPage: Map }
+      activeFileIdx: 0,
+      activeSheetIdx: 0,
+      selStart: null,
+      selEnd: null,
+      canvasZoom: 1.25,
+      draggingDivider: null // { type: 'col'|'row', index: number }
+    };
+
+    const el = {
+      dropzone: document.getElementById('dropzone'),
+      pdfInput: document.getElementById('pdf-input'),
+      queueList: document.getElementById('file-queue-list'),
+      queueCount: document.getElementById('queue-count'),
+      diagBadge: document.getElementById('diag-badge'),
+      btnDownload: document.getElementById('btn-download-xlsx'),
+      btnBatchZip: document.getElementById('btn-export-batch-zip'),
+      btnSaveProfile: document.getElementById('btn-save-profile'),
+      btnLoadProfile: document.getElementById('btn-load-profile'),
+      profileInput: document.getElementById('profile-input'),
+      btnReprocess: document.getElementById('btn-reprocess'),
+      btnToggleGeom: document.getElementById('btn-toggle-geom'),
+      btnMerge: document.getElementById('btn-merge-cells'),
+      btnUnmerge: document.getElementById('btn-unmerge-cells'),
+      btnAddRow: document.getElementById('btn-add-row'),
+      btnDelRow: document.getElementById('btn-del-row'),
+      btnAddCol: document.getElementById('btn-add-col'),
+      btnDelCol: document.getElementById('btn-del-col'),
+      btnToggleShade: document.getElementById('btn-toggle-shade'),
+      gridContainer: document.getElementById('grid-container'),
+      sheetTabs: document.getElementById('sheet-tabs'),
+      cellRef: document.getElementById('active-cell-ref'),
+      cellEditor: document.getElementById('active-cell-editor'),
+      optMode: document.getElementById('opt-mode'),
+      optMultilineMode: document.getElementById('opt-multiline-mode'),
+      optPages: document.getElementById('opt-pages'),
+      optRotation: document.getElementById('opt-rotation'),
+      optColTol: document.getElementById('opt-col-tol'),
+      optRowTol: document.getElementById('opt-row-tol'),
+      optDetectMerges: document.getElementById('opt-detect-merges'),
+      optSmartTypes: document.getElementById('opt-smart-types'),
+      optPreserveFills: document.getElementById('opt-preserve-fills'),
+      optEmbedImages: document.getElementById('opt-embed-images'),
+      valColTol: document.getElementById('val-col-tol'),
+      valRowTol: document.getElementById('val-row-tol'),
+      statDims: document.getElementById('stat-dims'),
+      statMerges: document.getElementById('stat-merges'),
+      statXobj: document.getElementById('stat-xobj'),
+      statLines: document.getElementById('stat-lines'),
+      statFills: document.getElementById('stat-fills'),
+      statImgTxt: document.getElementById('stat-img-txt'),
+      geomPanel: document.getElementById('geometry-panel'),
+      geomCanvas: document.getElementById('geometry-canvas'),
+      zoomLabel: document.getElementById('zoom-label'),
+      divAddType: document.getElementById('divider-add-type')
+    };
+
+    function getActiveFile() {
+      return state.files[state.activeFileIdx] || null;
+    }
+
+    function getActiveSheet() {
+      const f = getActiveFile();
+      return f ? (f.sheets[state.activeSheetIdx] || null) : null;
+    }
+
+    function getCurrentOptions() {
+      return {
+        mode: el.optMode.value,
+        multilineMode: el.optMultilineMode.value,
+        pagesMode: el.optPages.value,
+        rotation: el.optRotation.value,
+        colTol: parseInt(el.optColTol.value, 10),
+        rowTol: parseInt(el.optRowTol.value, 10),
+        detectMerges: el.optDetectMerges.checked,
+        smartTypes: el.optSmartTypes.checked,
+        preserveFills: el.optPreserveFills.checked,
+        embedImages: el.optEmbedImages.checked
+      };
+    }
+
+    function showStatus(msg, type = 'info') {
+      const banner = document.getElementById('status-banner');
+      const box = document.getElementById('status-box');
+      const text = document.getElementById('status-text');
+      banner.classList.remove('hidden');
+      text.textContent = msg;
+      box.className = 'px-4 py-2.5 rounded-xl border text-xs sm:text-sm flex items-center justify-between gap-3 ' + (
+        type === 'error'
+          ? 'bg-red-500/15 border-red-500/40 text-red-300'
+          : type === 'success'
+            ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+            : 'bg-blue-500/15 border-blue-500/40 text-blue-300'
+      );
+    }
+
+    // Theme Switcher
+    document.getElementById('btn-theme-toggle').addEventListener('click', () => {
+      const html = document.documentElement;
+      const isDark = html.classList.contains('dark');
+      html.classList.toggle('dark', !isDark);
+      html.classList.toggle('light', isDark);
+      document.getElementById('theme-label').textContent = isDark ? '🌙 Dark' : '☀️ Light';
+    });
+
+    el.optColTol.addEventListener('input', () => { el.valColTol.textContent = `${el.optColTol.value} pt`; });
+    el.optRowTol.addEventListener('input', () => { el.valRowTol.textContent = `${el.optRowTol.value} pt`; });
+
+    // Dropzone & Multi-File Upload
+    el.dropzone.addEventListener('click', () => el.pdfInput.click());
+    el.dropzone.addEventListener('dragover', (e) => { e.preventDefault(); el.dropzone.classList.add('drag-over'); });
+    el.dropzone.addEventListener('dragleave', () => el.dropzone.classList.remove('drag-over'));
+    el.dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      el.dropzone.classList.remove('drag-over');
+      if (e.dataTransfer.files?.length) handlePdfFiles(Array.from(e.dataTransfer.files));
+    });
+    el.pdfInput.addEventListener('change', (e) => {
+      if (e.target.files?.length) handlePdfFiles(Array.from(e.target.files));
+    });
+
+    async function handlePdfFiles(fileList) {
+      const pdfs = fileList.filter(f => f.name.toLowerCase().endsWith('.pdf') || f.type === 'application/pdf');
+      if (!pdfs.length) {
+        showStatus('Please select valid .pdf files with selectable text.', 'error');
+        return;
+      }
+
+      showStatus(`Parsing ${pdfs.length} PDF file(s) offline in pure JavaScript...`, 'info');
+      for (const file of pdfs) {
+        try {
+          const buf = await file.arrayBuffer();
+          const engine = new AdvancedPdfEngine(buf);
+          const rawPages = await engine.parse();
+          if (!rawPages.length) continue;
+
+          state.files.push({
+            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+            name: file.name,
+            rawPages,
+            sheets: [],
+            customTracksPerPage: new Map()
+          });
+        } catch (err) {
+          console.error(err);
+          showStatus(`Error reading ${file.name}: ${err.message}`, 'error');
+        }
+      }
+
+      if (state.files.length > 0) {
+        state.activeFileIdx = state.files.length - 1;
+        state.activeSheetIdx = 0;
+        rebuildFileSheets(getActiveFile());
+        renderFileQueue();
+        enableStudioControls();
+        showStatus(`Loaded ${pdfs.length} PDF(s). Ready for interactive divider editing & Excel export.`, 'success');
+      }
+    }
+
+    // Built-In Complex Demo PDF (Form XObject + Shaded Header + Multi-Line Attendance + Total Row)
+    document.getElementById('btn-load-sample').addEventListener('click', async () => {
+      const sampleBytes = buildComplexDemoPdf();
+      const engine = new AdvancedPdfEngine(sampleBytes.buffer);
+      const rawPages = await engine.parse();
+      state.files.push({
+        id: 'demo-' + Date.now(),
+        name: 'ISRO_Attendance_Report_Demo.pdf',
+        rawPages,
+        sheets: [],
+        customTracksPerPage: new Map()
+      });
+      state.activeFileIdx = state.files.length - 1;
+      state.activeSheetIdx = 0;
+      rebuildFileSheets(getActiveFile());
+      renderFileQueue();
+      enableStudioControls();
+      showStatus('Loaded Complex Demo PDF with Form XObject header, shaded cells, merged spans, and =SUM() total row.', 'success');
+    });
+
+    function buildComplexDemoPdf() {
+      const xobjHeaderStream = [
+        '0.86 0.92 0.99 rg 40 735 520 26 re f',
+        '0 0 0 rg 40 735 520 26 re S',
+        'BT /F1 10 Tf 50 744 Tm (Contract ID: GC154696VS  |  ISRO APPRENTICESHIP HOLDERS SOCIETY  |  Aug 2026) Tj ET'
+      ].join('\n');
+
+      const pageStream = [
+        '/HeaderXObj Do',
+        // Shaded Column Header Row
+        '0.91 0.94 0.97 rg 40 710 520 25 re f',
+        '0 0 0 rg 40 710 520 25 re S',
+        // Data Rows + Total Row
+        '40 665 520 45 re S',
+        '40 620 520 45 re S',
+        '40 575 520 45 re S',
+        '0.93 0.98 0.95 rg 40 548 520 27 re f',
+        '0 0 0 rg 40 548 520 27 re S',
+        // Vertical Dividers (x = 150, 215, 280, 345, 410, 485)
+        '150 548 m 150 735 l S',
+        '215 548 m 215 735 l S',
+        '280 548 m 280 735 l S',
+        '345 548 m 345 735 l S',
+        // Omit x=410 in rows 1 & 2 to create merged weekend blocks!
+        '410 710 m 410 735 l S',
+        '410 548 m 410 620 l S',
+        '485 548 m 485 735 l S',
+        // Headers
+        'BT /F1 9 Tf 48 719 Tm (Staff Name) Tj ET',
+        'BT /F1 9 Tf 162 719 Tm (01-08 Mon) Tj ET',
+        'BT /F1 9 Tf 227 719 Tm (02-08 Tue) Tj ET',
+        'BT /F1 9 Tf 292 719 Tm (03-08 Wed) Tj ET',
+        'BT /F1 9 Tf 357 719 Tm (04-08 Sat) Tj ET',
+        'BT /F1 9 Tf 422 719 Tm (05-08 Sun) Tj ET',
+        'BT /F1 9 Tf 495 719 Tm (Hours) Tj ET',
+        // Row 1
+        'BT /F1 9 Tf 48 684 Tm (GAYATHRI J S) Tj ET',
+        'BT /F1 8 Tf 165 696 Tm (09:29) Tj 0 -11 Td (17:07) Tj 0 -11 Td (7.37) Tj ET',
+        'BT /F1 8 Tf 230 696 Tm (09:55) Tj 0 -11 Td (17:03) Tj 0 -11 Td (7.08) Tj ET',
+        'BT /F1 8 Tf 295 696 Tm (09:13) Tj 0 -11 Td (17:17) Tj 0 -11 Td (8.03) Tj ET',
+        'BT /F1 8 Tf 382 684 Tm (WEEKEND OFF) Tj ET',
+        'BT /F1 9 Tf 502 684 Tm (22.48) Tj ET',
+        // Row 2
+        'BT /F1 9 Tf 48 639 Tm (ABHAYAMBIKA S) Tj ET',
+        'BT /F1 8 Tf 165 651 Tm (09:01) Tj 0 -11 Td (16:55) Tj 0 -11 Td (7.54) Tj ET',
+        'BT /F1 8 Tf 230 651 Tm (08:50) Tj 0 -11 Td (15:45) Tj 0 -11 Td (6.55) Tj ET',
+        'BT /F1 8 Tf 302 639 Tm (abs) Tj ET',
+        'BT /F1 9 Tf 502 639 Tm (14.09) Tj ET',
+        // Row 3 (Unmerged Sat/Sun)
+        'BT /F1 9 Tf 48 594 Tm (SUJA S R) Tj ET',
+        'BT /F1 8 Tf 165 606 Tm (09:28) Tj 0 -11 Td (17:15) Tj 0 -11 Td (7.46) Tj ET',
+        'BT /F1 8 Tf 230 606 Tm (09:17) Tj 0 -11 Td (15:00) Tj 0 -11 Td (5.43) Tj ET',
+        'BT /F1 8 Tf 295 606 Tm (09:07) Tj 0 -11 Td (17:09) Tj 0 -11 Td (8.02) Tj ET',
+        'BT /F1 8 Tf 360 606 Tm (10:04) Tj 0 -11 Td (16:07) Tj 0 -11 Td (6.02) Tj ET',
+        'BT /F1 8 Tf 432 594 Tm (abs) Tj ET',
+        'BT /F1 9 Tf 502 594 Tm (26.93) Tj ET',
+        // Summary Total Row
+        'BT /F1 9 Tf 48 558 Tm (Grand Total) Tj ET',
+        'BT /F1 9 Tf 502 558 Tm (63.50) Tj ET'
+      ].join('\n');
+
+      const pdfStr = `%PDF-1.4
+1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj
+2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj
+3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> /XObject << /HeaderXObj 6 0 R >> >> /Contents 5 0 R >> endobj
+4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj
+5 0 obj << /Length ${pageStream.length} >>
+stream
+${pageStream}
+endstream
+endobj
+6 0 obj << /Type /XObject /Subtype /Form /BBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Length ${xobjHeaderStream.length} >>
+stream
+${xobjHeaderStream}
+endstream
+endobj
+trailer << /Root 1 0 R >>
+%%EOF`;
+      return new TextEncoder().encode(pdfStr);
+    }
+
+    function enableStudioControls() {
+      const hasFiles = state.files.length > 0;
+      el.btnDownload.disabled = !hasFiles;
+      el.btnBatchZip.disabled = !hasFiles;
+      el.btnSaveProfile.disabled = !hasFiles;
+      el.btnReprocess.disabled = !hasFiles;
+      el.btnToggleGeom.disabled = !hasFiles;
+    }
+
+    function renderFileQueue() {
+      el.queueCount.textContent = `${state.files.length} file${state.files.length === 1 ? '' : 's'}`;
+      el.queueList.innerHTML = '';
+      state.files.forEach((f, idx) => {
+        const div = document.createElement('div');
+        div.className = `file-pill ${idx === state.activeFileIdx ? 'active' : ''}`;
+        div.innerHTML = `
+          <span class="truncate font-medium">📄 ${f.name} <span class="opacity-60 font-mono">(${f.rawPages.length}p)</span></span>
+          <button class="text-xs opacity-60 hover:opacity-100 px-1.5" title="Remove PDF">✕</button>
+        `;
+        div.addEventListener('click', (e) => {
+          if (e.target.tagName === 'BUTTON') {
+            state.files.splice(idx, 1);
+            state.activeFileIdx = Math.max(0, Math.min(state.activeFileIdx, state.files.length - 1));
+            state.activeSheetIdx = 0;
+            renderFileQueue();
+            enableStudioControls();
+            if (getActiveFile()) {
+              renderSheetTabs();
+              renderActiveSheet();
+            } else {
+              el.gridContainer.innerHTML = '<div class="p-12 text-center text-xs opacity-60">Queue empty. Drop a PDF to continue.</div>';
+            }
+            return;
+          }
+          state.activeFileIdx = idx;
+          state.activeSheetIdx = 0;
+          state.selStart = null;
+          state.selEnd = null;
+          renderFileQueue();
+          renderSheetTabs();
+          renderActiveSheet();
+        });
+        el.queueList.appendChild(div);
+      });
+    }
+
+    // Re-analyze when options change
+    el.btnReprocess.addEventListener('click', () => {
+      const f = getActiveFile();
+      if (f) {
+        f.customTracksPerPage.clear();
+        rebuildFileSheets(f);
+      }
+    });
+    [el.optMode, el.optMultilineMode, el.optPages, el.optRotation, el.optDetectMerges, el.optSmartTypes, el.optPreserveFills, el.optEmbedImages].forEach(ctrl => {
+      ctrl.addEventListener('change', () => {
+        const f = getActiveFile();
+        if (f) rebuildFileSheets(f);
+      });
+    });
+
+    function rebuildFileSheets(fileObj) {
+      if (!fileObj) return;
+      const opts = getCurrentOptions();
+      const built = fileObj.rawPages.map(p => {
+        const custom = fileObj.customTracksPerPage.get(p.pageNumber) || null;
+        return IntelligentGridBuilder.buildSheet(p, opts, custom);
+      });
+
+      if ((opts.pagesMode === 'stitch' || opts.pagesMode === 'stitch_dedupe') && built.length > 1) {
+        const rows = [];
+        const fills = [];
+        const formulas = [];
+        const merges = [];
+        const images = [];
+        let rowOffset = 0;
+        const firstHeaderSig = built[0].rows[0]?.join('|') || '';
+
+        built.forEach((sh, idx) => {
+          let startRow = 0;
+          if (idx > 0 && opts.pagesMode === 'stitch_dedupe' && sh.rows[0]?.join('|') === firstHeaderSig) {
+            startRow = 1; // Skip repeated header row
+          }
+          for (let r = startRow; r < sh.rows.length; r++) {
+            rows.push([...sh.rows[r]]);
+            fills.push([...(sh.fills[r] || [])]);
+            formulas.push([...(sh.formulas[r] || [])]);
+          }
+          sh.merges.forEach(m => {
+            if (m.s.r >= startRow) {
+              merges.push({
+                s: { r: m.s.r - startRow + rowOffset, c: m.s.c },
+                e: { r: m.e.r - startRow + rowOffset, c: m.e.c }
+              });
+            }
+          });
+          sh.images.forEach(im => {
+            if (im.row >= startRow) {
+              images.push({ ...im, row: im.row - startRow + rowOffset });
+            }
+          });
+          rowOffset += (sh.rows.length - startRow);
+        });
+
+        fileObj.sheets = [{
+          name: 'Stitched_Table',
+          rows,
+          fills,
+          formulas,
+          merges,
+          images,
+          colTracks: built[0].colTracks,
+          rowTracks: built[0].rowTracks,
+          geometry: built[0].geometry
+        }];
+      } else {
+        fileObj.sheets = built;
+      }
+
+      state.activeSheetIdx = Math.min(state.activeSheetIdx, fileObj.sheets.length - 1);
+      renderSheetTabs();
+      renderActiveSheet();
+    }
+
+    function renderSheetTabs() {
+      const f = getActiveFile();
+      el.sheetTabs.innerHTML = '';
+      if (!f) return;
+      f.sheets.forEach((sh, idx) => {
+        const btn = document.createElement('button');
+        btn.className = idx === state.activeSheetIdx
+          ? 'px-3 py-1 rounded-lg text-xs font-semibold bg-blue-600 text-white shadow'
+          : 'btn py-1 px-2.5 text-xs';
+        btn.textContent = sh.name;
+        btn.onclick = () => {
+          state.activeSheetIdx = idx;
+          state.selStart = null;
+          state.selEnd = null;
+          renderSheetTabs();
+          renderActiveSheet();
+        };
+        el.sheetTabs.appendChild(btn);
+      });
+    }
+
+    function renderActiveSheet() {
+      const f = getActiveFile();
+      const sheet = getActiveSheet();
+      if (!f || !sheet) return;
+
+      const rows = sheet.rows;
+      const fills = sheet.fills || [];
+      const formulas = sheet.formulas || [];
+      const merges = sheet.merges || [];
+      const numRows = rows.length;
+      const numCols = Math.max(1, ...rows.map(r => r.length));
+
+      // Diagnostics Update
+      const totXobj = f.rawPages.reduce((s, p) => s + (p.xobjectCount || 0), 0);
+      const totLines = f.rawPages.reduce((s, p) => s + p.lines.length, 0);
+      const totFills = f.rawPages.reduce((s, p) => s + (p.shadedRects?.length || 0), 0);
+      const totImgs = f.rawPages.reduce((s, p) => s + (p.images?.length || 0), 0);
+      const totTxt = f.rawPages.reduce((s, p) => s + p.textItems.length, 0);
+
+      el.statDims.textContent = `${numRows} × ${numCols}`;
+      el.statMerges.textContent = merges.length;
+      el.statXobj.textContent = totXobj;
+      el.statLines.textContent = totLines;
+      el.statFills.textContent = totFills;
+      el.statImgTxt.textContent = `${totImgs} / ${totTxt}`;
+
+      el.diagBadge.textContent = `${f.rawPages.length}p | ${totXobj} XObj | ${totLines} lines | ${totFills} fills | ${merges.length} merges`;
+      el.diagBadge.classList.remove('hidden');
+
+      const masterMap = new Map();
+      const coveredSet = new Set();
+      for (const m of merges) {
+        masterMap.set(`${m.s.r},${m.s.c}`, {
+          rowspan: m.e.r - m.s.r + 1,
+          colspan: m.e.c - m.s.c + 1
+        });
+        for (let rr = m.s.r; rr <= m.e.r; rr++) {
+          for (let cc = m.s.c; cc <= m.e.c; cc++) {
+            if (rr === m.s.r && cc === m.s.c) continue;
+            coveredSet.add(`${rr},${cc}`);
+          }
+        }
+      }
+
+      const sel = getSelectionBounds();
+      const table = document.createElement('table');
+      table.className = 'excel-preview';
+
+      const thead = document.createElement('thead');
+      const headRow = document.createElement('tr');
+      const cornerTh = document.createElement('th');
+      cornerTh.className = 'row-header';
+      cornerTh.textContent = '#';
+      headRow.appendChild(cornerTh);
+
+      for (let c = 0; c < numCols; c++) {
+        const th = document.createElement('th');
+        th.textContent = PureXlsxBuilder.colIndexToLetter(c);
+        headRow.appendChild(th);
+      }
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      for (let r = 0; r < numRows; r++) {
+        const tr = document.createElement('tr');
+        const rowNumTd = document.createElement('td');
+        rowNumTd.className = 'row-num';
+        rowNumTd.textContent = r + 1;
+        tr.appendChild(rowNumTd);
+
+        for (let c = 0; c < numCols; c++) {
+          const key = `${r},${c}`;
+          if (coveredSet.has(key)) continue;
+
+          const td = document.createElement('td');
+          td.className = 'grid-cell';
+          const span = masterMap.get(key);
+          if (span) {
+            if (span.rowspan > 1) td.rowSpan = span.rowspan;
+            if (span.colspan > 1) td.colSpan = span.colspan;
+            td.classList.add('is-merged');
+          }
+
+          const hexBg = fills[r]?.[c];
+          if (hexBg && hexBg !== 'FFFFFF') {
+            td.style.backgroundColor = `#${hexBg}33`;
+          }
+
+          if (sel && r >= sel.r1 && r <= sel.r2 && c >= sel.c1 && c <= sel.c2) {
+            td.classList.add('is-selected');
+          }
+
+          td.textContent = rows[r][c] ?? '';
+
+          if (span) {
+            const b = document.createElement('span');
+            b.className = 'merge-badge';
+            b.textContent = `${span.rowspan}×${span.colspan}`;
+            td.appendChild(b);
+          }
+
+          if (formulas[r]?.[c]) {
+            const fb = document.createElement('span');
+            fb.className = 'formula-badge';
+            fb.textContent = 'fx';
+            fb.title = `=${formulas[r][c]}`;
+            td.appendChild(fb);
+          }
+
+          td.addEventListener('click', (e) => {
+            if (e.shiftKey && state.selStart) {
+              state.selEnd = { r: span ? r + span.rowspan - 1 : r, c: span ? c + span.colspan - 1 : c };
+            } else {
+              state.selStart = { r, c };
+              state.selEnd = { r: span ? r + span.rowspan - 1 : r, c: span ? c + span.colspan - 1 : c };
+            }
+            updateSelectionToolbar();
+            renderActiveSheet();
+          });
+
+          td.addEventListener('dblclick', () => {
+            td.contentEditable = 'true';
+            td.focus();
+            td.addEventListener('blur', () => {
+              td.contentEditable = 'false';
+              const cleanVal = Array.from(td.childNodes)
+                .filter(n => n.nodeType === Node.TEXT_NODE)
+                .map(n => n.textContent)
+                .join('\n');
+              sheet.rows[r][c] = cleanVal;
+              el.cellEditor.value = cleanVal.replace(/\n/g, ' \\n ');
+              renderActiveSheet();
+            }, { once: true });
+          });
+
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+
+      table.appendChild(tbody);
+      el.gridContainer.innerHTML = '';
+      el.gridContainer.appendChild(table);
+
+      if (!el.geomPanel.classList.contains('hidden')) {
+        drawInteractiveGeometryCanvas();
+      }
+    }
+
+    function getSelectionBounds() {
+      if (!state.selStart || !state.selEnd) return null;
+      return {
+        r1: Math.min(state.selStart.r, state.selEnd.r),
+        r2: Math.max(state.selStart.r, state.selEnd.r),
+        c1: Math.min(state.selStart.c, state.selEnd.c),
+        c2: Math.max(state.selStart.c, state.selEnd.c)
+      };
+    }
+
+    function updateSelectionToolbar() {
+      const sheet = getActiveSheet();
+      const b = getSelectionBounds();
+      const hasSel = !!(sheet && b);
+      el.cellEditor.disabled = !hasSel;
+      el.btnAddRow.disabled = !hasSel;
+      el.btnDelRow.disabled = !hasSel;
+      el.btnAddCol.disabled = !hasSel;
+      el.btnDelCol.disabled = !hasSel;
+      el.btnToggleShade.disabled = !hasSel;
+
+      if (!hasSel) {
+        el.cellRef.textContent = '--';
+        el.btnMerge.disabled = true;
+        el.btnUnmerge.disabled = true;
+        return;
+      }
+
+      const startRef = `${PureXlsxBuilder.colIndexToLetter(b.c1)}${b.r1 + 1}`;
+      const endRef = `${PureXlsxBuilder.colIndexToLetter(b.c2)}${b.r2 + 1}`;
+      el.cellRef.textContent = startRef === endRef ? startRef : `${startRef}:${endRef}`;
+
+      const fStr = sheet.formulas?.[b.r1]?.[b.c1];
+      el.cellEditor.value = fStr ? `=${fStr}` : (sheet.rows[b.r1][b.c1] ?? '').replace(/\n/g, ' \\n ');
+      el.btnMerge.disabled = !(b.r2 > b.r1 || b.c2 > b.c1);
+      el.btnUnmerge.disabled = !sheet.merges.some(m => m.s.r === b.r1 && m.s.c === b.c1);
+    }
+
+    el.cellEditor.addEventListener('input', () => {
+      const sheet = getActiveSheet();
+      const b = getSelectionBounds();
+      if (!sheet || !b) return;
+      const val = el.cellEditor.value;
+      if (val.startsWith('=')) {
+        sheet.formulas[b.r1][b.c1] = val.slice(1);
+      } else {
+        sheet.formulas[b.r1][b.c1] = '';
+        sheet.rows[b.r1][b.c1] = val.replace(/\s*\\n\s*/g, '\n');
+      }
+      renderActiveSheet();
+    });
+
+    // Manual Cell Merge / Unmerge / Row / Col / Fill Actions
+    el.btnMerge.addEventListener('click', () => {
+      const sheet = getActiveSheet();
+      const b = getSelectionBounds();
+      if (!sheet || !b || (b.r1 === b.r2 && b.c1 === b.c2)) return;
+      sheet.merges = sheet.merges.filter(m => m.e.r < b.r1 || m.s.r > b.r2 || m.e.c < b.c1 || m.s.c > b.c2);
+      const texts = [];
+      for (let r = b.r1; r <= b.r2; r++) {
+        for (let c = b.c1; c <= b.c2; c++) {
+          if (sheet.rows[r][c]) texts.push(sheet.rows[r][c]);
+          sheet.rows[r][c] = '';
+        }
+      }
+      sheet.rows[b.r1][b.c1] = texts.join('\n');
+      sheet.merges.push({ s: { r: b.r1, c: b.c1 }, e: { r: b.r2, c: b.c2 } });
+      updateSelectionToolbar();
+      renderActiveSheet();
+    });
+
+    el.btnUnmerge.addEventListener('click', () => {
+      const sheet = getActiveSheet();
+      const b = getSelectionBounds();
+      if (!sheet || !b) return;
+      sheet.merges = sheet.merges.filter(m => !(m.s.r === b.r1 && m.s.c === b.c1));
+      updateSelectionToolbar();
+      renderActiveSheet();
+    });
+
+    el.btnAddRow.addEventListener('click', () => {
+      const sheet = getActiveSheet();
+      const b = getSelectionBounds();
+      if (!sheet || !b) return;
+      const cols = sheet.rows[0].length;
+      sheet.rows.splice(b.r1 + 1, 0, Array(cols).fill(''));
+      sheet.fills.splice(b.r1 + 1, 0, Array(cols).fill(''));
+      sheet.formulas.splice(b.r1 + 1, 0, Array(cols).fill(''));
+      sheet.merges.forEach(m => {
+        if (m.s.r > b.r1) m.s.r++;
+        if (m.e.r > b.r1) m.e.r++;
+      });
+      renderActiveSheet();
+    });
+
+    el.btnDelRow.addEventListener('click', () => {
+      const sheet = getActiveSheet();
+      const b = getSelectionBounds();
+      if (!sheet || !b || sheet.rows.length <= 1) return;
+      sheet.rows.splice(b.r1, 1);
+      sheet.fills.splice(b.r1, 1);
+      sheet.formulas.splice(b.r1, 1);
+      sheet.merges = sheet.merges.filter(m => !(m.s.r === b.r1 && m.e.r === b.r1));
+      state.selStart = null;
+      state.selEnd = null;
+      updateSelectionToolbar();
+      renderActiveSheet();
+    });
+
+    el.btnAddCol.addEventListener('click', () => {
+      const sheet = getActiveSheet();
+      const b = getSelectionBounds();
+      if (!sheet || !b) return;
+      sheet.rows.forEach(r => r.splice(b.c1 + 1, 0, ''));
+      sheet.fills.forEach(r => r.splice(b.c1 + 1, 0, ''));
+      sheet.formulas.forEach(r => r.splice(b.c1 + 1, 0, ''));
+      sheet.merges.forEach(m => {
+        if (m.s.c > b.c1) m.s.c++;
+        if (m.e.c > b.c1) m.e.c++;
+      });
+      renderActiveSheet();
+    });
+
+    el.btnDelCol.addEventListener('click', () => {
+      const sheet = getActiveSheet();
+      const b = getSelectionBounds();
+      if (!sheet || !b || sheet.rows[0].length <= 1) return;
+      sheet.rows.forEach(r => r.splice(b.c1, 1));
+      sheet.fills.forEach(r => r.splice(b.c1, 1));
+      sheet.formulas.forEach(r => r.splice(b.c1, 1));
+      sheet.merges = sheet.merges.filter(m => !(m.s.c === b.c1 && m.e.c === b.c1));
+      state.selStart = null;
+      state.selEnd = null;
+      updateSelectionToolbar();
+      renderActiveSheet();
+    });
+
+    el.btnToggleShade.addEventListener('click', () => {
+      const sheet = getActiveSheet();
+      const b = getSelectionBounds();
+      if (!sheet || !b) return;
+      for (let r = b.r1; r <= b.r2; r++) {
+        for (let c = b.c1; c <= b.c2; c++) {
+          sheet.fills[r][c] = sheet.fills[r][c] ? '' : 'DBEAFE';
+        }
+      }
+      renderActiveSheet();
+    });
+
+    /* =========================================================================
+       5. INTERACTIVE VISUAL GEOMETRY INSPECTOR (DRAGGABLE COLUMN/ROW DIVIDERS)
+       ========================================================================= */
+    el.btnToggleGeom.addEventListener('click', () => {
+      el.geomPanel.classList.toggle('hidden');
+      if (!el.geomPanel.classList.contains('hidden')) drawInteractiveGeometryCanvas();
+    });
+
+    document.getElementById('btn-zoom-in').addEventListener('click', () => {
+      state.canvasZoom = Math.min(2.5, state.canvasZoom + 0.2);
+      el.zoomLabel.textContent = `${Math.round((state.canvasZoom / 1.25) * 100)}%`;
+      drawInteractiveGeometryCanvas();
+    });
+
+    document.getElementById('btn-zoom-out').addEventListener('click', () => {
+      state.canvasZoom = Math.max(0.6, state.canvasZoom - 0.2);
+      el.zoomLabel.textContent = `${Math.round((state.canvasZoom / 1.25) * 100)}%`;
+      drawInteractiveGeometryCanvas();
+    });
+
+    function drawInteractiveGeometryCanvas() {
+      const sheet = getActiveSheet();
+      if (!sheet || !sheet.geometry) return;
+      const geom = sheet.geometry;
+      const scale = state.canvasZoom;
+      const canvas = el.geomCanvas;
+      canvas.width = Math.max(460, geom.width * scale);
+      canvas.height = Math.max(320, geom.height * scale);
+
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#070b14';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Shaded PDF Rectangles (Purple)
+      for (const sr of (geom.shadedRects || [])) {
+        ctx.fillStyle = `#${sr.color}55`;
+        ctx.fillRect(sr.x1 * scale, sr.y1 * scale, (sr.x2 - sr.x1) * scale, (sr.y2 - sr.y1) * scale);
+      }
+
+      // Extracted Text Bounding Boxes (Emerald)
+      ctx.fillStyle = 'rgba(16, 185, 129, 0.22)';
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 1;
+      for (const t of geom.textItems) {
+        ctx.fillRect(t.x * scale, (t.y - t.height) * scale, Math.max(8, t.width * scale), Math.max(8, t.height * scale));
+        ctx.strokeRect(t.x * scale, (t.y - t.height) * scale, Math.max(8, t.width * scale), Math.max(8, t.height * scale));
+      }
+
+      // PDF Vector Lines (Subtle Cyan)
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+      ctx.lineWidth = 1;
+      for (const ln of geom.lines) {
+        ctx.beginPath();
+        ctx.moveTo(ln.x1 * scale, ln.y1 * scale);
+        ctx.lineTo(ln.x2 * scale, ln.y2 * scale);
+        ctx.stroke();
+      }
+
+      // Draggable Column Tracks (Bright Amber)
+      geom.colTracks.forEach((x, idx) => {
+        const px = x * scale;
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, canvas.height); ctx.stroke();
+
+        // Top handle pill
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(px - 6, 2, 12, 12);
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 9px monospace';
+        ctx.fillText(String(idx + 1), px - 3, 11);
+      });
+
+      // Draggable Row Tracks (Bright Cyan)
+      geom.rowTracks.forEach((y, idx) => {
+        const py = y * scale;
+        ctx.strokeStyle = '#06b6d4';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(canvas.width, py); ctx.stroke();
+
+        // Left handle pill
+        ctx.fillStyle = '#06b6d4';
+        ctx.fillRect(2, py - 6, 14, 12);
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 9px monospace';
+        ctx.fillText(String(idx + 1), 4, py + 3);
+      });
+    }
+
+    // Canvas Mouse/Touch Dragging for Dividers
+    function getCanvasPdfCoords(e) {
+      const rect = el.geomCanvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const x = ((clientX - rect.left) * (el.geomCanvas.width / rect.width)) / state.canvasZoom;
+      const y = ((clientY - rect.top) * (el.geomCanvas.height / rect.height)) / state.canvasZoom;
+      return { x, y };
+    }
+
+    el.geomCanvas.addEventListener('mousedown', (e) => {
+      const sheet = getActiveSheet();
+      if (!sheet?.geometry) return;
+      const { x, y } = getCanvasPdfCoords(e);
+      const hitTol = 7 / state.canvasZoom;
+
+      const colIdx = sheet.geometry.colTracks.findIndex(cx => Math.abs(cx - x) <= hitTol);
+      if (colIdx !== -1) {
+        state.draggingDivider = { type: 'col', index: colIdx };
+        return;
+      }
+      const rowIdx = sheet.geometry.rowTracks.findIndex(ry => Math.abs(ry - y) <= hitTol);
+      if (rowIdx !== -1) {
+        state.draggingDivider = { type: 'row', index: rowIdx };
+        return;
+      }
+
+      // Click empty space to insert a new divider
+      if (el.divAddType.value === 'col') {
+        sheet.geometry.colTracks.push(x);
+        sheet.geometry.colTracks.sort((a, b) => a - b);
+      } else {
+        sheet.geometry.rowTracks.push(y);
+        sheet.geometry.rowTracks.sort((a, b) => a - b);
+      }
+      drawInteractiveGeometryCanvas();
+    });
+
+    el.geomCanvas.addEventListener('mousemove', (e) => {
+      if (!state.draggingDivider) return;
+      const sheet = getActiveSheet();
+      if (!sheet?.geometry) return;
+      const { x, y } = getCanvasPdfCoords(e);
+      if (state.draggingDivider.type === 'col') {
+        sheet.geometry.colTracks[state.draggingDivider.index] = Math.max(0, x);
+      } else {
+        sheet.geometry.rowTracks[state.draggingDivider.index] = Math.max(0, y);
+      }
+      drawInteractiveGeometryCanvas();
+    });
+
+    window.addEventListener('mouseup', () => { state.draggingDivider = null; });
+
+    el.geomCanvas.addEventListener('dblclick', (e) => {
+      const sheet = getActiveSheet();
+      if (!sheet?.geometry) return;
+      const { x, y } = getCanvasPdfCoords(e);
+      const hitTol = 7 / state.canvasZoom;
+      const colIdx = sheet.geometry.colTracks.findIndex(cx => Math.abs(cx - x) <= hitTol);
+      if (colIdx !== -1 && sheet.geometry.colTracks.length > 2) {
+        sheet.geometry.colTracks.splice(colIdx, 1);
+        drawInteractiveGeometryCanvas();
+        return;
+      }
+      const rowIdx = sheet.geometry.rowTracks.findIndex(ry => Math.abs(ry - y) <= hitTol);
+      if (rowIdx !== -1 && sheet.geometry.rowTracks.length > 2) {
+        sheet.geometry.rowTracks.splice(rowIdx, 1);
+        drawInteractiveGeometryCanvas();
+      }
+    });
+
+    document.getElementById('btn-snap-dividers').addEventListener('click', () => {
+      const f = getActiveFile();
+      const sheet = getActiveSheet();
+      if (!f || !sheet?.geometry) return;
+      const pageNum = f.rawPages[state.activeSheetIdx]?.pageNumber || 1;
+      f.customTracksPerPage.set(pageNum, {
+        colTracks: [...sheet.geometry.colTracks].sort((a, b) => a - b),
+        rowTracks: [...sheet.geometry.rowTracks].sort((a, b) => a - b)
+      });
+      rebuildFileSheets(f);
+      showStatus('Re-snapped table cells and merged ranges to your adjusted column/row dividers.', 'success');
+    });
+
+    /* =========================================================================
+       6. REUSABLE JSON LAYOUT PROFILES & SINGLE / BATCH EXPORT
+       ========================================================================= */
+    el.btnSaveProfile.addEventListener('click', () => {
+      const f = getActiveFile();
+      const sheet = getActiveSheet();
+      if (!f || !sheet) return;
+      const profile = {
+        profileVersion: 1,
+        createdAt: new Date().toISOString(),
+        options: getCurrentOptions(),
+        colTracks: sheet.geometry?.colTracks || [],
+        rowTracks: sheet.geometry?.rowTracks || []
+      };
+      const blob = new Blob([JSON.stringify(profile, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = f.name.replace(/\.pdf$/i, '') + '_layout_profile.json';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showStatus('Saved reusable JSON layout profile (dividers + extraction rules).', 'success');
+    });
+
+    el.btnLoadProfile.addEventListener('click', () => el.profileInput.click());
+    el.profileInput.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const profile = JSON.parse(await file.text());
+        if (profile.options) {
+          el.optMode.value = profile.options.mode || 'hybrid';
+          el.optMultilineMode.value = profile.options.multilineMode || 'stacked';
+          el.optPages.value = profile.options.pagesMode || 'separate';
+          el.optRotation.value = profile.options.rotation || 'auto';
+          el.optColTol.value = profile.options.colTol ?? 6;
+          el.optRowTol.value = profile.options.rowTol ?? 5;
+          el.optDetectMerges.checked = !!profile.options.detectMerges;
+          el.optSmartTypes.checked = !!profile.options.smartTypes;
+          el.optPreserveFills.checked = !!profile.options.preserveFills;
+          el.optEmbedImages.checked = !!profile.options.embedImages;
+          el.valColTol.textContent = `${el.optColTol.value} pt`;
+          el.valRowTol.textContent = `${el.optRowTol.value} pt`;
+        }
+        const f = getActiveFile();
+        if (f && profile.colTracks?.length && profile.rowTracks?.length) {
+          f.rawPages.forEach(p => {
+            f.customTracksPerPage.set(p.pageNumber, {
+              colTracks: profile.colTracks,
+              rowTracks: profile.rowTracks
+            });
+          });
+          rebuildFileSheets(f);
+        }
+        showStatus(`Applied layout profile "${file.name}".`, 'success');
+      } catch (err) {
+        showStatus(`Invalid JSON profile: ${err.message}`, 'error');
+      }
+    });
+
+    // Export Active PDF as Exact Excel (.xlsx)
+    el.btnDownload.addEventListener('click', () => {
+      const f = getActiveFile();
+      if (!f || !f.sheets.length) return;
+      try {
+        const xlsxBytes = PureXlsxBuilder.generateXlsxBytes(f.sheets, el.optSmartTypes.checked);
+        const outName = f.name.replace(/\.pdf$/i, '') + '_exact.xlsx';
+        triggerDownload(xlsxBytes, outName, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        showStatus(`Exported "${outName}" with exact merged cells, shaded fills, and formulas.`, 'success');
+      } catch (err) {
+        console.error(err);
+        showStatus(`Export error: ${err.message}`, 'error');
+      }
+    });
+
+    // Export All Loaded PDFs as a Batch .ZIP of .xlsx Files
+    el.btnBatchZip.addEventListener('click', () => {
+      if (!state.files.length) return;
+      try {
+        const opts = getCurrentOptions();
+        const zipEntries = [];
+        state.files.forEach((f, idx) => {
+          if (!f.sheets.length) rebuildFileSheets(f);
+          const xlsxBytes = PureXlsxBuilder.generateXlsxBytes(f.sheets, opts.smartTypes);
+          const cleanName = f.name.replace(/\.pdf$/i, '') + `_${idx + 1}.xlsx`;
+          zipEntries.push({ name: cleanName, data: xlsxBytes });
+        });
+        const zipBytes = PureXlsxBuilder.createZip(zipEntries);
+        triggerDownload(zipBytes, 'Batch_PDF_to_Excel_Exports.zip', 'application/zip');
+        showStatus(`Exported ${zipEntries.length} Excel workbooks inside Batch_PDF_to_Excel_Exports.zip.`, 'success');
+      } catch (err) {
+        console.error(err);
+        showStatus(`Batch export error: ${err.message}`, 'error');
+      }
+    });
+
+    function triggerDownload(uint8Arr, filename, mime) {
+      const blob = new Blob([uint8Arr], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+  </script>
+</body>
+</html>
